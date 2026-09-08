@@ -1,0 +1,65 @@
+#root {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.site-header__logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page {
+  padding: 2rem 1.5rem;
+  text-align: left;
+}
+
+.page__title {
+  margin-top: 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.card-grid a {
+  display: block;
+  padding: 1rem;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.mypage-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.mypage-tabs a {
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.mypage-tabs a.active {
+  background-color: #646cff;
+  color: white;
+  border-color: #646cff;
+}
