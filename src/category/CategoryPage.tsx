@@ -1,24 +1,37 @@
 import { Link, useParams } from 'react-router-dom'
-import { findCategory } from './data.ts'
+import { useCategories } from './useCategories.ts'
+import { findCategoryBySlug, getSubCategories } from './data.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 
 function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>()
-  const category = findCategory(categoryId)
+  const { categories, isLoading, error } = useCategories()
 
-  if (!category) {
+  if (isLoading) {
+    return <div className="page">読み込み中...</div>
+  }
+
+  if (error) {
+    return <div className="page">{error}</div>
+  }
+
+  const category = findCategoryBySlug(categories, categoryId)
+
+  if (!category || category.parentSlug !== null) {
     return <NotFoundPage />
   }
 
+  const subCategories = getSubCategories(categories, category.slug)
+
   return (
     <div className="page">
-      <h1 className="page__title">{category.name}</h1>
+      <h1 className="page__title">{category.label}</h1>
 
       <h2>小カテゴリー</h2>
       <div className="card-grid">
-        {category.subCategories.map((subCategory) => (
-          <Link key={subCategory.id} to={`/category/${category.id}/${subCategory.id}`}>
-            {subCategory.name}
+        {subCategories.map((subCategory) => (
+          <Link key={subCategory.slug} to={`/category/${category.slug}/${subCategory.slug}`}>
+            {subCategory.label}
           </Link>
         ))}
       </div>

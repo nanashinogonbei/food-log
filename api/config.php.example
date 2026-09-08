@@ -1,0 +1,12 @@
+<?php
+
+// このファイルを api/config.php としてコピーし、実際の接続情報を設定してください。
+// api/config.php は .gitignore で除外されます。
+
+return [
+    'host' => '127.0.0.1',
+    'port' => '3306',
+    'database' => 'food_log',
+    'username' => 'root',
+    'password' => '',
+];

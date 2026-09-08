@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# PHP API local config (contains DB credentials)
+api/config.php

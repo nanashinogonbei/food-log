@@ -10,7 +10,8 @@ import RequireAuth from './components/RequireAuth.tsx'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
 import SubCategoryPage from './category/SubCategoryPage.tsx'
-import { categories } from './category/data.ts'
+import { useCategories } from './category/useCategories.ts'
+import { getMainCategories } from './category/data.ts'
 import ProductPage from './product/ProductPage.tsx'
 import MyPage from './mypage/MyPage.tsx'
 import RequestPage from './mypage/RequestPage.tsx'
@@ -26,6 +27,9 @@ const products = [
 
 // トップページ (/)
 function TopPage() {
+  const { categories, isLoading, error } = useCategories()
+  const mainCategories = getMainCategories(categories)
+
   return (
     <div className="page">
       <h1 className="page__title">トップページ</h1>
@@ -34,10 +38,12 @@ function TopPage() {
       <h2>
         カテゴリーから探す <Link to="/category">（一覧を見る）</Link>
       </h2>
+      {isLoading && <p>読み込み中...</p>}
+      {error && <p>{error}</p>}
       <div className="card-grid">
-        {categories.map((category) => (
-          <Link key={category.id} to={`/category/${category.id}`}>
-            {category.name}
+        {mainCategories.map((category) => (
+          <Link key={category.slug} to={`/category/${category.slug}`}>
+            {category.label}
           </Link>
         ))}
       </div>
