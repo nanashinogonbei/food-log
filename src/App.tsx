@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import './App.css'
 import Header from './components/Header.tsx'
+import RequireAuth from './components/RequireAuth.tsx'
 import TopPage from './pages/TopPage.tsx'
 import CategoryPage from './pages/CategoryPage.tsx'
 import ProductPage from './pages/ProductPage.tsx'
@@ -20,12 +21,33 @@ function App() {
         <Route path="/category/:categoryId" element={<CategoryPage />} />
         {/* 詳細ページ */}
         <Route path="/product/:productId" element={<ProductPage />} />
-        {/* マイページ */}
-        <Route path="/:userId" element={<MyPage />} />
-        {/* 商品申請 */}
-        <Route path="/:userId/request" element={<RequestPage />} />
-        {/* 商品評価 */}
-        <Route path="/:userId/valuation" element={<ValuationPage />} />
+        {/* マイページ（要ログイン） */}
+        <Route
+          path="/:userId"
+          element={
+            <RequireAuth>
+              <MyPage />
+            </RequireAuth>
+          }
+        />
+        {/* 商品申請（要ログイン） */}
+        <Route
+          path="/:userId/request"
+          element={
+            <RequireAuth>
+              <RequestPage />
+            </RequireAuth>
+          }
+        />
+        {/* 商品評価（要ログイン） */}
+        <Route
+          path="/:userId/valuation"
+          element={
+            <RequireAuth>
+              <ValuationPage />
+            </RequireAuth>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
