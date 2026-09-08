@@ -1,25 +1,24 @@
 import { Link, useParams } from 'react-router-dom'
-
-// TODO: 実データ取得(API/DB)に置き換える
-const products = [
-  { id: '1', name: '商品A' },
-  { id: '2', name: '商品B' },
-]
+import { findCategory } from './data.ts'
+import NotFoundPage from '../NotFoundPage.tsx'
 
 function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>()
+  const category = findCategory(categoryId)
+
+  if (!category) {
+    return <NotFoundPage />
+  }
 
   return (
     <div className="page">
-      <h1 className="page__title">カテゴリーページ</h1>
-      <p>
-        カテゴリーID: <strong>{categoryId}</strong>
-      </p>
+      <h1 className="page__title">{category.name}</h1>
 
+      <h2>小カテゴリー</h2>
       <div className="card-grid">
-        {products.map((product) => (
-          <Link key={product.id} to={`/product/${product.id}`}>
-            {product.name}
+        {category.subCategories.map((subCategory) => (
+          <Link key={subCategory.id} to={`/category/${category.id}/${subCategory.id}`}>
+            {subCategory.name}
           </Link>
         ))}
       </div>

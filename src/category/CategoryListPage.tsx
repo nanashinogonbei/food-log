@@ -1,11 +1,5 @@
 import { Link } from 'react-router-dom'
-
-// TODO: 実データ取得(API/DB)に置き換える
-const categories = [
-  { id: 'sweets', name: 'スイーツ' },
-  { id: 'drink', name: 'ドリンク' },
-  { id: 'snack', name: 'スナック' },
-]
+import { categories } from './data.ts'
 
 function CategoryListPage() {
   return (

@@ -9,6 +9,8 @@ import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
+import SubCategoryPage from './category/SubCategoryPage.tsx'
+import { categories } from './category/data.ts'
 import ProductPage from './product/ProductPage.tsx'
 import MyPage from './mypage/MyPage.tsx'
 import RequestPage from './mypage/RequestPage.tsx'
@@ -16,12 +18,6 @@ import ValuationPage from './mypage/ValuationPage.tsx'
 import NotFoundPage from './NotFoundPage.tsx'
 
 // TODO: 実データ取得(API/DB)に置き換える
-const categories = [
-  { id: 'sweets', name: 'スイーツ' },
-  { id: 'drink', name: 'ドリンク' },
-  { id: 'snack', name: 'スナック' },
-]
-
 const products = [
   { id: '1', name: '商品A' },
   { id: '2', name: '商品B' },
@@ -69,6 +65,8 @@ function App() {
         <Route path="/category" element={<CategoryListPage />} />
         {/* カテゴリーページ */}
         <Route path="/category/:categoryId" element={<CategoryPage />} />
+        {/* 小カテゴリーページ */}
+        <Route path="/category/:categoryId/:subCategoryId" element={<SubCategoryPage />} />
         {/* 詳細ページ */}
         <Route path="/product/:productId" element={<ProductPage />} />
         {/* マイページ（要ログイン） */}
