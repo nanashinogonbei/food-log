@@ -2,13 +2,14 @@
 export interface CategoryRecord {
   id: number
   slug: string
+  name: string
   label: string
   order: number
   parentSlug: string | null
 }
 
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '//test.production-null.work/food-log/api'
-const API_BASE_URL = '//test.production-null.work/food-log/api'
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+const API_BASE_URL = 'https://production-null.work/food-log/api'
 
 let cachedCategories: CategoryRecord[] | null = null
 let inFlightRequest: Promise<CategoryRecord[]> | null = null
@@ -23,11 +24,11 @@ export function fetchCategories(): Promise<CategoryRecord[]> {
   }
 
   if (!inFlightRequest) {
-    inFlightRequest = fetch(`${API_BASE_URL}/categories.php`, {
-		method: "GET",
-		headers: {
-			Authorization: "Basic " + btoa("null:test")
-		}
+	inFlightRequest = fetch(`${API_BASE_URL}/categories.php`, {
+	  method: 'GET',
+	  mode: 'cors',
+	  cache: 'default',
+	  credentials: 'include',
 	})
       .then((response) => {
         if (!response.ok) {

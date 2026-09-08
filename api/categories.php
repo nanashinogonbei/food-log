@@ -5,8 +5,10 @@ declare(strict_types=1);
 require __DIR__ . '/db.php';
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -22,19 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $pdo = getPdoConnection();
 
-    // 自己参照(parent)で親カテゴリーのslugも一緒に取得し、
-    // フロント側で階層(大カテゴリー/小カテゴリー)を組み立てやすくする
+    // c.id を slug として扱い、親の id (c.parent) を parent_slug として取得
     $stmt = $pdo->query(
         'SELECT
             c.id,
-            c.slug,
-            c.label,
-            c.`order` AS `order`,
+            c.name,
+			c.label,
+            c.order,
             c.parent,
-            p.slug AS parent_slug
+			CAST(c.id AS CHAR) AS slug,
+            CAST(p.id AS CHAR) AS parent_slug
          FROM categories c
          LEFT JOIN categories p ON p.id = c.parent
-         ORDER BY (c.parent IS NULL) DESC, c.parent ASC, c.`order` ASC'
+         ORDER BY (c.parent IS NULL) DESC, c.parent ASC, c.order ASC'
     );
 
     $rows = $stmt->fetchAll();
@@ -42,10 +44,11 @@ try {
     $categories = array_map(static function (array $row): array {
         return [
             'id' => (int) $row['id'],
-            'slug' => $row['slug'],
-            'label' => $row['label'],
+            'slug' => $row['slug'], // idの文字列 (例: "1")
+            'name' => $row['name'],
+			'label' => $row['label'],
             'order' => (int) $row['order'],
-            'parentSlug' => $row['parent_slug'],
+            'parentSlug' => $row['parent_slug'], // 親idの文字列 (例: "2" または null)
         ];
     }, $rows);
 

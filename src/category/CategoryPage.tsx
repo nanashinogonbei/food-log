@@ -25,13 +25,13 @@ function CategoryPage() {
 
   return (
     <div className="page">
-      <h1 className="page__title">{category.label}</h1>
+      <h1 className="page__title">{category.name}</h1>
 
       <h2>小カテゴリー</h2>
       <div className="card-grid">
         {subCategories.map((subCategory) => (
           <Link key={subCategory.slug} to={`/category/${category.slug}/${subCategory.slug}`}>
-            {subCategory.label}
+            {subCategory.name}
           </Link>
         ))}
       </div>

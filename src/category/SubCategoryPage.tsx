@@ -46,9 +46,9 @@ function SubCategoryPage() {
   return (
     <div className="page">
       <p>
-        <Link to={`/category/${category.slug}`}>{category.label}</Link> &gt; {subCategory.label}
+        <Link to={`/category/${category.slug}`}>{category.name}</Link> &gt; {subCategory.name}
       </p>
-      <h1 className="page__title">{subCategory.label}</h1>
+      <h1 className="page__title">{subCategory.name}</h1>
 
       <div className="card-grid">
         {products.map((product) => (

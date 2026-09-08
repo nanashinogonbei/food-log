@@ -21,7 +21,7 @@ function CategoryListPage() {
       <div className="card-grid">
         {mainCategories.map((category) => (
           <Link key={category.slug} to={`/category/${category.slug}`}>
-            {category.label}
+            {category.name}
           </Link>
         ))}
       </div>

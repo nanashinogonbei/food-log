@@ -1,0 +1,49 @@
+{
+  "hash": "430fa445",
+  "configHash": "14d565b8",
+  "lockfileHash": "31ade541",
+  "browserHash": "21d70d11",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "dc2fdd54",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "34627e2b",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "f627d311",
+      "needsInterop": false
+    },
+    "@clerk/clerk-react": {
+      "src": "../../node_modules/@clerk/clerk-react/dist/index.mjs",
+      "file": "@clerk_clerk-react.js",
+      "fileHash": "3b871c3f",
+      "needsInterop": false
+    },
+    "@clerk/localizations": {
+      "src": "../../node_modules/@clerk/localizations/dist/index.mjs",
+      "file": "@clerk_localizations.js",
+      "fileHash": "93abc2d9",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-RDMB2FCJ": {
+      "file": "chunk-RDMB2FCJ.js"
+    },
+    "chunk-IGNIO7M7": {
+      "file": "chunk-IGNIO7M7.js"
+    },
+    "chunk-PX6F3LHL": {
+      "file": "chunk-PX6F3LHL.js"
+    }
+  }
+}
