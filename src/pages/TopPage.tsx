@@ -19,7 +19,9 @@ function TopPage() {
       <h1 className="page__title">トップページ</h1>
       <p>不特定多数が商品を評価するコミュニティサイトです。</p>
 
-      <h2>カテゴリーから探す</h2>
+      <h2>
+        カテゴリーから探す <Link to="/category">（一覧を見る）</Link>
+      </h2>
       <div className="card-grid">
         {categories.map((category) => (
           <Link key={category.id} to={`/category/${category.id}`}>

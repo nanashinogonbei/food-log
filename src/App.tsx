@@ -3,6 +3,7 @@ import './App.css'
 import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
 import TopPage from './pages/TopPage.tsx'
+import CategoryListPage from './pages/CategoryListPage.tsx'
 import CategoryPage from './pages/CategoryPage.tsx'
 import ProductPage from './pages/ProductPage.tsx'
 import MyPage from './pages/MyPage.tsx'
@@ -17,6 +18,8 @@ function App() {
       <Routes>
         {/* トップページ */}
         <Route path="/" element={<TopPage />} />
+        {/* カテゴリー一覧ページ */}
+        <Route path="/category" element={<CategoryListPage />} />
         {/* カテゴリーページ */}
         <Route path="/category/:categoryId" element={<CategoryPage />} />
         {/* 詳細ページ */}
