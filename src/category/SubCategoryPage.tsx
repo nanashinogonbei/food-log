@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { useCategories } from './useCategories.ts'
-import { findCategoryBySlug } from './data.ts'
+import { findMainCategoryByLabel, findSubCategoryByLabel } from './data.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 
 // TODO: 商品データもDB/APIから取得するように置き換える
@@ -23,7 +23,7 @@ const productsBySubCategorySlug: Record<string, { id: string; name: string }[]> 
 }
 
 function SubCategoryPage() {
-  const { categoryId, subCategoryId } = useParams<{ categoryId: string; subCategoryId: string }>()
+  const { categoryLabel, subCategoryLabel } = useParams<{ categoryLabel: string; subCategoryLabel: string }>()
   const { categories, isLoading, error } = useCategories()
 
   if (isLoading) {
@@ -34,10 +34,10 @@ function SubCategoryPage() {
     return <div className="page">{error}</div>
   }
 
-  const category = findCategoryBySlug(categories, categoryId)
-  const subCategory = findCategoryBySlug(categories, subCategoryId)
+  const category = findMainCategoryByLabel(categories, categoryLabel)
+  const subCategory = findSubCategoryByLabel(categories, category?.slug, subCategoryLabel)
 
-  if (!category || !subCategory || subCategory.parentSlug !== category.slug) {
+  if (!category || !subCategory) {
     return <NotFoundPage />
   }
 
@@ -46,7 +46,7 @@ function SubCategoryPage() {
   return (
     <div className="page">
       <p>
-        <Link to={`/category/${category.slug}`}>{category.name}</Link> &gt; {subCategory.name}
+        <Link to={`/category/${category.label}`}>{category.name}</Link> &gt; {subCategory.name}
       </p>
       <h1 className="page__title">{subCategory.name}</h1>
 

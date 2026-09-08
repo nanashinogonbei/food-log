@@ -20,7 +20,7 @@ function CategoryListPage() {
       <h1 className="page__title">カテゴリー一覧</h1>
       <div className="card-grid">
         {mainCategories.map((category) => (
-          <Link key={category.slug} to={`/category/${category.slug}`}>
+          <Link key={category.slug} to={`/category/${category.label}`}>
             {category.name}
           </Link>
         ))}

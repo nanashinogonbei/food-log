@@ -42,7 +42,7 @@ function TopPage() {
       {error && <p>{error}</p>}
       <div className="card-grid">
         {mainCategories.map((category) => (
-          <Link key={category.slug} to={`/category/${category.slug}`}>
+          <Link key={category.slug} to={`/category/${category.label}`}>
             {category.name}
           </Link>
         ))}
@@ -70,9 +70,9 @@ function App() {
         {/* カテゴリー一覧ページ */}
         <Route path="/category" element={<CategoryListPage />} />
         {/* カテゴリーページ */}
-        <Route path="/category/:categoryId" element={<CategoryPage />} />
+        <Route path="/category/:categoryLabel" element={<CategoryPage />} />
         {/* 小カテゴリーページ */}
-        <Route path="/category/:categoryId/:subCategoryId" element={<SubCategoryPage />} />
+        <Route path="/category/:categoryLabel/:subCategoryLabel" element={<SubCategoryPage />} />
         {/* 詳細ページ */}
         <Route path="/product/:productId" element={<ProductPage />} />
         {/* マイページ（要ログイン） */}

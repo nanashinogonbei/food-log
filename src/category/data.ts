@@ -2,13 +2,12 @@
 export interface CategoryRecord {
   id: number
   slug: string
-  name: string
   label: string
   order: number
   parentSlug: string | null
 }
 
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 const API_BASE_URL = 'https://production-null.work/food-log/api'
 
 let cachedCategories: CategoryRecord[] | null = null
@@ -61,4 +60,18 @@ export function getSubCategories(categories: CategoryRecord[], parentSlug: strin
 /** slug からカテゴリー(大小どちらも)を1件取得する */
 export function findCategoryBySlug(categories: CategoryRecord[], slug: string | undefined): CategoryRecord | undefined {
   return categories.find((category) => category.slug === slug)
+}
+
+/** label から大カテゴリーを1件取得する(URLに大カテゴリー名を使うため) */
+export function findMainCategoryByLabel(categories: CategoryRecord[], label: string | undefined): CategoryRecord | undefined {
+  return categories.find((category) => category.parentSlug === null && category.label === label)
+}
+
+/** 指定した親(slug)配下で、label が一致する小カテゴリーを1件取得する */
+export function findSubCategoryByLabel(
+  categories: CategoryRecord[],
+  parentSlug: string | undefined,
+  label: string | undefined,
+): CategoryRecord | undefined {
+  return categories.find((category) => category.parentSlug === parentSlug && category.label === label)
 }
