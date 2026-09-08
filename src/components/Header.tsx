@@ -11,7 +11,7 @@ function Header() {
       </Link>
       <nav className="site-header__nav">
         <SignedOut>
-          <a href="/login.html">ログイン</a>
+          <a href="/login">ログイン</a>
         </SignedOut>
         <SignedIn>
           {user && <Link to={`/${user.id}`}>マイページ</Link>}

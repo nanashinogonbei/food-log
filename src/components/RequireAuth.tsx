@@ -7,7 +7,7 @@ interface RequireAuthProps {
 }
 
 /**
- * ログインしていない場合は /login.html にリダイレクトし、
+ * ログインしていない場合は /login にリダイレクトし、
  * ログイン確認が取れるまで・未ログイン時は children を描画しない。
  */
 function RequireAuth({ children }: RequireAuthProps) {
@@ -15,7 +15,7 @@ function RequireAuth({ children }: RequireAuthProps) {
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      window.location.href = '/login.html'
+      window.location.href = '/login'
     }
   }, [isLoaded, isSignedIn])
 
