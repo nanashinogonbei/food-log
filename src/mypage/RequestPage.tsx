@@ -16,16 +16,33 @@ function RequestPage() {
     <div className="page">
       <h1 className="page__title">商品申請</h1>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="productName">商品名</label>
-        <br />
-        <input
-          id="productName"
-          type="text"
-          value={productName}
-          onChange={(event) => setProductName(event.target.value)}
-        />
-        <br />
-        <br />
+		<div>
+			<label htmlFor="productName">商品名【必須】</label>
+			<input
+			  id="productName"
+			  type="text"
+			  value={productName}
+			  onChange={(event) => setProductName(event.target.value)}
+			/>
+		</div>
+		<div>
+			<label htmlFor="productName">販売会社【必須】</label>
+			<input
+			  id="productName"
+			  type="text"
+			  value={productName}
+			  onChange={(event) => setProductName(event.target.value)}
+			/>
+		</div>
+		<div>
+			<label htmlFor="productName">製造会社</label>
+			<input
+			  id="productName"
+			  type="text"
+			  value={productName}
+			  onChange={(event) => setProductName(event.target.value)}
+			/>
+		</div>
         <button type="submit">申請する</button>
       </form>
     </div>
