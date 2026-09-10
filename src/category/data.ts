@@ -52,12 +52,17 @@ export function getMainCategories(categories: CategoryRecord[]): CategoryRecord[
   return categories.filter((category) => category.parentSlug === null)
 }
 
-/** 指定した大カテゴリーの slug に紐づく小カテゴリーを取り出す */
-export function getSubCategories(categories: CategoryRecord[], parentSlug: string): CategoryRecord[] {
-  return categories.filter((category) => category.parentSlug === parentSlug)
+/** 指定した大カテゴリーの slug に紐づく中カテゴリーを取り出す */
+export function getMiddleCategories(categories: CategoryRecord[], mainSlug: string): CategoryRecord[] {
+  return categories.filter((category) => category.parentSlug === mainSlug)
 }
 
-/** slug からカテゴリー(大小どちらも)を1件取得する */
+/** 指定した中カテゴリーの slug に紐づく小カテゴリーを取り出す */
+export function getSubCategories(categories: CategoryRecord[], middleSlug: string): CategoryRecord[] {
+  return categories.filter((category) => category.parentSlug === middleSlug)
+}
+
+/** slug からカテゴリー(大中小いずれも)を1件取得する */
 export function findCategoryBySlug(categories: CategoryRecord[], slug: string | undefined): CategoryRecord | undefined {
   return categories.find((category) => category.slug === slug)
 }
@@ -67,11 +72,20 @@ export function findMainCategoryByLabel(categories: CategoryRecord[], label: str
   return categories.find((category) => category.parentSlug === null && category.label === label)
 }
 
-/** 指定した親(slug)配下で、label が一致する小カテゴリーを1件取得する */
-export function findSubCategoryByLabel(
+/** 指定した大カテゴリー(slug)配下で、label が一致する中カテゴリーを1件取得する */
+export function findMiddleCategoryByLabel(
   categories: CategoryRecord[],
-  parentSlug: string | undefined,
+  mainSlug: string | undefined,
   label: string | undefined,
 ): CategoryRecord | undefined {
-  return categories.find((category) => category.parentSlug === parentSlug && category.label === label)
+  return categories.find((category) => category.parentSlug === mainSlug && category.label === label)
+}
+
+/** 指定した中カテゴリー(slug)配下で、label が一致する小カテゴリーを1件取得する */
+export function findSubCategoryByLabel(
+  categories: CategoryRecord[],
+  middleSlug: string | undefined,
+  label: string | undefined,
+): CategoryRecord | undefined {
+  return categories.find((category) => category.parentSlug === middleSlug && category.label === label)
 }

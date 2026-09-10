@@ -2,7 +2,8 @@
 
 ■ サイト構成 
 -トップページ (/)
---カテゴリーページ (/category/***)
+--中カテゴリーページ (/category/[label])
+---小カテゴリーページ (/category/[label]/[label])
 --詳細ページ (/product/***)
 -ログインページ (/login)
 -マイページ (/[userID])

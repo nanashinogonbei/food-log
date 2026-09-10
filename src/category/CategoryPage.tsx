@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { useCategories } from './useCategories.ts'
-import { findMainCategoryByLabel, getSubCategories } from './data.ts'
+import { findMainCategoryByLabel, getMiddleCategories } from './data.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 
 function CategoryPage() {
@@ -21,17 +21,20 @@ function CategoryPage() {
     return <NotFoundPage />
   }
 
-  const subCategories = getSubCategories(categories, category.slug)
+  const middleCategories = getMiddleCategories(categories, category.slug)
 
   return (
     <div className="page">
       <h1 className="page__title">{category.name}</h1>
 
-      <h2>小カテゴリー</h2>
+      <h2>中カテゴリー</h2>
       <div className="card-grid">
-        {subCategories.map((subCategory) => (
-          <Link key={subCategory.slug} to={`/category/${category.label}/${subCategory.label}`}>
-            {subCategory.name}
+        {middleCategories.map((middleCategory) => (
+          <Link
+            key={middleCategory.slug}
+            to={`/category/${category.label}/${middleCategory.label}`}
+          >
+            {middleCategory.name}
           </Link>
         ))}
       </div>

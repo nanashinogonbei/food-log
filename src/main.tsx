@@ -9,9 +9,10 @@ import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
+import MiddleCategoryPage from './category/MiddleCategoryPage.tsx'
 import SubCategoryPage from './category/SubCategoryPage.tsx'
 import { useCategories } from './category/useCategories.ts'
-import { getMainCategories } from './category/data.ts'
+import { getMainCategories, getMiddleCategories } from './category/data.ts'
 import ProductPage from './product/ProductPage.tsx'
 import MyPage from './mypage/MyPage.tsx'
 import RequestPage from './mypage/RequestPage.tsx'
@@ -40,13 +41,27 @@ function TopPage() {
       </h2>
       {isLoading && <p>読み込み中...</p>}
       {error && <p>{error}</p>}
-      <div className="card-grid">
-        {mainCategories.map((category) => (
-          <Link key={category.slug} to={`/category/${category.label}`}>
-            {category.name}
-          </Link>
-        ))}
-      </div>
+      {mainCategories.map((category) => {
+        const middleCategories = getMiddleCategories(categories, category.slug)
+
+        return (
+          <div key={category.slug}>
+            <h3>
+              <Link to={`/category/${category.label}`}>{category.name}</Link>
+            </h3>
+            <div className="card-grid">
+              {middleCategories.map((middleCategory) => (
+                <Link
+                  key={middleCategory.slug}
+                  to={`/category/${category.label}/${middleCategory.label}`}
+                >
+                  {middleCategory.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )
+      })}
 
       <h2>注目の商品</h2>
       <div className="card-grid">
@@ -69,10 +84,15 @@ function App() {
         <Route path="/" element={<TopPage />} />
         {/* カテゴリー一覧ページ */}
         <Route path="/category" element={<CategoryListPage />} />
-        {/* カテゴリーページ */}
+        {/* 大カテゴリーページ */}
         <Route path="/category/:categoryLabel" element={<CategoryPage />} />
+        {/* 中カテゴリーページ */}
+        <Route path="/category/:categoryLabel/:middleCategoryLabel" element={<MiddleCategoryPage />} />
         {/* 小カテゴリーページ */}
-        <Route path="/category/:categoryLabel/:subCategoryLabel" element={<SubCategoryPage />} />
+        <Route
+          path="/category/:categoryLabel/:middleCategoryLabel/:subCategoryLabel"
+          element={<SubCategoryPage />}
+        />
         {/* 詳細ページ */}
         <Route path="/product/:productId" element={<ProductPage />} />
         {/* マイページ（要ログイン） */}
