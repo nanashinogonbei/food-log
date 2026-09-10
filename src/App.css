@@ -3,6 +3,15 @@
   margin: 0 auto;
 }
 
+figure {
+	margin: 0;
+	padding: 0;
+}
+
+img {
+	width: 100%;
+}
+
 .site-header {
   display: flex;
   align-items: center;
@@ -32,10 +41,10 @@
 }
 
 .card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	align-items: flex-start;
 }
 
 .card-grid a {
@@ -62,4 +71,27 @@
   background-color: #646cff;
   color: white;
   border-color: #646cff;
+}
+
+.category-group {
+	display: flex;
+	gap: 20px;
+	align-items: center;
+}
+.category-group + .category-group {
+	margin-top: 30px;
+}
+
+.heading-typeA {
+	margin: 0 0 15px;
+	padding: 10px 15px;
+	background-color: #eee;
+}
+
+.col-image {
+	width: 150px;
+}
+
+.col-text {
+	width: calc(100% - 170px);
 }

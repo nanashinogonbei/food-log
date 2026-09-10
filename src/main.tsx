@@ -45,21 +45,29 @@ function TopPage() {
         const middleCategories = getMiddleCategories(categories, category.slug)
 
         return (
-          <div key={category.slug}>
-            <h3>
-              <Link to={`/category/${category.label}`}>{category.name}</Link>
-            </h3>
-            <div className="card-grid">
-              {middleCategories.map((middleCategory) => (
-                <Link
-                  key={middleCategory.slug}
-                  to={`/category/${category.label}/${middleCategory.label}`}
-                >
-                  {middleCategory.name}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <div key={category.slug} class="category-group">
+			<figure class="col-image">
+				<img
+				  src={`/assets/images/category/${category.filename}`}
+				  alt={category.name}
+				/>
+			</figure>
+			<div class="col-text">
+				<h3 class="heading-typeA">
+				  <Link to={`/category/${category.label}`}>{category.name}</Link>
+				</h3>
+				<div className="card-grid">
+				  {middleCategories.map((middleCategory) => (
+					<Link
+					  key={middleCategory.slug}
+					  to={`/category/${category.label}/${middleCategory.label}`}
+					>
+					  {middleCategory.name}
+					</Link>
+				  ))}
+				</div>
+			</div>
+		</div>
         )
       })}
 

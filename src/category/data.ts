@@ -3,12 +3,12 @@ export interface CategoryRecord {
   id: number
   slug: string
   label: string
+  filename: string
   order: number
   parentSlug: string | null
 }
 
-//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
-const API_BASE_URL = 'https://production-null.work/food-log/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 let cachedCategories: CategoryRecord[] | null = null
 let inFlightRequest: Promise<CategoryRecord[]> | null = null

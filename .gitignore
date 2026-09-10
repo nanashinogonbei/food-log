@@ -25,3 +25,4 @@ dist-ssr
 
 # PHP API local config (contains DB credentials)
 api/config.php
+api/category-editer.php

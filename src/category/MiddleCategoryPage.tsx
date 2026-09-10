@@ -34,7 +34,6 @@ function MiddleCategoryPage() {
       </p>
       <h1 className="page__title">{middleCategory.name}</h1>
 
-      <h2>小カテゴリー</h2>
       <div className="card-grid">
         {subCategories.map((subCategory) => (
           <Link

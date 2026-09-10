@@ -30,6 +30,7 @@ try {
             c.id,
             c.name,
 			c.label,
+			c.filename,
             c.order,
             c.parent,
 			CAST(c.id AS CHAR) AS slug,
@@ -47,6 +48,7 @@ try {
             'slug' => $row['slug'], // idの文字列 (例: "1")
             'name' => $row['name'],
 			'label' => $row['label'],
+			'filename' => $row['filename'],
             'order' => (int) $row['order'],
             'parentSlug' => $row['parent_slug'], // 親idの文字列 (例: "2" または null)
         ];

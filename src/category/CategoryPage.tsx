@@ -27,7 +27,6 @@ function CategoryPage() {
     <div className="page">
       <h1 className="page__title">{category.name}</h1>
 
-      <h2>中カテゴリー</h2>
       <div className="card-grid">
         {middleCategories.map((middleCategory) => (
           <Link
