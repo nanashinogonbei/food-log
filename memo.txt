@@ -1,2 +1,82 @@
 lier.mail.lier@gmail.com
 iB1%8lGae#^5
+
+
+
+// 現在のページ番号を取得（通常ページとフロントページで取得方法が異なる）
+$paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : ( ( get_query_var( 'page' ) ) ? get_query_var( 'page' ) : 1 );
+	
+	
+<?php
+// ページネーション
+$total_pages = $the_query->max_num_pages;
+if ( $total_pages > 1 ) :
+	$current_page = max( 1, $paged );
+?>
+<?php
+echo paginate_links( array(
+	'base'      => str_replace( PHP_INT_MAX, '%#%', esc_url( get_pagenum_link( PHP_INT_MAX ) ) ),
+	'format'    => '?paged=%#%',
+	'current'   => $current_page,
+	'total'     => $total_pages,
+	'prev_text' => '&laquo; 前へ',
+	'next_text' => '次へ &raquo;',
+	'type'      => 'list',
+) );
+?>
+<?php endif; ?>
+<?php wp_reset_postdata(); ?>
+
+
+
+
+
+商品名【必須】
+カテゴリ【必須】
+販売会社【必須】
+製造会社
+商品写真（複数）【必須】
+
+
+
+
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+TRUNCATE TABLE `dsm-update_food-log`.`products`;
+TRUNCATE TABLE `dsm-update_food-log`.`product_photos`;
+
+
+
+
+* 大カテゴリーページ、中カテゴリーページ
+<h2>親カテゴリー名</h2>
+<ul>
+	<li><a href="/category/hoge">子カテゴリー名</a></li>
+	<li><a href="/category/hoge">子カテゴリー名</a></li>
+	<li><a href="/category/hoge">子カテゴリー名</a></li>
+</ul>
+
+<h2>親カテゴリー名</h2>
+<ul>
+	<li><a href="/category/hoge">子カテゴリー名</a></li>
+	<li><a href="/category/hoge">子カテゴリー名</a></li>
+	<li><a href="/category/hoge">子カテゴリー名</a></li>
+</ul>
+のような表示。
+カテゴリー内に属する製品がなければ表示させない。
+
+
+商品申請ページ(/[userID]/request)の入力項目を以下にしてください。
+
+商品名【必須】:name
+カテゴリー1【必須】:category1
+カテゴリー2:category1
+販売会社【必須】:distributor
+製造会社:manufacturing
+商品写真（複数）【必須】:photo
+
+合わせてDBに登録するapi(php)も作成してください。

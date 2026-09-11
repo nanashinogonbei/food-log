@@ -26,3 +26,6 @@ dist-ssr
 # PHP API local config (contains DB credentials)
 api/config.php
 api/category-editer.php
+# 商品申請でアップロードされた画像（git管理外）
+/uploads/*
+!/uploads/**/.gitkeep

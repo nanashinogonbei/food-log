@@ -73,6 +73,35 @@ img {
   border-color: #646cff;
 }
 
+.category-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.5rem;
+}
+
+.category-tabs button {
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.category-tabs button.active {
+  background-color: #646cff;
+  color: white;
+  border-color: #646cff;
+}
+
+.category-cascade {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
 .category-group {
 	display: flex;
 	gap: 20px;

@@ -1,20 +1,16 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useCategories } from './useCategories.ts'
-import { findMainCategoryByLabel, findMiddleCategoryByLabel, findSubCategoryByLabel } from './data.ts'
+import {
+  findMainCategoryByLabel,
+  findMiddleCategoryByLabel,
+  findSubCategoryByLabel,
+  getChildCategories,
+} from './data.ts'
+import { useProductsByCategory } from '../product/useProducts.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 
-// TODO: 商品データもDB/APIから取得するように置き換える
-const productsBySubCategorySlug: Record<string, { id: string; name: string }[]> = {
-  cider: [{ id: '1', name: 'サイダーA' }],
-  cola: [{ id: '2', name: 'コーラB' }],
-  'green-tea': [{ id: '3', name: '緑茶C' }],
-  'oolong-tea': [{ id: '4', name: '烏龍茶D' }],
-  black: [{ id: '5', name: 'ブラックコーヒーE' }],
-  'au-lait': [{ id: '6', name: 'カフェオレF' }],
-  'tablet-chocolate': [{ id: '7', name: '板チョコG' }],
-  'plain-cookie': [{ id: '8', name: 'クッキーH' }],
-  'potato-chips': [{ id: '9', name: 'ポテトチップスI' }],
-}
+const ALL_TAB = 'all'
 
 function SubCategoryPage() {
   const { categoryLabel, middleCategoryLabel, subCategoryLabel } = useParams<{
@@ -22,25 +18,40 @@ function SubCategoryPage() {
     middleCategoryLabel: string
     subCategoryLabel: string
   }>()
-  const { categories, isLoading, error } = useCategories()
-
-  if (isLoading) {
-    return <div className="page">読み込み中...</div>
-  }
-
-  if (error) {
-    return <div className="page">{error}</div>
-  }
+  const { categories, isLoading: isCategoriesLoading, error: categoriesError } = useCategories()
+  const [activeTab, setActiveTab] = useState<string>(ALL_TAB)
 
   const category = findMainCategoryByLabel(categories, categoryLabel)
   const middleCategory = findMiddleCategoryByLabel(categories, category?.slug, middleCategoryLabel)
   const subCategory = findSubCategoryByLabel(categories, middleCategory?.slug, subCategoryLabel)
 
+  // 小カテゴリーの下にある細区分（4階層目）を「すべて」に続くタブとして表示する
+  const childCategories = subCategory ? getChildCategories(categories, subCategory.slug) : []
+
+  const categoryIds = !subCategory
+    ? []
+    : activeTab === ALL_TAB
+      ? [subCategory.slug, ...childCategories.map((child) => child.slug)]
+      : [activeTab]
+
+  // カテゴリーの解決前・未存在時も含め、Hooksは常に同じ順序で呼び出す
+  const {
+    products,
+    isLoading: isProductsLoading,
+    error: productsError,
+  } = useProductsByCategory(categoryIds)
+
+  if (isCategoriesLoading) {
+    return <div className="page">読み込み中...</div>
+  }
+
+  if (categoriesError) {
+    return <div className="page">{categoriesError}</div>
+  }
+
   if (!category || !middleCategory || !subCategory) {
     return <NotFoundPage />
   }
-
-  const products = productsBySubCategorySlug[subCategory.slug] ?? []
 
   return (
     <div className="page">
@@ -51,9 +62,41 @@ function SubCategoryPage() {
       </p>
       <h1 className="page__title">{subCategory.name}</h1>
 
+      {childCategories.length > 0 && (
+        <div className="category-tabs">
+          <button
+            type="button"
+            className={activeTab === ALL_TAB ? 'active' : ''}
+            onClick={() => setActiveTab(ALL_TAB)}
+          >
+            すべて
+          </button>
+          {childCategories.map((child) => (
+            <button
+              key={child.slug}
+              type="button"
+              className={activeTab === child.slug ? 'active' : ''}
+              onClick={() => setActiveTab(child.slug)}
+            >
+              {child.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isProductsLoading && <p>読み込み中...</p>}
+      {productsError && <p>{productsError}</p>}
+
+      {!isProductsLoading && !productsError && products.length === 0 && <p>該当する商品はまだありません。</p>}
+
       <div className="card-grid">
         {products.map((product) => (
           <Link key={product.id} to={`/product/${product.id}`}>
+            {product.photos[0] && (
+              <figure className="col-image">
+                <img src={product.photos[0]} alt={product.name} />
+              </figure>
+            )}
             {product.name}
           </Link>
         ))}

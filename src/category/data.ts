@@ -2,6 +2,7 @@
 export interface CategoryRecord {
   id: number
   slug: string
+  name: string
   label: string
   filename: string
   order: number
@@ -50,6 +51,32 @@ export function fetchCategories(): Promise<CategoryRecord[]> {
 /** 大カテゴリー(親を持たない)のみを取り出す */
 export function getMainCategories(categories: CategoryRecord[]): CategoryRecord[] {
   return categories.filter((category) => category.parentSlug === null)
+}
+
+/**
+ * 指定した親(slug、大カテゴリーの場合は null)に紐づく子カテゴリーを取り出す。
+ * 大/中/小/細区分のどの階層に対しても使える汎用版。
+ */
+export function getChildCategories(categories: CategoryRecord[], parentSlug: string | null): CategoryRecord[] {
+  return categories.filter((category) => category.parentSlug === parentSlug)
+}
+
+/**
+ * カテゴリーの選択パス（大→中→小→細区分の順にslugを並べたもの）が
+ * これ以上下の階層を持たない末端まで選択し終えているかを判定する。
+ * (子カテゴリーが存在しない階層に到達した場合、またはmaxLevelsに達した場合に true)
+ */
+export function isCategoryPathComplete(categories: CategoryRecord[], path: string[], maxLevels = 4): boolean {
+  if (path.length === 0) {
+    return false
+  }
+
+  if (path.length >= maxLevels) {
+    return true
+  }
+
+  const lastSlug = path[path.length - 1]
+  return getChildCategories(categories, lastSlug).length === 0
 }
 
 /** 指定した大カテゴリーの slug に紐づく中カテゴリーを取り出す */
