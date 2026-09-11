@@ -8,6 +8,11 @@ figure {
 	padding: 0;
 }
 
+p {
+	margin: 0;
+	padding: 0:
+}
+
 img {
 	width: 100%;
 }
@@ -75,9 +80,8 @@ img {
 
 .category-tabs {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin: 1rem 0 1.5rem;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .category-tabs button {
@@ -123,4 +127,41 @@ img {
 
 .col-text {
 	width: calc(100% - 170px);
+}
+
+.group-endCategory {
+	display: flex;
+	gap: 30px
+}
+
+.colmun-side {
+	width: 200px;
+}
+
+.colmun-main {
+	width: calc( 100% - 230px );
+}
+
+.card-product .card-item > a {
+	display: flex;
+	gap: 30px;
+}
+
+.card-product .card-item .col-image {
+	width: 100px;
+	text-align: center;
+}
+.card-product .card-item .col-image img {
+	max-width: fit-content;
+	max-height: 80px;
+}
+
+.card-product .card-item .col-txt .elem-name {
+	font-size: 1.6rem;
+	font-weight: bold;
+}
+
+.card-product .card-item .col-txt .elem-distributor {
+	font-size: 0.8rem;
+	font-weight: 400;
 }

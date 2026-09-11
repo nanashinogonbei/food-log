@@ -62,45 +62,59 @@ function SubCategoryPage() {
       </p>
       <h1 className="page__title">{subCategory.name}</h1>
 
-      {childCategories.length > 0 && (
-        <div className="category-tabs">
-          <button
-            type="button"
-            className={activeTab === ALL_TAB ? 'active' : ''}
-            onClick={() => setActiveTab(ALL_TAB)}
-          >
-            すべて
-          </button>
-          {childCategories.map((child) => (
-            <button
-              key={child.slug}
-              type="button"
-              className={activeTab === child.slug ? 'active' : ''}
-              onClick={() => setActiveTab(child.slug)}
-            >
-              {child.name}
-            </button>
-          ))}
-        </div>
-      )}
+		<div class="group-endCategory">
+		
+			<div class="colmun-side">
+				{childCategories.length > 0 && (
+				<div className="category-tabs">
+				  <button
+					type="button"
+					className={activeTab === ALL_TAB ? 'active' : ''}
+					onClick={() => setActiveTab(ALL_TAB)}
+				  >
+					すべて
+				  </button>
+				  {childCategories.map((child) => (
+					<button
+					  key={child.slug}
+					  type="button"
+					  className={activeTab === child.slug ? 'active' : ''}
+					  onClick={() => setActiveTab(child.slug)}
+					>
+					  {child.name}
+					</button>
+				  ))}
+				</div>
+				)}
+			</div>
 
-      {isProductsLoading && <p>読み込み中...</p>}
-      {productsError && <p>{productsError}</p>}
+			<div class="colmun-main">
+				{isProductsLoading && <p>読み込み中...</p>}
+				{productsError && <p>{productsError}</p>}
 
-      {!isProductsLoading && !productsError && products.length === 0 && <p>該当する商品はまだありません。</p>}
+				{!isProductsLoading && !productsError && products.length === 0 && <p>該当する商品はまだありません。</p>}
 
-      <div className="card-grid">
-        {products.map((product) => (
-          <Link key={product.id} to={`/product/${product.id}`}>
-            {product.photos[0] && (
-              <figure className="col-image">
-                <img src={product.photos[0]} alt={product.name} />
-              </figure>
-            )}
-            {product.name}
-          </Link>
-        ))}
-      </div>
+				<div className="card-product">
+				{products.map((product) => (
+					<div class="card-item">
+						<Link key={product.id} to={`/product/${product.id}`}>
+						{product.photos[0] && (
+						  <figure className="col-image">
+							<img src={`http://production-null.work/food-log${product.photos[0]}`} alt={product.name} />
+						  </figure>
+						)}
+						<div class="col-txt">
+							<p class="elem-distributor">{product.distributor}</p>
+							<p class="elem-name">{product.name}</p>
+						</div>
+						</Link>
+					</div>
+				))}
+				</div>
+			</div>
+			
+		</div>
+		
     </div>
   )
 }

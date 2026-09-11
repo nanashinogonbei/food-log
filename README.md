@@ -24,8 +24,6 @@ yarn preview   # ビルド結果をローカルでプレビュー
 yarn lint      # ESLint
 npx tsc -b     # 型チェックのみ
 
-
-
 yarn up
 yarn cache clean
 
@@ -48,3 +46,7 @@ yarn cache clean
 --商品評価 (/[userID]/valuation)
 
 
+* 製品ステータス
+pending : 保留中
+approved : 承認済み
+rejected : 却下
