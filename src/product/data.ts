@@ -56,6 +56,57 @@ export async function fetchProductsByCategoryIds(categoryIds: string[]): Promise
 }
 
 /**
+ * 商品名の部分一致で商品を検索する（商品評価ページのオートコンプリート用）。
+ */
+export async function searchProductsByName(name: string): Promise<ProductSummary[]> {
+  const trimmed = name.trim()
+
+  if (trimmed === '') {
+    return []
+  }
+
+  const params = new URLSearchParams({ name: trimmed })
+
+  const response = await fetch(`${API_BASE_URL}/products.php?${params.toString()}`, {
+    method: 'GET',
+    mode: 'cors',
+    cache: 'default',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`商品の検索に失敗しました (status: ${response.status})`)
+  }
+
+  return response.json() as Promise<ProductSummary[]>
+}
+
+/**
+ * 指定したIDの商品を1件取得する（製品ページ、商品評価ページの事前選択用）。
+ * 存在しない場合は null を返す。
+ */
+export async function fetchProductById(id: string): Promise<ProductSummary | null> {
+  if (id.trim() === '') {
+    return null
+  }
+
+  const params = new URLSearchParams({ id })
+
+  const response = await fetch(`${API_BASE_URL}/products.php?${params.toString()}`, {
+    method: 'GET',
+    mode: 'cors',
+    cache: 'default',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`商品の取得に失敗しました (status: ${response.status})`)
+  }
+
+  return response.json() as Promise<ProductSummary | null>
+}
+
+/**
  * 商品申請フォームの内容をAPI(api/products.php)に送信する。
  * 商品写真は複数枚まとめて multipart/form-data で送る。
  */

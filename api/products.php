@@ -14,6 +14,7 @@ const ALLOWED_MIME_TYPES = [
     'image/png' => 'png',
     'image/webp' => 'webp',
 ];
+const NAME_SEARCH_LIMIT = 20;
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');
@@ -38,12 +39,30 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 /**
+ * GET /api/products.php?id=1
+ *   指定した商品を1件取得する（製品ページ、商品評価ページの事前選択用）。
+ * GET /api/products.php?name=xxx
+ *   商品名の部分一致で検索する（商品評価ページのオートコンプリート用）。
  * GET /api/products.php?categoryIds=1,9,39
- * 指定したカテゴリーID群のいずれかに category1 または category2 が一致する商品一覧を返す。
- * (カテゴリーページで「すべて」タブ＝親＋子カテゴリー群のIDをまとめて渡す使い方を想定)
+ *   指定したカテゴリーID群のいずれかに category1 または category2 が一致する商品一覧を返す。
+ *   (カテゴリーページで「すべて」タブ＝親＋子カテゴリー群のIDをまとめて渡す使い方を想定)
+ * id, name, categoryIds はこの優先順位で1つだけ処理する。いずれも未指定の場合は空を返す。
  */
 function handleListProducts(): void
 {
+    $id = trim((string) ($_GET['id'] ?? ''));
+    $name = trim((string) ($_GET['name'] ?? ''));
+
+    if ($id !== '') {
+        handleGetProductById($id);
+        return;
+    }
+
+    if ($name !== '') {
+        handleSearchProductsByName($name);
+        return;
+    }
+
     $categoryIdsParam = trim((string) ($_GET['categoryIds'] ?? ''));
 
     if ($categoryIdsParam === '') {
@@ -75,46 +94,117 @@ function handleListProducts(): void
         $stmt->execute(array_merge($categoryIds, $categoryIds));
         $products = $stmt->fetchAll();
 
-        $productIds = array_map(static fn (array $row): int => (int) $row['id'], $products);
-        $photosByProductId = [];
-
-        if (count($productIds) > 0) {
-            $photoPlaceholders = implode(',', array_fill(0, count($productIds), '?'));
-            $photoStmt = $pdo->prepare(
-                "SELECT product_id, filename FROM product_photos
-                 WHERE product_id IN ($photoPlaceholders)
-                 ORDER BY product_id ASC, display_order ASC"
-            );
-            $photoStmt->execute($productIds);
-
-            foreach ($photoStmt->fetchAll() as $photoRow) {
-                $productId = (int) $photoRow['product_id'];
-                $photosByProductId[$productId] ??= [];
-                $photosByProductId[$productId][] = UPLOAD_URL_BASE . $photoRow['filename'];
-            }
-        }
-
-        $result = array_map(static function (array $row) use ($photosByProductId): array {
-            $productId = (int) $row['id'];
-
-            return [
-                'id' => $productId,
-                'name' => $row['name'],
-                'category1' => $row['category1'] !== null ? (string) $row['category1'] : null,
-                'category2' => $row['category2'] !== null ? (string) $row['category2'] : null,
-                'distributor' => $row['distributor'],
-                'manufacturing' => $row['manufacturing'],
-                'status' => $row['status'],
-                'createdAt' => $row['created_at'],
-                'photos' => $photosByProductId[$productId] ?? [],
-            ];
-        }, $products);
-
-        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+        echo json_encode(attachPhotosAndFormat($pdo, $products), JSON_UNESCAPED_UNICODE);
     } catch (Throwable $e) {
         http_response_code(500);
         echo json_encode(['error' => '商品一覧の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
     }
+}
+
+/**
+ * 指定したIDの商品を1件取得する。
+ * 存在しない場合は null を返す（フロント側で「見つからない」を判定できるように、
+ * 一覧系のエンドポイントとは異なり空配列ではなく null を返す）。
+ */
+function handleGetProductById(string $id): void
+{
+    if (!ctype_digit($id)) {
+        echo json_encode(null, JSON_UNESCAPED_UNICODE);
+        return;
+    }
+
+    try {
+        $pdo = getPdoConnection();
+
+        $stmt = $pdo->prepare(
+            'SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
+             FROM products
+             WHERE id = :id'
+        );
+        $stmt->execute(['id' => $id]);
+        $product = $stmt->fetch();
+
+        if ($product === false) {
+            echo json_encode(null, JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $result = attachPhotosAndFormat($pdo, [$product]);
+        echo json_encode($result[0], JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '商品の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
+ * 商品名の部分一致で商品を検索する。
+ * 呼び出し側(フロント)は3文字以上で呼び出す想定だが、サーバー側では簡易な下限のみ課す。
+ */
+function handleSearchProductsByName(string $name): void
+{
+    try {
+        $pdo = getPdoConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
+             FROM products
+             WHERE name LIKE :name
+             ORDER BY name ASC
+             LIMIT " . NAME_SEARCH_LIMIT
+        );
+        $stmt->execute(['name' => '%' . $name . '%']);
+        $products = $stmt->fetchAll();
+
+        echo json_encode(attachPhotosAndFormat($pdo, $products), JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '商品の検索に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
+ * 商品レコードの配列に写真URLを付与し、フロントに返すJSON形式に整形する。
+ *
+ * @param list<array{id:int|string,name:string,category1:int|string|null,category2:int|string|null,distributor:string,manufacturing:string|null,status:string,created_at:string}> $products
+ * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>}>
+ */
+function attachPhotosAndFormat(PDO $pdo, array $products): array
+{
+    $productIds = array_map(static fn (array $row): int => (int) $row['id'], $products);
+    $photosByProductId = [];
+
+    if (count($productIds) > 0) {
+        $photoPlaceholders = implode(',', array_fill(0, count($productIds), '?'));
+        $photoStmt = $pdo->prepare(
+            "SELECT product_id, filename FROM product_photos
+             WHERE product_id IN ($photoPlaceholders)
+             ORDER BY product_id ASC, display_order ASC"
+        );
+        $photoStmt->execute($productIds);
+
+        foreach ($photoStmt->fetchAll() as $photoRow) {
+            $productId = (int) $photoRow['product_id'];
+            $photosByProductId[$productId] ??= [];
+            $photosByProductId[$productId][] = UPLOAD_URL_BASE . $photoRow['filename'];
+        }
+    }
+
+    return array_map(static function (array $row) use ($photosByProductId): array {
+        $productId = (int) $row['id'];
+
+        return [
+            'id' => $productId,
+            'name' => $row['name'],
+            'category1' => $row['category1'] !== null ? (string) $row['category1'] : null,
+            'category2' => $row['category2'] !== null ? (string) $row['category2'] : null,
+            'distributor' => $row['distributor'],
+            'manufacturing' => $row['manufacturing'],
+            'status' => $row['status'],
+            'createdAt' => $row['created_at'],
+            'photos' => $photosByProductId[$productId] ?? [],
+        ];
+    }, $products);
 }
 
 /**
