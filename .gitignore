@@ -1,4 +1,5 @@
 # Logs
+.00_memo.txt
 logs
 *.log
 npm-debug.log*

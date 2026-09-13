@@ -84,23 +84,12 @@ function ValuationPage() {
     }
   }, [preselectedProductId])
 
-  // 商品名が完全一致する候補が見つかったら自動で確定し、
   // 確定済みの商品名と入力内容がずれたら選択を解除する
   useEffect(() => {
-    if (selectedProduct && selectedProduct.name === trimmedProductName) {
-      return
-    }
-
-    const exactMatch = candidates.find((candidate) => candidate.name === trimmedProductName)
-
-    // 入力内容が候補と完全一致したら自動確定し、確定済みの商品名とずれたら選択を解除する。
-    if (exactMatch) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedProduct(exactMatch)
-    } else if (selectedProduct) {
+    if (selectedProduct && selectedProduct.name !== trimmedProductName) {
       setSelectedProduct(null)
     }
-  }, [candidates, trimmedProductName, selectedProduct])
+  }, [trimmedProductName, selectedProduct])
 
   const handleProductNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setProductName(event.target.value)
@@ -248,20 +237,6 @@ function ValuationPage() {
         </div>
 
         <div className="valuation-form__field">
-          <label htmlFor="comment">コメント【必須】</label>
-          <textarea
-            id="comment"
-            value={comment}
-            onChange={(event) => setComment(event.target.value)}
-            rows={6}
-            required
-          />
-          <p className="field-hint">
-            {commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）
-          </p>
-        </div>
-
-        <div className="valuation-form__field">
           <label htmlFor="purchasePrice">購入金額</label>
 		  <div>
 			  <input
@@ -287,6 +262,20 @@ function ValuationPage() {
             maxLength={PURCHASE_STORE_MAX_LENGTH}
 			placeholder="例）成城石井 グランゲート東京駅店 or 東京都渋谷区"
           />
+        </div>
+
+        <div className="valuation-form__field">
+          <label htmlFor="comment">コメント【必須】</label>
+          <textarea
+            id="comment"
+            value={comment}
+            onChange={(event) => setComment(event.target.value)}
+            rows={6}
+            required
+          />
+          <p className="field-hint">
+            {commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）
+          </p>
         </div>
 
         <button type="submit" disabled={isSubmitting}>
