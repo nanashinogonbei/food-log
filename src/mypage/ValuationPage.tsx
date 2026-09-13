@@ -39,10 +39,16 @@ function ValuationPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
+  // 投稿完了時のみ 'created' | 'updated' が入り、完了メッセージの出し分けに使う
+  const [submitSuccessAction, setSubmitSuccessAction] = useState<'created' | 'updated' | null>(null)
 
   const { valuations, isLoading: isValuationsLoading, error: valuationsError, reload: reloadValuations } =
     useUserValuations(userId)
+
+  // 選択中の商品について、このユーザーが投稿済みの評価（あれば1件のみ存在する）
+  const existingValuation =
+    selectedProduct !== null ? valuations.find((v) => v.productId === selectedProduct.id) ?? null : null
+  const isEditingExisting = existingValuation !== null
 
   // 製品ページから ?productId=xxx 付きで遷移してきた場合、商品を事前選択する
   useEffect(() => {
@@ -91,6 +97,27 @@ function ValuationPage() {
     }
   }, [trimmedProductName, selectedProduct])
 
+  // 商品選択が変わったタイミングで評価項目を同期する。
+  // 既にその商品を評価済みなら投稿内容を読み込んで「修正」できるようにし、
+  // 未評価ならフォームをクリアして新規投稿の状態にする。
+  useEffect(() => {
+    if (!selectedProduct) {
+      return
+    }
+
+    if (existingValuation) {
+      setScore(existingValuation.score)
+      setComment(existingValuation.comment)
+      setPurchasePrice(existingValuation.purchasePrice ?? '')
+      setPurchaseStore(existingValuation.purchaseStore ?? '')
+    } else {
+      setScore('')
+      setComment('')
+      setPurchasePrice('')
+      setPurchaseStore('')
+    }
+  }, [selectedProduct, existingValuation])
+
   const handleProductNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setProductName(event.target.value)
   }
@@ -136,10 +163,10 @@ function ValuationPage() {
 
     setIsSubmitting(true)
     setSubmitError(null)
-    setSubmitSuccess(false)
+    setSubmitSuccessAction(null)
 
     try {
-      await submitValuation({
+      const result = await submitValuation({
         userId,
         productId: selectedProduct.id,
         score,
@@ -148,7 +175,7 @@ function ValuationPage() {
         purchaseStore: purchaseStore || undefined,
       })
 
-      setSubmitSuccess(true)
+      setSubmitSuccessAction(result.action)
       setProductName('')
       setSelectedProduct(null)
       setScore('')
@@ -170,7 +197,8 @@ function ValuationPage() {
 
       {isLoadingPreselected && <p>選択中の商品を読み込んでいます...</p>}
       {preselectedError && <p>{preselectedError}</p>}
-      {submitSuccess && <p>評価を投稿しました。ご協力ありがとうございます。</p>}
+      {submitSuccessAction === 'created' && <p>評価を投稿しました。ご協力ありがとうございます。</p>}
+      {submitSuccessAction === 'updated' && <p>評価を修正しました。ご協力ありがとうございます。</p>}
       {submitError && <p>{submitError}</p>}
 
       <form className="valuation-form" onSubmit={handleSubmit}>
@@ -190,6 +218,11 @@ function ValuationPage() {
             <div className="selected-product">
               {selectedProduct.photos[0] && <img src={`http://production-null.work/food-log${selectedProduct.photos[0]}`} alt={selectedProduct.name} />}
               <span>「{selectedProduct.name}」を選択中</span>
+              {isEditingExisting && (
+                <p className="field-hint">
+                  この商品はすでに評価済みです。内容を修正して再投稿できます。
+                </p>
+              )}
             </div>
           )}
 
@@ -279,7 +312,7 @@ function ValuationPage() {
         </div>
 
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? '送信中...' : '評価を投稿する'}
+          {isSubmitting ? '送信中...' : isEditingExisting ? '評価を修正する' : '評価を投稿する'}
         </button>
       </form>
 

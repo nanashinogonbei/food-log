@@ -22,6 +22,8 @@ export interface ValuationSubmitResult {
   id: number
   productId: number
   score: ValuationScore
+  /** 'created': 新規投稿 / 'updated': 既存評価の修正（同じ商品への2回目以降の投稿） */
+  action: 'created' | 'updated'
 }
 
 export interface ValuationSummary {
@@ -36,6 +38,8 @@ export interface ValuationSummary {
   purchasePrice: string | null
   purchaseStore: string | null
   createdAt: string
+  /** 評価を修正した日時。未修正の場合は null */
+  updatedAt: string | null
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'

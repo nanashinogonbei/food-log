@@ -92,7 +92,7 @@ function handleListValuations(): void
 
         $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, v.user_id, v.score, v.comment,
-                    v.purchase_price, v.purchase_store, v.created_at
+                    v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN products p ON p.id = v.product_id
              WHERE $where
@@ -138,6 +138,7 @@ function handleListValuations(): void
                 'purchasePrice' => $row['purchase_price'],
                 'purchaseStore' => $row['purchase_store'],
                 'createdAt' => $row['created_at'],
+                'updatedAt' => $row['updated_at'],
             ];
         }, $rows);
 
@@ -202,27 +203,99 @@ try {
         respondError(400, '指定された商品が存在しません。');
     }
 
-    $insertStmt = $pdo->prepare(
-        'INSERT INTO product_valuations (product_id, user_id, score, comment, purchase_price, purchase_store, created_at)
-         VALUES (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_store, NOW())'
+    // 同一ユーザー・同一商品の評価が既に存在するか確認する。
+    // 存在する場合は「新規投稿」ではなく「既存の評価内容を修正」として扱い、
+    // 同じ商品に対して複数の評価が登録されないようにする。
+    $existingStmt = $pdo->prepare(
+        'SELECT id FROM product_valuations WHERE product_id = :product_id AND user_id = :user_id'
     );
-
-    $insertStmt->execute([
+    $existingStmt->execute([
         'product_id' => $productId,
         'user_id' => $userId,
-        'score' => $score,
-        'comment' => $comment,
-        'purchase_price' => $purchasePrice !== '' ? $purchasePrice : null,
-        'purchase_store' => $purchaseStore !== '' ? $purchaseStore : null,
     ]);
+    $existingRow = $existingStmt->fetch();
 
-    $valuationId = (int) $pdo->lastInsertId();
+    $purchasePriceValue = $purchasePrice !== '' ? $purchasePrice : null;
+    $purchaseStoreValue = $purchaseStore !== '' ? $purchaseStore : null;
 
-    http_response_code(201);
+    if ($existingRow !== false) {
+        // --- 更新（修正投稿） ---
+        $valuationId = (int) $existingRow['id'];
+        $action = 'updated';
+
+        $updateStmt = $pdo->prepare(
+            'UPDATE product_valuations
+             SET score = :score, comment = :comment, purchase_price = :purchase_price,
+                 purchase_store = :purchase_store, updated_at = NOW()
+             WHERE id = :id'
+        );
+        $updateStmt->execute([
+            'score' => $score,
+            'comment' => $comment,
+            'purchase_price' => $purchasePriceValue,
+            'purchase_store' => $purchaseStoreValue,
+            'id' => $valuationId,
+        ]);
+    } else {
+        // --- 新規登録 ---
+        $action = 'created';
+
+        $insertStmt = $pdo->prepare(
+            'INSERT INTO product_valuations (product_id, user_id, score, comment, purchase_price, purchase_store, created_at)
+             VALUES (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_store, NOW())'
+        );
+
+        try {
+            $insertStmt->execute([
+                'product_id' => $productId,
+                'user_id' => $userId,
+                'score' => $score,
+                'comment' => $comment,
+                'purchase_price' => $purchasePriceValue,
+                'purchase_store' => $purchaseStoreValue,
+            ]);
+        } catch (PDOException $e) {
+            // UNIQUE KEY (product_id, user_id) に抵触した場合（同時投稿などでの競合）は
+            // 既存行を更新する処理にフォールバックする。
+            if ((string) $e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            $action = 'updated';
+
+            $raceStmt = $pdo->prepare(
+                'SELECT id FROM product_valuations WHERE product_id = :product_id AND user_id = :user_id'
+            );
+            $raceStmt->execute(['product_id' => $productId, 'user_id' => $userId]);
+            $raceRow = $raceStmt->fetch();
+            $valuationId = (int) $raceRow['id'];
+
+            $updateStmt = $pdo->prepare(
+                'UPDATE product_valuations
+                 SET score = :score, comment = :comment, purchase_price = :purchase_price,
+                     purchase_store = :purchase_store, updated_at = NOW()
+                 WHERE id = :id'
+            );
+            $updateStmt->execute([
+                'score' => $score,
+                'comment' => $comment,
+                'purchase_price' => $purchasePriceValue,
+                'purchase_store' => $purchaseStoreValue,
+                'id' => $valuationId,
+            ]);
+        }
+
+        if ($action === 'created') {
+            $valuationId = (int) $pdo->lastInsertId();
+        }
+    }
+
+    http_response_code($action === 'created' ? 201 : 200);
     echo json_encode([
         'id' => $valuationId,
         'productId' => (int) $productId,
         'score' => $score,
+        'action' => $action,
     ], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
     http_response_code(500);

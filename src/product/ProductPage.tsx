@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react'
 import { useProduct } from './useProducts.ts'
 import { useProductValuations } from '../valuation/useValuations.ts'
+import { formatJapaneseDate } from '../valuation/format.ts'
 
 function ProductPage() {
   const { productId } = useParams<{ productId: string }>()
@@ -91,6 +92,10 @@ function ProductPage() {
       <ul className="valuation-list">
         {valuations.map((valuation) => (
           <li key={valuation.id} className="valuation-list__item">
+            <p className="valuation-list__date">
+              投稿日: {formatJapaneseDate(valuation.createdAt)}
+              {valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
+            </p>
             <p className="valuation-list__score">{valuation.scoreLabel}</p>
             <p className="valuation-list__comment">{valuation.comment}</p>
             {(valuation.purchasePrice || valuation.purchaseStore) && (
