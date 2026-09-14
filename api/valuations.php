@@ -21,7 +21,7 @@ const PURCHASE_STORE_MAX_LENGTH = 50;
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -31,6 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     handleListValuations();
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    handleDeleteValuation();
     exit;
 }
 
@@ -146,6 +151,53 @@ function handleListValuations(): void
     } catch (Throwable $e) {
         http_response_code(500);
         echo json_encode(['error' => '評価一覧の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
+ * DELETE /api/valuations.php?id=123&userId=xxx
+ *   指定IDの評価を削除する（製品ページの「削除」リンク用）。
+ * 投稿者本人（userIdが一致する評価）のみ削除できる。
+ * DELETEリクエストはクエリ文字列でパラメータを受け取る（他APIのGETと合わせる）。
+ */
+function handleDeleteValuation(): void
+{
+    $id = trim((string) ($_GET['id'] ?? ''));
+    // TODO: 本来はClerkのセッション(Authorizationヘッダー)をサーバー側で検証すべきだが、
+    // このプロジェクトの他API同様、簡易的にクエリから受け取った値をそのまま使用している。
+    $userId = trim((string) ($_GET['userId'] ?? ''));
+
+    if ($id === '' || !ctype_digit($id)) {
+        respondError(400, '削除する評価を指定してください。');
+    }
+
+    if ($userId === '') {
+        respondError(400, 'ユーザーIDが取得できませんでした。再度ログインしてください。');
+    }
+
+    try {
+        $pdo = getPdoConnection();
+
+        $checkStmt = $pdo->prepare('SELECT user_id FROM product_valuations WHERE id = :id');
+        $checkStmt->execute(['id' => $id]);
+        $row = $checkStmt->fetch();
+
+        if ($row === false) {
+            respondError(404, '指定された評価が見つかりません。');
+        }
+
+        if ($row['user_id'] !== $userId) {
+            respondError(403, 'この評価を削除する権限がありません。');
+        }
+
+        $deleteStmt = $pdo->prepare('DELETE FROM product_valuations WHERE id = :id');
+        $deleteStmt->execute(['id' => $id]);
+
+        http_response_code(200);
+        echo json_encode(['id' => (int) $id], JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '評価の削除に失敗しました。'], JSON_UNESCAPED_UNICODE);
     }
 }
 

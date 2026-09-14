@@ -116,3 +116,26 @@ async function fetchValuations(query: { userId?: string; productId?: string }): 
 
   return response.json() as Promise<ValuationSummary[]>
 }
+
+/**
+ * 指定したIDの評価を削除する（製品ページの「削除」リンク用）。
+ * 投稿者本人のみ削除できる（userIdをサーバー側で照合する）。
+ */
+export async function deleteValuation(id: number, userId: string): Promise<void> {
+  const params = new URLSearchParams({ id: String(id), userId })
+
+  const response = await fetch(`${API_BASE_URL}/valuations.php?${params.toString()}`, {
+    method: 'DELETE',
+    mode: 'cors',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    const data: unknown = await response.json().catch(() => null)
+    const message =
+      data && typeof data === 'object' && 'error' in data
+        ? String((data as { error: unknown }).error)
+        : `評価の削除に失敗しました (status: ${response.status})`
+    throw new Error(message)
+  }
+}

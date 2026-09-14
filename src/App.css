@@ -283,6 +283,19 @@ img {
 	margin: 0 0 0.5rem;
 }
 
+
+.section-product {
+	display: flex;
+	gap: 30px
+}
+.section-product .product-page__photos {
+	width: 30%;
+}
+.section-product .product-page__meta {
+	width: calc( 70% - 30px );
+}
+
+
 .valuation-list {
 	list-style: none;
 	padding: 0;
@@ -311,4 +324,15 @@ img {
 	margin-top: 0.5rem;
 	font-size: 0.85rem;
 	opacity: 0.8;
+}
+
+
+.valuation-tabs {
+	display: flex;
+}
+.valuation-tabs > .valuation-tabs__tab {
+	cursor: pointer;
+}
+.valuation-tabs > .valuation-tabs__tab.valuation-tabs__tab--active {
+	background-color: #ddd;
 }
