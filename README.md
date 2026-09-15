@@ -11,9 +11,9 @@
 -ログインページ (/login)
 -マイページ (/[userID])
 --商品申請 一覧 (/[userID]/request)
----商品申請 投稿 (/[userID]/request)
+---商品申請 投稿 (/[userID]/request/post)
 --商品評価 一覧 (/[userID]/valuation)
----商品評価 投稿 (/[userID]/valuation)
+---商品評価 投稿 (/[userID]/valuation/post)
 
 
 * 製品ステータス
