@@ -66,25 +66,30 @@ function SubCategoryPage() {
 		
 			<div class="colmun-side">
 				{childCategories.length > 0 && (
-				<div className="category-tabs">
-				  <button
-					type="button"
-					className={activeTab === ALL_TAB ? 'active' : ''}
-					onClick={() => setActiveTab(ALL_TAB)}
-				  >
-					すべて
-				  </button>
-				  {childCategories.map((child) => (
-					<button
-					  key={child.slug}
-					  type="button"
-					  className={activeTab === child.slug ? 'active' : ''}
-					  onClick={() => setActiveTab(child.slug)}
+				<ul className="li-category">
+					<li
+						className={`item${activeTab === ALL_TAB ? ' -active' : ''}`}
 					>
-					  {child.name}
-					</button>
-				  ))}
-				</div>
+					<Link
+						onClick={() => setActiveTab(ALL_TAB)}
+					>
+					すべて
+					</Link>
+					</li>
+					{childCategories.map((child) => (
+						<li
+							className="item"
+							className={`item${activeTab === child.slug ? ' -active' : ''}`}
+						>
+						<Link
+						  key={child.slug}
+						  onClick={() => setActiveTab(child.slug)}
+						>
+						{child.name}
+						</Link>
+						</li>
+					))}
+				</ul>
 				)}
 			</div>
 
