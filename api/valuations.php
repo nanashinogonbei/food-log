@@ -56,14 +56,24 @@ function respondError(int $status, string $message): never
 }
 
 /**
+ * GET /api/valuations.php?ranking=weekly|monthly|quarterly
+ *   期間内（週間=直近7日/月間=直近1ヶ月/四半期=直近3ヶ月）に投稿された評価数の多い順に
+ *   商品を最大5件返す（トップページの「注目の商品」ランキング用）。
  * GET /api/valuations.php?userId=xxx
  *   指定ユーザーが投稿した評価一覧を返す（マイページの商品評価タブ用）。
  * GET /api/valuations.php?productId=1
  *   指定商品に投稿された評価一覧を返す（製品ページ用）。
- * 両方指定された場合はAND条件になる。どちらも未指定の場合は空配列を返す。
+ * ranking, userId+productId はこの優先順位で1つだけ処理する。いずれも未指定の場合は空配列を返す。
  */
 function handleListValuations(): void
 {
+    $ranking = trim((string) ($_GET['ranking'] ?? ''));
+
+    if ($ranking !== '') {
+        handleProductRanking($ranking);
+        return;
+    }
+
     $userId = trim((string) ($_GET['userId'] ?? ''));
     $productId = trim((string) ($_GET['productId'] ?? ''));
 
@@ -151,6 +161,92 @@ function handleListValuations(): void
     } catch (Throwable $e) {
         http_response_code(500);
         echo json_encode(['error' => '評価一覧の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
+ * 期間内に投稿された評価数の多い順に商品を最大5件返す（トップページのランキング用）。
+ * period は 'weekly'（直近7日）/ 'monthly'（直近1ヶ月）/ 'quarterly'（直近3ヶ月）のいずれか。
+ * 不正な period の場合は空配列を返す。
+ */
+function handleProductRanking(string $period): void
+{
+    $intervals = [
+        'weekly' => '7 DAY',
+        'monthly' => '1 MONTH',
+        'quarterly' => '3 MONTH',
+    ];
+
+    if (!isset($intervals[$period])) {
+        echo json_encode([], JSON_UNESCAPED_UNICODE);
+        return;
+    }
+
+    try {
+        $pdo = getPdoConnection();
+
+        // $intervals はホワイトリストの固定値のみを埋め込むため、SQLインジェクションの心配はない。
+        $stmt = $pdo->query(
+            "SELECT v.product_id, COUNT(*) AS valuation_count
+             FROM product_valuations v
+             WHERE v.created_at >= NOW() - INTERVAL {$intervals[$period]}
+             GROUP BY v.product_id
+             ORDER BY valuation_count DESC, v.product_id ASC
+             LIMIT 5"
+        );
+        $rankingRows = $stmt->fetchAll();
+
+        if (count($rankingRows) === 0) {
+            echo json_encode([], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $productIds = array_map(static fn (array $row): int => (int) $row['product_id'], $rankingRows);
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+
+        $productStmt = $pdo->prepare("SELECT id, name FROM products WHERE id IN ($placeholders) AND status != 'pending'");
+        $productStmt->execute($productIds);
+        $nameByProductId = [];
+        foreach ($productStmt->fetchAll() as $row) {
+            $nameByProductId[(int) $row['id']] = $row['name'];
+        }
+
+        $photoStmt = $pdo->prepare(
+            "SELECT product_id, filename FROM product_photos
+             WHERE product_id IN ($placeholders)
+             ORDER BY product_id ASC, display_order ASC"
+        );
+        $photoStmt->execute($productIds);
+        $photoByProductId = [];
+        foreach ($photoStmt->fetchAll() as $row) {
+            $pid = (int) $row['product_id'];
+            if (!isset($photoByProductId[$pid])) {
+                $photoByProductId[$pid] = UPLOAD_URL_BASE . $row['filename'];
+            }
+        }
+
+        $result = [];
+        foreach ($rankingRows as $row) {
+            $pid = (int) $row['product_id'];
+
+            // 商品が削除済みなどで名前が引けない場合はランキングから除外する
+            if (!isset($nameByProductId[$pid])) {
+                continue;
+            }
+
+            $result[] = [
+                'rank' => count($result) + 1,
+                'productId' => $pid,
+                'productName' => $nameByProductId[$pid],
+                'productPhoto' => $photoByProductId[$pid] ?? null,
+                'valuationCount' => (int) $row['valuation_count'],
+            ];
+        }
+
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'ランキングの取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
     }
 }
 

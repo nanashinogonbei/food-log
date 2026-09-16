@@ -16,7 +16,9 @@
 ---商品評価 投稿 (/[userID]/valuation/post)
 
 
-* 製品ステータス
+* 製品ステータス(status)
 pending : 保留中
 approved : 承認済み
 rejected : 却下
+
+

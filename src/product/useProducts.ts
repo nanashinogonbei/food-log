@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchProductById, fetchProductsByCategoryIds, searchProductsByName } from './data.ts'
+import { fetchProductById, fetchProductsByCategoryIds, fetchProductsByUser, searchProductsByName } from './data.ts'
 import type { ProductSummary } from './data.ts'
 
 interface UseProductsByCategoryResult {
@@ -64,6 +64,59 @@ export function useProductsByCategory(categoryIds: string[]): UseProductsByCateg
   }
 
   return { products, isLoading, error }
+}
+
+interface UseUserProductsResult {
+  products: ProductSummary[]
+  isLoading: boolean
+  error: string | null
+  /** 商品申請後などに一覧を再取得する */
+  reload: () => void
+}
+
+/**
+ * 指定したユーザーが申請した商品一覧を取得する（マイページの商品申請タブ用）。
+ */
+export function useUserProducts(userId: string | undefined): UseUserProductsResult {
+  const [products, setProducts] = useState<ProductSummary[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadCount, setReloadCount] = useState(0)
+
+  useEffect(() => {
+    if (!userId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoading(false)
+      return
+    }
+
+    let isMounted = true
+    setIsLoading(true)
+    setError(null)
+
+    fetchProductsByUser(userId)
+      .then((data) => {
+        if (isMounted) {
+          setProducts(data)
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : '商品一覧の取得に失敗しました')
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [userId, reloadCount])
+
+  return { products, isLoading, error, reload: () => setReloadCount((count) => count + 1) }
 }
 
 interface UseProductResult {

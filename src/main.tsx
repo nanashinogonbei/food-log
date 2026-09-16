@@ -7,6 +7,7 @@ import './index.css'
 import './App.css'
 import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
+import FeaturedProductsRanking from './components/FeaturedProductsRanking.tsx'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
 import MiddleCategoryPage from './category/MiddleCategoryPage.tsx'
@@ -16,15 +17,10 @@ import { getMainCategories, getMiddleCategories } from './category/data.ts'
 import ProductPage from './product/ProductPage.tsx'
 import MyPage from './mypage/MyPage.tsx'
 import RequestPage from './mypage/RequestPage.tsx'
+import RequestPostPage from './mypage/RequestPostPage.tsx'
 import ValuationPage from './mypage/ValuationPage.tsx'
+import ValuationPostPage from './mypage/ValuationPostPage.tsx'
 import NotFoundPage from './NotFoundPage.tsx'
-
-// TODO: 実データ取得(API/DB)に置き換える
-const products = [
-  { id: '1', name: '商品A' },
-  { id: '2', name: '商品B' },
-  { id: '3', name: '商品C' },
-]
 
 // トップページ (/)
 function TopPage() {
@@ -72,13 +68,7 @@ function TopPage() {
       })}
 
       <h2>注目の商品</h2>
-      <div className="card-grid">
-        {products.map((product) => (
-          <Link key={product.id} to={`/product/${product.id}`}>
-            {product.name}
-          </Link>
-        ))}
-      </div>
+      <FeaturedProductsRanking />
     </div>
   )
 }
@@ -112,7 +102,7 @@ function App() {
             </RequireAuth>
           }
         />
-        {/* 商品申請（要ログイン） */}
+        {/* 商品申請一覧（要ログイン） */}
         <Route
           path="/:userId/request"
           element={
@@ -121,12 +111,30 @@ function App() {
             </RequireAuth>
           }
         />
-        {/* 商品評価（要ログイン） */}
+        {/* 商品申請 投稿（要ログイン） */}
+        <Route
+          path="/:userId/request/post"
+          element={
+            <RequireAuth>
+              <RequestPostPage />
+            </RequireAuth>
+          }
+        />
+        {/* 商品評価一覧（要ログイン） */}
         <Route
           path="/:userId/valuation"
           element={
             <RequireAuth>
               <ValuationPage />
+            </RequireAuth>
+          }
+        />
+        {/* 商品評価 投稿（要ログイン） */}
+        <Route
+          path="/:userId/valuation/post"
+          element={
+            <RequireAuth>
+              <ValuationPostPage />
             </RequireAuth>
           }
         />

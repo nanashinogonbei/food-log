@@ -94,6 +94,27 @@ export function findCategoryBySlug(categories: CategoryRecord[], slug: string | 
   return categories.find((category) => category.slug === slug)
 }
 
+/**
+ * 指定したカテゴリー(slug)から親を辿り、大→中→小→細区分の順に並べたカテゴリー配列を返す。
+ * 製品ページのパンくず表示（例: 飲料 > ソフトドリンク > 清涼飲料・ジュース > 炭酸飲料）用。
+ * 該当カテゴリーが見つからない場合は空配列を返す。
+ */
+export function getCategoryPath(categories: CategoryRecord[], slug: string | null | undefined): CategoryRecord[] {
+  if (!slug) {
+    return []
+  }
+
+  const path: CategoryRecord[] = []
+  let current = findCategoryBySlug(categories, slug)
+
+  while (current) {
+    path.unshift(current)
+    current = current.parentSlug ? findCategoryBySlug(categories, current.parentSlug) : undefined
+  }
+
+  return path
+}
+
 /** label から大カテゴリーを1件取得する(URLに大カテゴリー名を使うため) */
 export function findMainCategoryByLabel(categories: CategoryRecord[], label: string | undefined): CategoryRecord | undefined {
   return categories.find((category) => category.parentSlug === null && category.label === label)

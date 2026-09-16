@@ -56,6 +56,26 @@ export async function fetchProductsByCategoryIds(categoryIds: string[]): Promise
 }
 
 /**
+ * 指定したユーザーが申請した商品一覧を取得する（マイページの商品申請タブ用）。
+ */
+export async function fetchProductsByUser(userId: string): Promise<ProductSummary[]> {
+  const params = new URLSearchParams({ userId })
+
+  const response = await fetch(`${API_BASE_URL}/products.php?${params.toString()}`, {
+    method: 'GET',
+    mode: 'cors',
+    cache: 'default',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`商品一覧の取得に失敗しました (status: ${response.status})`)
+  }
+
+  return response.json() as Promise<ProductSummary[]>
+}
+
+/**
  * 商品名の部分一致で商品を検索する（商品評価ページのオートコンプリート用）。
  */
 export async function searchProductsByName(name: string): Promise<ProductSummary[]> {

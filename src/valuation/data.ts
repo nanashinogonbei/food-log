@@ -42,6 +42,16 @@ export interface ValuationSummary {
   updatedAt: string | null
 }
 
+export type RankingPeriod = 'weekly' | 'monthly' | 'quarterly'
+
+export interface ProductRanking {
+  rank: number
+  productId: number
+  productName: string
+  productPhoto: string | null
+  valuationCount: number
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 /**
@@ -78,6 +88,27 @@ export async function submitValuation(payload: ValuationPayload): Promise<Valuat
   }
 
   return data as ValuationSubmitResult
+}
+
+/**
+ * 指定した期間（週間/月間/四半期）に投稿された評価数の多い順に商品を最大5件取得する
+ * （トップページの「注目の商品」ランキング用）。
+ */
+export async function fetchProductRanking(period: RankingPeriod): Promise<ProductRanking[]> {
+  const params = new URLSearchParams({ ranking: period })
+
+  const response = await fetch(`${API_BASE_URL}/valuations.php?${params.toString()}`, {
+    method: 'GET',
+    mode: 'cors',
+    cache: 'default',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`ランキングの取得に失敗しました (status: ${response.status})`)
+  }
+
+  return response.json() as Promise<ProductRanking[]>
 }
 
 /**

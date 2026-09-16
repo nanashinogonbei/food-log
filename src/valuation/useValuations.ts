@@ -1,6 +1,52 @@
 import { useEffect, useState } from 'react'
-import { fetchValuationsByProduct, fetchValuationsByUser } from './data.ts'
-import type { ValuationSummary } from './data.ts'
+import { fetchProductRanking, fetchValuationsByProduct, fetchValuationsByUser } from './data.ts'
+import type { ProductRanking, RankingPeriod, ValuationSummary } from './data.ts'
+
+interface UseProductRankingResult {
+  ranking: ProductRanking[]
+  isLoading: boolean
+  error: string | null
+}
+
+/**
+ * 指定した期間（週間/月間/四半期）の評価数ランキング（最大5件）を取得する
+ * （トップページの「注目の商品」用）。
+ */
+export function useProductRanking(period: RankingPeriod): UseProductRankingResult {
+  const [ranking, setRanking] = useState<ProductRanking[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsLoading(true)
+    setError(null)
+
+    fetchProductRanking(period)
+      .then((data) => {
+        if (isMounted) {
+          setRanking(data)
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'ランキングの取得に失敗しました')
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [period])
+
+  return { ranking, isLoading, error }
+}
 
 interface UseValuationsResult {
   valuations: ValuationSummary[]

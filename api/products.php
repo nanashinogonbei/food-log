@@ -43,15 +43,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
  *   指定した商品を1件取得する（製品ページ、商品評価ページの事前選択用）。
  * GET /api/products.php?name=xxx
  *   商品名の部分一致で検索する（商品評価ページのオートコンプリート用）。
+ * GET /api/products.php?userId=xxx
+ *   指定したユーザーが申請した商品一覧を返す（マイページの商品申請タブ用）。
  * GET /api/products.php?categoryIds=1,9,39
  *   指定したカテゴリーID群のいずれかに category1 または category2 が一致する商品一覧を返す。
  *   (カテゴリーページで「すべて」タブ＝親＋子カテゴリー群のIDをまとめて渡す使い方を想定)
- * id, name, categoryIds はこの優先順位で1つだけ処理する。いずれも未指定の場合は空を返す。
+ * id, name, userId, categoryIds はこの優先順位で1つだけ処理する。いずれも未指定の場合は空を返す。
  */
 function handleListProducts(): void
 {
     $id = trim((string) ($_GET['id'] ?? ''));
     $name = trim((string) ($_GET['name'] ?? ''));
+    $userId = trim((string) ($_GET['userId'] ?? ''));
 
     if ($id !== '') {
         handleGetProductById($id);
@@ -60,6 +63,11 @@ function handleListProducts(): void
 
     if ($name !== '') {
         handleSearchProductsByName($name);
+        return;
+    }
+
+    if ($userId !== '') {
+        handleListProductsByUser($userId);
         return;
     }
 
@@ -88,7 +96,8 @@ function handleListProducts(): void
         $stmt = $pdo->prepare(
             "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
              FROM products
-             WHERE category1 IN ($placeholders) OR category2 IN ($placeholders)
+             WHERE (category1 IN ($placeholders) OR category2 IN ($placeholders))
+               AND status != 'pending'
              ORDER BY created_at DESC"
         );
         $stmt->execute(array_merge($categoryIds, $categoryIds));
@@ -117,9 +126,9 @@ function handleGetProductById(string $id): void
         $pdo = getPdoConnection();
 
         $stmt = $pdo->prepare(
-            'SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
+            "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
              FROM products
-             WHERE id = :id'
+             WHERE id = :id AND status != 'pending'"
         );
         $stmt->execute(['id' => $id]);
         $product = $stmt->fetch();
@@ -138,8 +147,37 @@ function handleGetProductById(string $id): void
 }
 
 /**
+ * 指定したユーザーが申請した商品一覧を取得する（マイページの商品申請タブ用）。
+ */
+function handleListProductsByUser(string $userId): void
+{
+    try {
+        $pdo = getPdoConnection();
+
+        $stmt = $pdo->prepare(
+            'SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
+             FROM products
+             WHERE requested_by = :requested_by
+             ORDER BY created_at DESC'
+        );
+        $stmt->execute(['requested_by' => $userId]);
+        $products = $stmt->fetchAll();
+
+        echo json_encode(attachPhotosAndFormat($pdo, $products), JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '商品一覧の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
  * 商品名の部分一致で商品を検索する。
  * 呼び出し側(フロント)は3文字以上で呼び出す想定だが、サーバー側では簡易な下限のみ課す。
+ *
+ * 注意: このエンドポイントのみ、status='pending'（承認待ち）の商品も含めて返す。
+ * 商品評価 投稿ページ(/[userID]/valuation/post)のオートコンプリートでは、
+ * 承認待ちの商品も「（保留中）」を付けて選択できる仕様のため。
+ * それ以外の一覧・取得系エンドポイントでは pending の商品は除外している。
  */
 function handleSearchProductsByName(string $name): void
 {

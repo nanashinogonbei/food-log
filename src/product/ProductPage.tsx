@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react'
 import { useProduct } from './useProducts.ts'
 import { useProductValuations } from '../valuation/useValuations.ts'
 import { deleteValuation } from '../valuation/data.ts'
 import { formatJapaneseDate } from '../valuation/format.ts'
+import { useCategories } from '../category/useCategories.ts'
+import { getCategoryPath } from '../category/data.ts'
 
 type ValuationTab = 'positive' | 'negative'
 
@@ -13,12 +15,20 @@ function ProductPage() {
   const navigate = useNavigate()
   const { user } = useUser()
   const { product, isLoading, error } = useProduct(productId)
+  const { categories } = useCategories()
   const {
     valuations,
     isLoading: isValuationsLoading,
     error: valuationsError,
     reload: reloadValuations,
   } = useProductValuations(productId)
+
+  // 大きい画像に表示中のサムネイルのインデックス（サムネイルにマウスオーバー/フォーカス/クリックで切り替え）
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0)
+
+  useEffect(() => {
+    setActivePhotoIndex(0)
+  }, [product?.id])
 
   // ログインユーザーが既にこの商品を評価済みかどうか（評価済みなら投稿ボタンを隠す）
   const hasEvaluated = user ? valuations.some((valuation) => valuation.userId === user.id) : false
@@ -33,7 +43,7 @@ function ProductPage() {
     if (!user || !product) {
       return
     }
-    navigate(`/${user.id}/valuation?productId=${product.id}`)
+    navigate(`/${user.id}/valuation/post?productId=${product.id}`)
   }
 
   const handleDeleteClick = async (valuationId: number) => {
@@ -78,22 +88,66 @@ function ProductPage() {
     )
   }
 
+  const categoryPaths = [product.category1, product.category2]
+    .map((categorySlug) => getCategoryPath(categories, categorySlug))
+    .filter((path) => path.length > 0)
+
+  const purchasePrices = valuations
+    .map((valuation) => (valuation.purchasePrice ? Number(valuation.purchasePrice) : NaN))
+    .filter((price) => Number.isFinite(price))
+  const priceRange =
+    purchasePrices.length > 0
+      ? { min: Math.min(...purchasePrices), max: Math.max(...purchasePrices) }
+      : null
+
   return (
     <div className="page product-page">
 
 		<section className="section-product">
 			{product.photos.length > 0 && (
 				<div className="product-page__photos">
-				  {product.photos.map((photo) => (
-					<figure key={photo}>
-					  <img src={`http://production-null.work/food-log${photo}`} alt={product.name} />
+					<figure className="product-page__photo-main">
+					  <img
+						src={`http://production-null.work/food-log${product.photos[activePhotoIndex] ?? product.photos[0]}`}
+						alt={product.name}
+					  />
 					</figure>
-				  ))}
+
+					{product.photos.length > 1 && (
+					  <div className="product-page__photo-thumbs">
+						{product.photos.map((photo, index) => (
+						  <Link
+							key={photo}
+							className={`product-page__photo-thumb${
+							  index === activePhotoIndex ? ' product-page__photo-thumb--active' : ''
+							}`}
+							onMouseEnter={() => setActivePhotoIndex(index)}
+							onFocus={() => setActivePhotoIndex(index)}
+							onClick={() => setActivePhotoIndex(index)}
+							aria-label={`${index + 1}枚目の画像を表示`}
+						  >
+							<img src={`http://production-null.work/food-log${photo}`} alt="" />
+						  </Link>
+						))}
+					  </div>
+					)}
 				</div>
 			)}
 
 			<div className="product-page__meta">
+				{categoryPaths.length > 0 && (
+					<nav className="product-page__breadcrumb" aria-label="カテゴリー">
+						{categoryPaths.map((path) => (
+							<p key={path[path.length - 1].slug}>{path.map((category) => category.name).join(' > ')}</p>
+						))}
+					</nav>
+				)}
 				<h1 className="page__title">{product.name}</h1>
+				{priceRange && (
+					<p className="product-page__price-range">
+						{priceRange.min}円～{priceRange.max}円
+					</p>
+				)}
 				<h2>販売会社</h2>
 				<div>{product.distributor}</div>
 				{product.manufacturing && (
@@ -105,18 +159,20 @@ function ProductPage() {
 			</div>
 		</section>
 
-      {!hasEvaluated && (
-        <SignedIn>
-          <button type="button" onClick={handleEvaluateClick}>
-            この製品を評価する
-          </button>
-        </SignedIn>
-      )}
-      <SignedOut>
-        <p>
-          <a href="/login.html">ログイン</a>すると、この製品を評価できます。
-        </p>
-      </SignedOut>
+		<div class="stack-valuation">
+		  {!hasEvaluated && (
+			<SignedIn>
+			  <button type="button" onClick={handleEvaluateClick}>
+				この製品を評価する
+			  </button>
+			</SignedIn>
+		  )}
+		  <SignedOut>
+			<p>
+			  <a href="/login.html">ログイン</a>すると、この製品を評価できます。
+			</p>
+		  </SignedOut>
+		</div>
 
       <h2>みんなの評価</h2>
       {isValuationsLoading && <p>読み込み中...</p>}
@@ -176,7 +232,7 @@ function ProductPage() {
             )}
             {user && valuation.userId === user.id && (
               <p className="valuation-list__actions">
-                <Link to={`/${user.id}/valuation?productId=${valuation.productId}`}>編集</Link>{' '}
+                <Link to={`/${user.id}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
                 <button type="button" onClick={() => handleDeleteClick(valuation.id)}>
                   削除
                 </button>
