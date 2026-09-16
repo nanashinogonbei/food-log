@@ -62,9 +62,9 @@ function SubCategoryPage() {
       </p>
       <h1 className="page__title">{subCategory.name}</h1>
 
-		<div class="group-endCategory">
+		<div className="group-endCategory">
 		
-			<div class="colmun-side">
+			<div className="colmun-side">
 				{childCategories.length > 0 && (
 				<ul className="li-category">
 					<li
@@ -93,7 +93,7 @@ function SubCategoryPage() {
 				)}
 			</div>
 
-			<div class="colmun-main">
+			<div className="colmun-main">
 				{isProductsLoading && <p>読み込み中...</p>}
 				{productsError && <p>{productsError}</p>}
 
@@ -101,16 +101,19 @@ function SubCategoryPage() {
 
 				<div className="card-product">
 				{products.map((product) => (
-					<div class="card-item">
-						<Link key={product.id} to={`/product/${product.id}`}>
+					<div
+						key={product.id}
+						className="card-item"
+					>
+						<Link to={`/product/${product.id}`}>
 						{product.photos[0] && (
 						  <figure className="col-image">
 							<img src={`http://production-null.work/food-log${product.photos[0]}`} alt={product.name} />
 						  </figure>
 						)}
-						<div class="col-txt">
-							<p class="elem-distributor">{product.distributor}</p>
-							<p class="elem-name">{product.name}</p>
+						<div className="col-txt">
+							<p className="elem-distributor">{product.distributor}</p>
+							<p className="elem-name">{product.name}</p>
 						</div>
 						</Link>
 					</div>
