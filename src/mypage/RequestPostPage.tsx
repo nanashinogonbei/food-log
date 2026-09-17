@@ -20,7 +20,6 @@ function RequestPostPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submittedProductId, setSubmittedProductId] = useState<number | null>(null)
-  const [submittedProductName, setSubmittedProductName] = useState('')
 
   const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPhotos(event.target.files ? Array.from(event.target.files) : [])
@@ -67,7 +66,6 @@ function RequestPostPage() {
 
       setSubmitSuccess(true)
       setSubmittedProductId(result.id)
-      setSubmittedProductName(name)
       setName('')
       setCategory1Path([])
       setCategory2Path([])
@@ -96,9 +94,7 @@ function RequestPostPage() {
           <p>商品を申請しました。ご協力ありがとうございます。</p>
           {submittedProductId !== null && (
             <p>
-              <Link
-                to={`/${userId}/valuation/post?productId=${submittedProductId}&productName=${encodeURIComponent(submittedProductName)}`}
-              >
+              <Link to={`/${userId}/valuation/post?productId=${submittedProductId}`}>
                 この商品の評価を投稿する
               </Link>
             </p>

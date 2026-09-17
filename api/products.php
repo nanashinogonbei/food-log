@@ -41,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 /**
  * GET /api/products.php?id=1
  *   指定した商品を1件取得する（製品ページ、商品評価ページの事前選択用）。
+ *   userId も併せて指定された場合、その商品の申請者（requested_by）本人であれば
+ *   pending（承認待ち）の商品も取得できる。
  * GET /api/products.php?name=xxx
  *   商品名の部分一致で検索する（商品評価ページのオートコンプリート用）。
  * GET /api/products.php?userId=xxx
@@ -49,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
  *   指定したカテゴリーID群のいずれかに category1 または category2 が一致する商品一覧を返す。
  *   (カテゴリーページで「すべて」タブ＝親＋子カテゴリー群のIDをまとめて渡す使い方を想定)
  * id, name, userId, categoryIds はこの優先順位で1つだけ処理する。いずれも未指定の場合は空を返す。
+ * ただし id 指定時は userId を同時に指定してもよい（上記の pending 取得の判定に使う）。
  */
 function handleListProducts(): void
 {
@@ -57,7 +60,7 @@ function handleListProducts(): void
     $userId = trim((string) ($_GET['userId'] ?? ''));
 
     if ($id !== '') {
-        handleGetProductById($id);
+        handleGetProductById($id, $userId);
         return;
     }
 
@@ -114,8 +117,13 @@ function handleListProducts(): void
  * 指定したIDの商品を1件取得する。
  * 存在しない場合は null を返す（フロント側で「見つからない」を判定できるように、
  * 一覧系のエンドポイントとは異なり空配列ではなく null を返す）。
+ *
+ * 通常は status='pending'（承認待ち）の商品を除外するが、
+ * $userId が指定され、かつその商品の申請者（requested_by）自身である場合は、
+ * pending でも取得できる（商品申請後に自分の申請商品を商品評価ページで
+ * 選択済み状態にするための仕様）。
  */
-function handleGetProductById(string $id): void
+function handleGetProductById(string $id, string $userId): void
 {
     if (!ctype_digit($id)) {
         echo json_encode(null, JSON_UNESCAPED_UNICODE);
@@ -125,12 +133,22 @@ function handleGetProductById(string $id): void
     try {
         $pdo = getPdoConnection();
 
-        $stmt = $pdo->prepare(
-            "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
-             FROM products
-             WHERE id = :id AND status != 'pending'"
-        );
-        $stmt->execute(['id' => $id]);
+        if ($userId !== '') {
+            $stmt = $pdo->prepare(
+                "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
+                 FROM products
+                 WHERE id = :id AND (status != 'pending' OR requested_by = :requested_by)"
+            );
+            $stmt->execute(['id' => $id, 'requested_by' => $userId]);
+        } else {
+            $stmt = $pdo->prepare(
+                "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
+                 FROM products
+                 WHERE id = :id AND status != 'pending'"
+            );
+            $stmt->execute(['id' => $id]);
+        }
+
         $product = $stmt->fetch();
 
         if ($product === false) {

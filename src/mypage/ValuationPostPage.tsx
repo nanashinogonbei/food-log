@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { fetchProductById, searchProductsByName } from '../product/data.ts'
+import { fetchProductById } from '../product/data.ts'
 import type { ProductSummary } from '../product/data.ts'
 import { useProductSearch } from '../product/useProducts.ts'
 import { submitValuation, VALUATION_SCORE_OPTIONS } from '../valuation/data.ts'
@@ -19,7 +19,6 @@ function ValuationPostPage() {
   const { userId } = useParams<{ userId: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const preselectedProductId = searchParams.get('productId')
-  const preselectedProductName = searchParams.get('productName')
 
   // --- 商品選択 ---
   const [productName, setProductName] = useState('')
@@ -50,7 +49,8 @@ function ValuationPostPage() {
     selectedProduct !== null ? valuations.find((v) => v.productId === selectedProduct.id) ?? null : null
   const isEditingExisting = existingValuation !== null
 
-  // 製品ページから ?productId=xxx 付きで遷移してきた場合、商品を事前選択する
+  // 製品ページから ?productId=xxx 付きで遷移してきた場合、商品を事前選択する。
+  // userId を渡すことで、自分が申請した商品であれば pending（承認待ち）でも取得できる。
   useEffect(() => {
     if (!preselectedProductId) {
       return
@@ -62,7 +62,7 @@ function ValuationPostPage() {
     setIsLoadingPreselected(true)
     setPreselectedError(null)
 
-    fetchProductById(preselectedProductId)
+    fetchProductById(preselectedProductId, userId)
       .then((product) => {
         if (!isMounted) {
           return
@@ -70,30 +70,9 @@ function ValuationPostPage() {
         if (product) {
           setSelectedProduct(product)
           setProductName(product.name)
-          return
+        } else {
+          setPreselectedError('指定された商品が見つかりませんでした。商品名を入力して選び直してください。')
         }
-
-        // 承認待ち（pending）の商品はID指定の取得では除外される仕様のため、
-        // 商品申請直後の遷移など pending 状態の商品はここでは見つからない。
-        // 商品名クエリがあれば、pending も含む名前検索でフォールバックする。
-        if (preselectedProductName) {
-          return searchProductsByName(preselectedProductName).then((searchResults) => {
-            if (!isMounted) {
-              return
-            }
-
-            const matched = searchResults.find((candidate) => String(candidate.id) === preselectedProductId)
-
-            if (matched) {
-              setSelectedProduct(matched)
-              setProductName(matched.name)
-            } else {
-              setPreselectedError('指定された商品が見つかりませんでした。商品名を入力して選び直してください。')
-            }
-          })
-        }
-
-        setPreselectedError('指定された商品が見つかりませんでした。商品名を入力して選び直してください。')
       })
       .catch((err: unknown) => {
         if (isMounted) {
@@ -109,7 +88,7 @@ function ValuationPostPage() {
     return () => {
       isMounted = false
     }
-  }, [preselectedProductId, preselectedProductName])
+  }, [preselectedProductId, userId])
 
   // 確定済みの商品名と入力内容がずれたら選択を解除する
   useEffect(() => {

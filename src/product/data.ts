@@ -104,13 +104,19 @@ export async function searchProductsByName(name: string): Promise<ProductSummary
 /**
  * 指定したIDの商品を1件取得する（製品ページ、商品評価ページの事前選択用）。
  * 存在しない場合は null を返す。
+ *
+ * userId を指定すると、その商品の申請者本人である場合に限り、
+ * pending（承認待ち）の商品も取得できる（商品申請直後の事前選択用）。
  */
-export async function fetchProductById(id: string): Promise<ProductSummary | null> {
+export async function fetchProductById(id: string, userId?: string): Promise<ProductSummary | null> {
   if (id.trim() === '') {
     return null
   }
 
   const params = new URLSearchParams({ id })
+  if (userId) {
+    params.set('userId', userId)
+  }
 
   const response = await fetch(`${API_BASE_URL}/products.php?${params.toString()}`, {
     method: 'GET',
