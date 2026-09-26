@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { deleteValuation } from '../valuation/data.ts'
 import { useUserValuations } from '../valuation/useValuations.ts'
 import { formatJapaneseDate } from '../valuation/format.ts'
+
+const PAGE_SIZE = 10
 
 /** マイページの商品評価タブ: ログインユーザー自身が投稿した評価の一覧を表示する */
 function ValuationPage() {
@@ -10,9 +13,17 @@ function ValuationPage() {
   const navigate = useNavigate()
   const { user } = useUser()
   const { valuations, isLoading, error, reload: reloadValuations } = useUserValuations(userId)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  const visibleValuations = valuations.slice(0, visibleCount)
+  const hasMore = visibleCount < valuations.length
 
   const handlePostClick = () => {
     navigate(`/${userId}/valuation/post`)
+  }
+
+  const handleShowMoreClick = () => {
+    setVisibleCount((count) => count + PAGE_SIZE)
   }
 
   const handleDeleteClick = async (valuationId: number) => {
@@ -38,13 +49,16 @@ function ValuationPage() {
         商品を評価する
       </button>
 
-      <h2>投稿した評価</h2>
+      <h2>
+        投稿した評価
+        {!isLoading && !error && <span className="page__count">（全{valuations.length}件）</span>}
+      </h2>
       {isLoading && <p>読み込み中...</p>}
       {error && <p>{error}</p>}
       {!isLoading && !error && valuations.length === 0 && <p>まだ評価を投稿していません。</p>}
 
       <ul className="valuation-list">
-        {valuations.map((valuation) => (
+        {visibleValuations.map((valuation) => (
           <li key={valuation.id} className="valuation-list__item">
             <p className="valuation-list__product">
               <Link to={`/product/${valuation.productId}`}>
@@ -77,6 +91,14 @@ function ValuationPage() {
           </li>
         ))}
       </ul>
+
+      {hasMore && (
+        <p>
+          <button type="button" onClick={handleShowMoreClick}>
+            もっと見る
+          </button>
+        </p>
+      )}
     </div>
   )
 }

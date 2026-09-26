@@ -26,5 +26,3 @@
 pending : 保留中
 approved : 承認済み
 rejected : 却下
-
-

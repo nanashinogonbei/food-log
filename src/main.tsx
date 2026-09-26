@@ -7,6 +7,8 @@ import './index.css'
 import './App.css'
 import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
+import RequireAdmin from './components/RequireAdmin.tsx'
+import AdminPage from './admin/AdminPage.tsx'
 import FeaturedProductsRanking from './components/FeaturedProductsRanking.tsx'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
@@ -93,6 +95,15 @@ function App() {
         />
         {/* 詳細ページ */}
         <Route path="/product/:productId" element={<ProductPage />} />
+        {/* 管理者ページ（要管理者権限） */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminPage />
+            </RequireAdmin>
+          }
+        />
         {/* マイページ（要ログイン） */}
         <Route
           path="/:userId"

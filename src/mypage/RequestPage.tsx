@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useUserProducts } from '../product/useProducts.ts'
 
@@ -7,14 +8,24 @@ const STATUS_LABELS: Record<string, string> = {
   rejected: '却下',
 }
 
+const PAGE_SIZE = 10
+
 /** マイページの商品申請タブ: ログインユーザー自身が申請した商品の一覧を表示する */
 function RequestPage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const { products, isLoading, error } = useUserProducts(userId)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  const visibleProducts = products.slice(0, visibleCount)
+  const hasMore = visibleCount < products.length
 
   const handlePostClick = () => {
     navigate(`/${userId}/request/post`)
+  }
+
+  const handleShowMoreClick = () => {
+    setVisibleCount((count) => count + PAGE_SIZE)
   }
 
   return (
@@ -25,13 +36,16 @@ function RequestPage() {
         商品を申請する
       </button>
 
-      <h2>申請した商品</h2>
+      <h2>
+        申請した商品
+        {!isLoading && !error && <span className="page__count">（全{products.length}件）</span>}
+      </h2>
       {isLoading && <p>読み込み中...</p>}
       {error && <p>{error}</p>}
       {!isLoading && !error && products.length === 0 && <p>まだ商品を申請していません。</p>}
 
       <ul className="product-list">
-        {products.map((product) => {
+        {visibleProducts.map((product) => {
           const statusLabel = STATUS_LABELS[product.status]
 
           return (
@@ -57,6 +71,14 @@ function RequestPage() {
           )
         })}
       </ul>
+
+      {hasMore && (
+        <p>
+          <button type="button" onClick={handleShowMoreClick}>
+            もっと見る
+          </button>
+        </p>
+      )}
     </div>
   )
 }
