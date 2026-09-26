@@ -448,6 +448,119 @@ img {
 	color: #dc3545;
 }
 
+.product-list__status--approved {
+	background-color: rgba(40, 167, 69, 0.15);
+	color: #28a745;
+}
+
+.admin-product-list {
+	list-style: none;
+	padding: 0;
+	margin: 1rem 0 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.admin-product-list__item {
+	border: 1px solid rgba(128, 128, 128, 0.3);
+	border-radius: 8px;
+	padding: 1rem;
+}
+
+.admin-product-list__name {
+	font-weight: bold;
+}
+
+.admin-product-list__meta {
+	font-size: 0.85rem;
+	opacity: 0.8;
+	word-break: break-all;
+}
+
+.admin-product-list__photos {
+	list-style: none;
+	padding: 0;
+	margin: 0.75rem 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.admin-product-list__photo {
+	position: relative;
+	width: 96px;
+	height: 96px;
+}
+
+.admin-product-list__photo img {
+	width: 96px;
+	height: 96px;
+	object-fit: cover;
+	border-radius: 4px;
+	display: block;
+}
+
+.admin-product-list__photo-delete {
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	line-height: 1;
+	border: none;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, 0.65);
+	color: #fff;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+.admin-product-list__photo-delete:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.admin-product-list__edit {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	margin-top: 0.5rem;
+}
+
+.admin-product-list__field-label {
+	margin: 0.5rem 0 0.25rem;
+	font-weight: bold;
+}
+
+.admin-product-list__status-buttons {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.admin-product-list__status-button {
+	padding: 0.4rem 1rem;
+	border: 1px solid rgba(128, 128, 128, 0.4);
+	border-radius: 999px;
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.admin-product-list__status-button--active {
+	background-color: #1a73e8;
+	border-color: #1a73e8;
+	color: #fff;
+	font-weight: bold;
+}
+
+.admin-product-list__status-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 .ranking {
 	margin-top: 1rem;
 }

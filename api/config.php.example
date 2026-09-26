@@ -9,4 +9,18 @@ return [
     'database' => 'food_log',
     'username' => 'root',
     'password' => '',
+
+    // 商品申請の管理画面 (/admin/product) で使用する設定
+    //
+    // 管理者として許可するClerkのUser ID一覧。
+    // フロントの .env に設定する VITE_ADMIN_USER_IDS と同じ値にしておくこと
+    // （フロント側はページ表示の可否、こちらはAPIの操作権限のチェックに使う）。
+    'admin_user_ids' => [
+        'user_xxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    ],
+
+    // 商品申請の処理結果を申請者にメール通知するため、
+    // Clerk Backend APIからメールアドレスを取得するのに使うSecret Key。
+    // Clerkダッシュボード > API Keys から取得してください（sk_で始まる値）。絶対に公開しないこと。
+    'clerk_secret_key' => 'sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
 ];
