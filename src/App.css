@@ -45,6 +45,15 @@ img {
   margin-top: 0;
 }
 
+.admin-product-search {
+	margin: 0.75rem 0 1.25rem;
+}
+
+.admin-product-search input {
+	padding: 0.4rem 0.6rem;
+	min-width: 240px;
+}
+
 .card-grid {
 	display: flex;
 	gap: 10px;

@@ -1,4 +1,4 @@
-// PHP API (api/admin-products.php) へ商品申請の管理操作を送信する
+// PHP API (api/admin-product-approval.php) へ商品申請の管理操作を送信する
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
@@ -51,7 +51,7 @@ async function extractErrorMessage(response: Response, fallback: string): Promis
 export async function fetchAdminProducts(adminUserId: string): Promise<AdminProductSummary[]> {
   const params = new URLSearchParams({ adminUserId })
 
-  const response = await fetch(`${API_BASE_URL}/admin-products.php?${params.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/admin-product-approval.php?${params.toString()}`, {
     method: 'GET',
     mode: 'cors',
     cache: 'no-store',
@@ -84,7 +84,7 @@ export async function updateAdminProduct(payload: AdminProductUpdatePayload): Pr
   }
   body.set('status', payload.status)
 
-  const response = await fetch(`${API_BASE_URL}/admin-products.php`, {
+  const response = await fetch(`${API_BASE_URL}/admin-product-approval.php`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -108,7 +108,7 @@ export async function updateAdminProduct(payload: AdminProductUpdatePayload): Pr
 export async function deleteAdminProductPhoto(adminUserId: string, photoId: number): Promise<void> {
   const params = new URLSearchParams({ adminUserId, photoId: String(photoId) })
 
-  const response = await fetch(`${API_BASE_URL}/admin-products.php?${params.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/admin-product-approval.php?${params.toString()}`, {
     method: 'DELETE',
     mode: 'cors',
     credentials: 'include',

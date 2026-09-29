@@ -1,14 +1,10 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { CategoryRecord } from '../category/data.ts'
 import { getCategoryPath, isCategoryPathComplete } from '../category/data.ts'
 import CategoryCascadeSelect from '../components/CategoryCascadeSelect.tsx'
-import { deleteAdminProductPhoto, updateAdminProduct } from './productAdmin.ts'
-import type { AdminProductStatus, AdminProductSummary } from './productAdmin.ts'
-
-const STATUS_OPTIONS: { value: AdminProductStatus; label: string }[] = [
-  { value: 'approved', label: '承認済み' },
-  { value: 'rejected', label: '却下' },
-]
+import { deleteManagedProductPhoto, updateManagedProduct } from './productManage.ts'
+import type { ManagedProductSummary } from './productManage.ts'
 
 const STATUS_LABELS: Record<string, string> = {
   pending: '申請中',
@@ -16,8 +12,8 @@ const STATUS_LABELS: Record<string, string> = {
   rejected: '却下',
 }
 
-interface AdminProductItemProps {
-  product: AdminProductSummary
+interface AdminProductManageItemProps {
+  product: ManagedProductSummary
   categories: CategoryRecord[]
   /** カテゴリー一覧の読み込み中は、カテゴリーを送信する編集操作を無効化する */
   categoriesLoading: boolean
@@ -26,19 +22,22 @@ interface AdminProductItemProps {
   onUpdated: () => void
 }
 
-/** 商品申請 管理画面の1件分: 確認表示、編集フォーム、不適切な写真の削除を扱う */
-function AdminProductItem({ product, categories, categoriesLoading, adminUserId, onUpdated }: AdminProductItemProps) {
+/** 商品 管理画面の1件分: 商品情報（名前・カテゴリー・会社名）の編集と、写真の削除を扱う */
+function AdminProductManageItem({
+  product,
+  categories,
+  categoriesLoading,
+  adminUserId,
+  onUpdated,
+}: AdminProductManageItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [name, setName] = useState(product.name)
   // カテゴリー一覧は非同期に読み込まれるため、マウント時点ではまだ空のことがある。
-  // そのためcategory1Path/category2Pathはここでは同期保持せず、
-  // 「編集を開始する時」に実際に必要になったタイミングで都度計算する
-  // （categoriesLoading中は編集ボタンを無効化して保護する）。
+  // そのため「編集を開始する時」に実際に必要になったタイミングで都度計算する。
   const [category1Path, setCategory1Path] = useState<string[]>([])
   const [category2Path, setCategory2Path] = useState<string[]>([])
   const [distributor, setDistributor] = useState(product.distributor)
   const [manufacturing, setManufacturing] = useState(product.manufacturing ?? '')
-  const [status, setStatus] = useState<AdminProductStatus>(product.status as AdminProductStatus)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deletingPhotoId, setDeletingPhotoId] = useState<number | null>(null)
@@ -50,46 +49,28 @@ function AdminProductItem({ product, categories, categoriesLoading, adminUserId,
     setCategory2Path(getCategoryPath(categories, product.category2).map((category) => category.slug))
     setDistributor(product.distributor)
     setManufacturing(product.manufacturing ?? '')
-    setStatus(product.status as AdminProductStatus)
     setSaveError(null)
     setIsEditing(true)
   }
 
   const save = async () => {
-    if (status === 'pending') {
-      setSaveError('承認または却下を選択してください。')
-      return
-    }
-
-    const isRejecting = status === 'rejected'
-
-    // 却下する場合は、カテゴリーが正しく選択されているかを気にする必要がないため、
-    // 選択状態のチェックをスキップし、登録済みのカテゴリーをそのまま使って更新する。
-    if (!isRejecting && !isCategoryPathComplete(categories, category1Path)) {
+    if (!isCategoryPathComplete(categories, category1Path)) {
       setSaveError('カテゴリー1を最後の階層まで選択してください。')
       return
     }
-
-    const category1Value = isRejecting ? (product.category1 ?? '') : category1Path[category1Path.length - 1]
-    const category2Value = isRejecting
-      ? (product.category2 ?? undefined)
-      : category2Path.length > 0
-        ? category2Path[category2Path.length - 1]
-        : undefined
 
     setIsSaving(true)
     setSaveError(null)
 
     try {
-      await updateAdminProduct({
+      await updateManagedProduct({
         adminUserId,
         productId: product.id,
         name,
-        category1: category1Value,
-        category2: category2Value,
+        category1: category1Path[category1Path.length - 1],
+        category2: category2Path.length > 0 ? category2Path[category2Path.length - 1] : undefined,
         distributor,
         manufacturing: manufacturing || undefined,
-        status,
       })
       setIsEditing(false)
       onUpdated()
@@ -109,7 +90,7 @@ function AdminProductItem({ product, categories, categoriesLoading, adminUserId,
     setPhotoError(null)
 
     try {
-      await deleteAdminProductPhoto(adminUserId, photoId)
+      await deleteManagedProductPhoto(adminUserId, photoId)
       onUpdated()
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : '写真の削除に失敗しました')
@@ -119,17 +100,13 @@ function AdminProductItem({ product, categories, categoriesLoading, adminUserId,
   }
 
   const isEditActionDisabled = isSaving || categoriesLoading
-
   const statusLabel = STATUS_LABELS[product.status] ?? product.status
 
   return (
     <li className="admin-product-list__item">
       <p className="admin-product-list__name">
-        {product.name}
+        <Link to={`/product/${product.id}`}>{product.name}</Link>
         <span className={`product-list__status product-list__status--${product.status}`}>{statusLabel}</span>
-      </p>
-      <p className="admin-product-list__meta">
-        申請者User ID: {product.requestedBy} / 申請日: {product.createdAt}
       </p>
       <p className="admin-product-list__meta">
         販売会社: {product.distributor}
@@ -167,17 +144,17 @@ function AdminProductItem({ product, categories, categoriesLoading, adminUserId,
             disabled={isEditActionDisabled}
             title={categoriesLoading ? 'カテゴリー情報を読み込み中です' : undefined}
           >
-            確認・編集する
+            編集する
           </button>
         </p>
       )}
 
       {isEditing && (
         <div className="admin-product-list__edit">
-          <label htmlFor={`admin-name-${product.id}`}>商品名</label>
+          <label htmlFor={`manage-name-${product.id}`}>商品名</label>
           <br />
           <input
-            id={`admin-name-${product.id}`}
+            id={`manage-name-${product.id}`}
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -185,30 +162,30 @@ function AdminProductItem({ product, categories, categoriesLoading, adminUserId,
           <br />
           <br />
 
-          <label htmlFor={`admin-cat1-${product.id}`}>カテゴリー1</label>
+          <label htmlFor={`manage-cat1-${product.id}`}>カテゴリー1</label>
           <br />
           <CategoryCascadeSelect
-            idPrefix={`admin-cat1-${product.id}`}
+            idPrefix={`manage-cat1-${product.id}`}
             categories={categories}
             path={category1Path}
             onChange={setCategory1Path}
           />
           <br />
 
-          <label htmlFor={`admin-cat2-${product.id}`}>カテゴリー2</label>
+          <label htmlFor={`manage-cat2-${product.id}`}>カテゴリー2</label>
           <br />
           <CategoryCascadeSelect
-            idPrefix={`admin-cat2-${product.id}`}
+            idPrefix={`manage-cat2-${product.id}`}
             categories={categories}
             path={category2Path}
             onChange={setCategory2Path}
           />
           <br />
 
-          <label htmlFor={`admin-distributor-${product.id}`}>販売会社</label>
+          <label htmlFor={`manage-distributor-${product.id}`}>販売会社</label>
           <br />
           <input
-            id={`admin-distributor-${product.id}`}
+            id={`manage-distributor-${product.id}`}
             type="text"
             value={distributor}
             onChange={(event) => setDistributor(event.target.value)}
@@ -216,34 +193,15 @@ function AdminProductItem({ product, categories, categoriesLoading, adminUserId,
           <br />
           <br />
 
-          <label htmlFor={`admin-manufacturing-${product.id}`}>製造会社</label>
+          <label htmlFor={`manage-manufacturing-${product.id}`}>製造会社</label>
           <br />
           <input
-            id={`admin-manufacturing-${product.id}`}
+            id={`manage-manufacturing-${product.id}`}
             type="text"
             value={manufacturing}
             onChange={(event) => setManufacturing(event.target.value)}
           />
           <br />
-          <br />
-
-          <p className="admin-product-list__field-label">ステータス</p>
-          <div className="admin-product-list__status-buttons" role="group" aria-label="ステータス">
-            {STATUS_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`admin-product-list__status-button${
-                  status === option.value ? ' admin-product-list__status-button--active' : ''
-                }`}
-                onClick={() => setStatus(option.value)}
-                disabled={isSaving}
-                aria-pressed={status === option.value}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
           <br />
 
           {saveError && <p>{saveError}</p>}
@@ -260,4 +218,4 @@ function AdminProductItem({ product, categories, categoriesLoading, adminUserId,
   )
 }
 
-export default AdminProductItem
+export default AdminProductManageItem

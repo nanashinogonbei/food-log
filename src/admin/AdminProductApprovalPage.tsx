@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useCategories } from '../category/useCategories.ts'
-import AdminProductItem from './AdminProductItem.tsx'
-import { fetchAdminProducts } from './productAdmin.ts'
-import type { AdminProductSummary } from './productAdmin.ts'
+import AdminProductApprovalItem from './AdminProductApprovalItem.tsx'
+import { fetchAdminProducts } from './productApproval.ts'
+import type { AdminProductSummary } from './productApproval.ts'
 
 /**
- * 商品申請 管理ページ (/admin/product)
+ * 商品承認 管理ページ (/admin/product-approval)
  * すべての商品申請を一覧表示し、内容の確認・編集、ステータス（申請中/承認済み/却下）の変更、
  * 不適切な写真を理由にした却下を行う。ステータスが承認/却下に変わると、
  * サーバー側で申請者への完了メールが送信される。
  */
-function AdminProductPage() {
+function AdminProductApprovalPage() {
   const { user } = useUser()
   const adminUserId = user?.id
   const { categories, isLoading: categoriesLoading } = useCategories()
@@ -57,7 +57,7 @@ function AdminProductPage() {
 
   return (
     <div className="page">
-      <h1 className="page__title">商品申請 管理</h1>
+      <h1 className="page__title">商品承認 管理</h1>
 
       {isLoading && <p>読み込み中...</p>}
       {error && <p>{error}</p>}
@@ -68,7 +68,7 @@ function AdminProductPage() {
 
           <ul className="admin-product-list">
             {products.map((product) => (
-              <AdminProductItem
+              <AdminProductApprovalItem
                 key={product.id}
                 product={product}
                 categories={categories}
@@ -84,4 +84,4 @@ function AdminProductPage() {
   )
 }
 
-export default AdminProductPage
+export default AdminProductApprovalPage

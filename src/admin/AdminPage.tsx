@@ -11,7 +11,10 @@ function AdminPage() {
       <h1 className="page__title">管理者ページ</h1>
       <ul>
         <li>
-          <Link to="/admin/product">商品申請 管理</Link>
+          <Link to="/admin/product-approval">商品承認 管理</Link>
+        </li>
+        <li>
+          <Link to="/admin/product">商品 管理</Link>
         </li>
       </ul>
     </div>

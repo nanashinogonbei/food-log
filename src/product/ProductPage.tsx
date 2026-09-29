@@ -159,20 +159,22 @@ function ProductPage() {
 			</div>
 		</section>
 
-		<div class="stack-valuation">
 		  {!hasEvaluated && (
 			<SignedIn>
+			<div class="stack-valuation">
 			  <button type="button" onClick={handleEvaluateClick}>
 				この製品を評価する
 			  </button>
+			</div>
 			</SignedIn>
 		  )}
 		  <SignedOut>
+			<div class="stack-valuation">
 			<p>
 			  <a href="/login.html">ログイン</a>すると、この製品を評価できます。
 			</p>
+			</div>
 		  </SignedOut>
-		</div>
 
       <h2>みんなの評価</h2>
       {isValuationsLoading && <p>読み込み中...</p>}

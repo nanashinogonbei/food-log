@@ -9,7 +9,8 @@ import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
 import RequireAdmin from './components/RequireAdmin.tsx'
 import AdminPage from './admin/AdminPage.tsx'
-import AdminProductPage from './admin/AdminProductPage.tsx'
+import AdminProductApprovalPage from './admin/AdminProductApprovalPage.tsx'
+import AdminProductManagePage from './admin/AdminProductManagePage.tsx'
 import FeaturedProductsRanking from './components/FeaturedProductsRanking.tsx'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
@@ -105,12 +106,21 @@ function App() {
             </RequireAdmin>
           }
         />
-        {/* 商品申請 管理ページ（要管理者権限） */}
+        {/* 商品承認 管理ページ（要管理者権限） */}
+        <Route
+          path="/admin/product-approval"
+          element={
+            <RequireAdmin>
+              <AdminProductApprovalPage />
+            </RequireAdmin>
+          }
+        />
+        {/* 商品 管理ページ（要管理者権限） */}
         <Route
           path="/admin/product"
           element={
             <RequireAdmin>
-              <AdminProductPage />
+              <AdminProductManagePage />
             </RequireAdmin>
           }
         />

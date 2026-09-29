@@ -17,7 +17,8 @@
 ---商品評価 投稿 (/[userID]/valuation/post)
 
 -マイページ (/admin)
---商品申請 管理 (/admin/product/)
+--商品申請 管理 (/admin/product-approval/)
+--商品　管理 (/admin/product/)
 --商品評価 管理 (/admin/valuation/)
 
 
