@@ -23,4 +23,15 @@ return [
     // Clerk Backend APIからメールアドレスを取得するのに使うSecret Key。
     // Clerkダッシュボード > API Keys から取得してください（sk_で始まる値）。絶対に公開しないこと。
     'clerk_secret_key' => 'sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+
+    // 商品申請・商品評価の投稿時にDBへ記録するIPアドレスの取得に使う設定（任意）。
+    //
+    // リバースプロキシ/ロードバランサー/CDN経由でPHPにアクセスされる環境では、
+    // そのプロキシのIPアドレスを列挙してください。列挙したプロキシからの接続に限り、
+    // X-Forwarded-For ヘッダーから実際のクライアントIPを取得します。
+    // 直接アクセスされる環境（ローカル開発など）では空配列のままにしてください
+    // （空の場合は REMOTE_ADDR をそのまま記録します）。
+    'trusted_proxies' => [
+        // '203.0.113.10',
+    ],
 ];

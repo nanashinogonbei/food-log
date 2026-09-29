@@ -3,6 +3,8 @@
 -- category1 / category2 は categories.id を参照する。
 -- category1 は必須（大カテゴリーを想定）、category2 は任意（中カテゴリーを想定）。
 -- status は申請直後は 'pending' とし、管理者の承認フローを想定している。
+-- ip_address は申請者のIPアドレス（IPv6対応で最大45文字）。api/products.php が申請時に記録する。
+--   既存データ（この項目の追加前に申請されたもの）は NULL。
 
 CREATE TABLE `products` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -12,6 +14,7 @@ CREATE TABLE `products` (
   `distributor` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `manufacturing` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `requested_by` varchar(255) NOT NULL COMMENT 'Clerkのユーザー ID',
+  `ip_address` varchar(45) DEFAULT NULL COMMENT '申請者のIPアドレス（IPv6対応）',
   `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -28,6 +31,7 @@ CREATE TABLE `product_photos` (
   `product_id` int UNSIGNED NOT NULL,
   `filename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `display_order` int UNSIGNED NOT NULL DEFAULT '0',
+  `ip_address` varchar(45) DEFAULT NULL COMMENT 'アップロードしたユーザーのIPアドレス（IPv6対応）',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_product_photos_product_id` (`product_id`),

@@ -320,6 +320,9 @@ if (!array_key_exists($score, SCORE_LABELS)) {
     respondError(400, '評価を選択してください。');
 }
 
+// 投稿者のIPアドレス（product_valuations に記録する。修正投稿の場合は最新の投稿元IPで上書きする）
+$ipAddress = getClientIpAddress();
+
 $commentLength = mb_strlen($comment);
 if ($commentLength < COMMENT_MIN_LENGTH || $commentLength > COMMENT_MAX_LENGTH) {
     respondError(
@@ -374,7 +377,7 @@ try {
         $updateStmt = $pdo->prepare(
             'UPDATE product_valuations
              SET score = :score, comment = :comment, purchase_price = :purchase_price,
-                 purchase_store = :purchase_store, updated_at = NOW()
+                 purchase_store = :purchase_store, ip_address = :ip_address, updated_at = NOW()
              WHERE id = :id'
         );
         $updateStmt->execute([
@@ -382,6 +385,7 @@ try {
             'comment' => $comment,
             'purchase_price' => $purchasePriceValue,
             'purchase_store' => $purchaseStoreValue,
+            'ip_address' => $ipAddress,
             'id' => $valuationId,
         ]);
     } else {
@@ -389,8 +393,8 @@ try {
         $action = 'created';
 
         $insertStmt = $pdo->prepare(
-            'INSERT INTO product_valuations (product_id, user_id, score, comment, purchase_price, purchase_store, created_at)
-             VALUES (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_store, NOW())'
+            'INSERT INTO product_valuations (product_id, user_id, score, comment, purchase_price, purchase_store, ip_address, created_at)
+             VALUES (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_store, :ip_address, NOW())'
         );
 
         try {
@@ -401,6 +405,7 @@ try {
                 'comment' => $comment,
                 'purchase_price' => $purchasePriceValue,
                 'purchase_store' => $purchaseStoreValue,
+                'ip_address' => $ipAddress,
             ]);
         } catch (PDOException $e) {
             // UNIQUE KEY (product_id, user_id) に抵触した場合（同時投稿などでの競合）は
@@ -421,7 +426,7 @@ try {
             $updateStmt = $pdo->prepare(
                 'UPDATE product_valuations
                  SET score = :score, comment = :comment, purchase_price = :purchase_price,
-                     purchase_store = :purchase_store, updated_at = NOW()
+                     purchase_store = :purchase_store, ip_address = :ip_address, updated_at = NOW()
                  WHERE id = :id'
             );
             $updateStmt->execute([
@@ -429,6 +434,7 @@ try {
                 'comment' => $comment,
                 'purchase_price' => $purchasePriceValue,
                 'purchase_store' => $purchaseStoreValue,
+                'ip_address' => $ipAddress,
                 'id' => $valuationId,
             ]);
         }

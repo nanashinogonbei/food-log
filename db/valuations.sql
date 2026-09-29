@@ -4,6 +4,8 @@
 -- score は単一選択の評価（イマイチ/好き/大好き）。
 -- comment は100文字以上2000文字以内（アプリケーション側でも検証するが、DB側は上限のみ制約）。
 -- purchase_price は「数字10桁以内」の入力仕様のため、桁落ちを避けて文字列として保持する。
+-- ip_address は投稿者のIPアドレス（IPv6対応で最大45文字）。api/valuations.php が投稿時に記録する。
+--   既存の評価を修正投稿した場合は、最新の投稿元IPで上書きする。既存データは NULL。
 -- 1ユーザーにつき同一商品への評価は1件のみとし、2件目以降の投稿は既存行の更新として扱う
 -- (UNIQUE KEY uq_product_valuations_product_user / api/valuations.php 側の upsert 処理と対応)。
 
@@ -15,6 +17,7 @@ CREATE TABLE `product_valuations` (
   `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `purchase_price` varchar(10) DEFAULT NULL COMMENT '半角数字のみ、10桁以内',
   `purchase_store` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL COMMENT '投稿者のIPアドレス（IPv6対応）',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL COMMENT '評価を修正した日時（未修正の場合はNULL）',
   PRIMARY KEY (`id`),

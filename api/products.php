@@ -304,6 +304,9 @@ if ($userId === '') {
     respondError(400, 'ユーザーIDが取得できませんでした。再度ログインしてください。');
 }
 
+// 投稿者のIPアドレス（products / product_photos に記録する）
+$ipAddress = getClientIpAddress();
+
 // --- 商品写真の検証 (input name="photo[]" で複数送信される想定) ---
 
 $photoFiles = $_FILES['photo'] ?? null;
@@ -376,8 +379,8 @@ try {
     $pdo->beginTransaction();
 
     $insertStmt = $pdo->prepare(
-        'INSERT INTO products (name, category1, category2, distributor, manufacturing, requested_by, status, created_at)
-         VALUES (:name, :category1, :category2, :distributor, :manufacturing, :requested_by, :status, NOW())'
+        'INSERT INTO products (name, category1, category2, distributor, manufacturing, requested_by, ip_address, status, created_at)
+         VALUES (:name, :category1, :category2, :distributor, :manufacturing, :requested_by, :ip_address, :status, NOW())'
     );
 
     $insertStmt->execute([
@@ -387,6 +390,7 @@ try {
         'distributor' => $distributor,
         'manufacturing' => $manufacturing !== '' ? $manufacturing : null,
         'requested_by' => $userId,
+        'ip_address' => $ipAddress,
         'status' => 'pending',
     ]);
 
@@ -397,8 +401,8 @@ try {
     }
 
     $photoStmt = $pdo->prepare(
-        'INSERT INTO product_photos (product_id, filename, display_order, created_at)
-         VALUES (:product_id, :filename, :display_order, NOW())'
+        'INSERT INTO product_photos (product_id, filename, display_order, ip_address, created_at)
+         VALUES (:product_id, :filename, :display_order, :ip_address, NOW())'
     );
 
     $savedPhotoUrls = [];
@@ -415,6 +419,7 @@ try {
             'product_id' => $productId,
             'filename' => $filename,
             'display_order' => $index,
+            'ip_address' => $ipAddress,
         ]);
 
         $savedPhotoUrls[] = UPLOAD_URL_BASE . $filename;
