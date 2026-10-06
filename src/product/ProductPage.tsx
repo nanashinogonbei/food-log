@@ -4,6 +4,8 @@ import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react'
 import { useProduct } from './useProducts.ts'
 import { useProductValuations } from '../valuation/useValuations.ts'
 import { deleteValuation } from '../valuation/data.ts'
+import { useReportedValuationIds } from '../report/useReportedValuationIds.ts'
+import ValuationReportButton from './ValuationReportButton.tsx'
 import { formatJapaneseDate } from '../valuation/format.ts'
 import { useCategories } from '../category/useCategories.ts'
 import { getCategoryPath } from '../category/data.ts'
@@ -22,6 +24,8 @@ function ProductPage() {
     error: valuationsError,
     reload: reloadValuations,
   } = useProductValuations(productId)
+  // ログインユーザーが通報済みの評価（「通報済み」表示用）
+  const { reportedIds, markReported } = useReportedValuationIds(user?.id)
 
   // 大きい画像に表示中のサムネイルのインデックス（サムネイルにマウスオーバー/フォーカス/クリックで切り替え）
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
@@ -238,6 +242,16 @@ function ProductPage() {
                 <button type="button" onClick={() => handleDeleteClick(valuation.id)}>
                   削除
                 </button>
+              </p>
+            )}
+            {user && valuation.userId !== user.id && (
+              <p className="valuation-list__actions">
+                <ValuationReportButton
+                  valuationId={valuation.id}
+                  reporterUserId={user.id}
+                  isReported={reportedIds.has(valuation.id)}
+                  onReported={markReported}
+                />
               </p>
             )}
           </li>

@@ -16,6 +16,9 @@ function AdminPage() {
         <li>
           <Link to="/admin/product">商品 管理</Link>
         </li>
+        <li>
+          <Link to="/admin/report">通報 管理</Link>
+        </li>
       </ul>
     </div>
   )

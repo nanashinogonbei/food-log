@@ -347,6 +347,11 @@ if (mb_strlen($purchaseStore) > PURCHASE_STORE_MAX_LENGTH) {
 try {
     $pdo = getPdoConnection();
 
+    // 通報を受けて投稿が制限されているアカウントは評価を投稿・修正できない
+    if (isUserRestricted($pdo, $userId)) {
+        respondError(403, REPORT_RESTRICTED_MESSAGE);
+    }
+
     // 商品の存在チェック（DBに登録されている商品のみ評価可能）
     $checkStmt = $pdo->prepare('SELECT id FROM products WHERE id = :id');
     $checkStmt->execute(['id' => $productId]);

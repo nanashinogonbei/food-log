@@ -11,6 +11,7 @@ import RequireAdmin from './components/RequireAdmin.tsx'
 import AdminPage from './admin/AdminPage.tsx'
 import AdminProductApprovalPage from './admin/AdminProductApprovalPage.tsx'
 import AdminProductManagePage from './admin/AdminProductManagePage.tsx'
+import AdminReportPage from './admin/AdminReportPage.tsx'
 import FeaturedProductsRanking from './components/FeaturedProductsRanking.tsx'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
@@ -121,6 +122,15 @@ function App() {
           element={
             <RequireAdmin>
               <AdminProductManagePage />
+            </RequireAdmin>
+          }
+        />
+        {/* 通報 管理ページ（要管理者権限） */}
+        <Route
+          path="/admin/report"
+          element={
+            <RequireAdmin>
+              <AdminReportPage />
             </RequireAdmin>
           }
         />

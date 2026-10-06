@@ -86,3 +86,32 @@ function getClientIpAddress(): ?string
 
     return $remoteAddr;
 }
+
+/** 有効な通報を、この人数以上の「別々のユーザー」から受けたアカウントは投稿できなくなる */
+const REPORT_RESTRICTION_THRESHOLD = 3;
+
+const REPORT_RESTRICTED_MESSAGE = 'このアカウントは通報を受けたため、投稿が制限されています。';
+
+/**
+ * 指定ユーザーの評価に対する、有効な通報(status='pending')の通報者数（重複除外）を返す。
+ * 同じ人が複数の評価を通報しても1人として数える。
+ */
+function countActiveReporters(PDO $pdo, string $userId): int
+{
+    $stmt = $pdo->prepare(
+        "SELECT COUNT(DISTINCT reporter_user_id) FROM valuation_reports
+         WHERE reported_user_id = :user_id AND status = 'pending'"
+    );
+    $stmt->execute(['user_id' => $userId]);
+
+    return (int) $stmt->fetchColumn();
+}
+
+/**
+ * 通報により投稿が制限されているアカウントかどうか。
+ * 商品申請(api/products.php)・商品評価(api/valuations.php)の投稿前に確認する。
+ */
+function isUserRestricted(PDO $pdo, string $userId): bool
+{
+    return countActiveReporters($pdo, $userId) >= REPORT_RESTRICTION_THRESHOLD;
+}

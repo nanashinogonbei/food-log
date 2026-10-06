@@ -361,6 +361,11 @@ $pdo = null;
 try {
     $pdo = getPdoConnection();
 
+    // 通報を受けて投稿が制限されているアカウントは商品申請できない
+    if (isUserRestricted($pdo, $userId)) {
+        respondError(403, REPORT_RESTRICTED_MESSAGE);
+    }
+
     // カテゴリーの存在チェック
     $checkStmt = $pdo->prepare('SELECT id FROM categories WHERE id = :id');
 

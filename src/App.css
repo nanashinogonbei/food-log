@@ -653,3 +653,41 @@ img {
 	text-align: center;
 	background-color: #eee;
 }
+/* 商品評価の通報 (製品ページ / 通報 管理ページ) */
+.report-button {
+	font-size: 0.85rem;
+}
+
+.report-form {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	max-width: 32rem;
+	text-align: left;
+}
+
+.report-form textarea {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.report-form__error {
+	color: #dc3545;
+}
+
+.report-form__done {
+	font-size: 0.85rem;
+	opacity: 0.7;
+}
+
+.report-list__comment {
+	white-space: pre-wrap;
+	margin: 0.25rem 0 0.75rem;
+	padding-left: 0.75rem;
+	border-left: 3px solid rgba(128, 128, 128, 0.4);
+}
+
+.report-status--dismissed {
+	background-color: rgba(128, 128, 128, 0.2);
+	color: #666;
+}
