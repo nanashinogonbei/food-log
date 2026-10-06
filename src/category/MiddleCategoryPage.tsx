@@ -2,8 +2,10 @@ import { Link, useParams } from 'react-router-dom'
 import { useCategories } from './useCategories.ts'
 import { findMainCategoryByLabel, findMiddleCategoryByLabel, getSubCategories } from './data.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
+import { useBodyId } from '../components/useBodyId.ts'
 
 function MiddleCategoryPage() {
+  useBodyId('CATEGORY-MIDDLE')
   const { categoryLabel, middleCategoryLabel } = useParams<{
     categoryLabel: string
     middleCategoryLabel: string

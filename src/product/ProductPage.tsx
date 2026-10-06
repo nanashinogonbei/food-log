@@ -9,10 +9,12 @@ import ValuationReportButton from './ValuationReportButton.tsx'
 import { formatJapaneseDate } from '../valuation/format.ts'
 import { useCategories } from '../category/useCategories.ts'
 import { getCategoryPath } from '../category/data.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 type ValuationTab = 'positive' | 'negative'
 
 function ProductPage() {
+  useBodyId('PRODUCT')
   const { productId } = useParams<{ productId: string }>()
   const navigate = useNavigate()
   const { user } = useUser()

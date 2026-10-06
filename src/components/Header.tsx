@@ -5,10 +5,8 @@ function Header() {
   const { user } = useUser()
 
   return (
-    <header className="site-header">
-      <Link className="site-header__logo" to="/">
-        food-log
-      </Link>
+    <header id="l-header">
+      <Link className="logo" to="/">もぐログ</Link>
       <nav className="site-header__nav">
         <SignedOut>
           <a href="/login.html">ログイン</a>

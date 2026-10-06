@@ -179,13 +179,23 @@ interface UseProductSearchResult {
   error: string | null
 }
 
+interface UseProductSearchOptions {
+  /** 検索を開始する最小文字数（既定: 3） */
+  minLength?: number
+  /** true の場合、承認待ち(pending)の商品を除外する（既定: false） */
+  publicOnly?: boolean
+}
+
 /**
- * 商品名（3文字以上）をデバウンスしながら検索し、候補一覧を返す。
- * 商品評価ページのオートコンプリートで使用する。3文字未満、または空文字が
- * 渡された場合は候補を空にしてAPIは呼ばない（呼び出し側で確定済み商品の
- * 再検索を止めたい場合にも、空文字を渡すことで利用できる）。
+ * 商品名（既定は3文字以上）をデバウンスしながら検索し、候補一覧を返す。
+ * 商品評価ページ／トップページのオートコンプリートで使用する。最小文字数未満、
+ * または空文字が渡された場合は候補を空にしてAPIは呼ばない（呼び出し側で確定済み
+ * 商品の再検索を止めたい場合にも、空文字を渡すことで利用できる）。
  */
-export function useProductSearch(query: string): UseProductSearchResult {
+export function useProductSearch(
+  query: string,
+  { minLength = NAME_SEARCH_MIN_LENGTH, publicOnly = false }: UseProductSearchOptions = {},
+): UseProductSearchResult {
   const [candidates, setCandidates] = useState<ProductSummary[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -193,7 +203,7 @@ export function useProductSearch(query: string): UseProductSearchResult {
   useEffect(() => {
     const trimmed = query.trim()
 
-    if (trimmed.length < NAME_SEARCH_MIN_LENGTH) {
+    if (trimmed.length < minLength) {
       // 検索文字数に満たない場合は候補をクリアし、APIも呼ばずに即座に確定させる。
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCandidates([])
@@ -207,7 +217,7 @@ export function useProductSearch(query: string): UseProductSearchResult {
     setError(null)
 
     const timerId = window.setTimeout(() => {
-      searchProductsByName(trimmed)
+      searchProductsByName(trimmed, { publicOnly })
         .then((data) => {
           if (isMounted) {
             setCandidates(data)
@@ -229,7 +239,7 @@ export function useProductSearch(query: string): UseProductSearchResult {
       isMounted = false
       window.clearTimeout(timerId)
     }
-  }, [query])
+  }, [query, minLength, publicOnly])
 
   return { candidates, isSearching, error }
 }

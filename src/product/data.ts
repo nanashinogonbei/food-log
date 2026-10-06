@@ -75,10 +75,18 @@ export async function fetchProductsByUser(userId: string): Promise<ProductSummar
   return response.json() as Promise<ProductSummary[]>
 }
 
+export interface SearchProductsOptions {
+  /** true の場合、承認待ち(pending)の商品を除外する（トップページの商品名検索用） */
+  publicOnly?: boolean
+}
+
 /**
- * 商品名の部分一致で商品を検索する（商品評価ページのオートコンプリート用）。
+ * 商品名の部分一致で商品を検索する（商品評価ページ／トップページのオートコンプリート用）。
  */
-export async function searchProductsByName(name: string): Promise<ProductSummary[]> {
+export async function searchProductsByName(
+  name: string,
+  options: SearchProductsOptions = {},
+): Promise<ProductSummary[]> {
   const trimmed = name.trim()
 
   if (trimmed === '') {
@@ -86,6 +94,9 @@ export async function searchProductsByName(name: string): Promise<ProductSummary
   }
 
   const params = new URLSearchParams({ name: trimmed })
+  if (options.publicOnly) {
+    params.set('publicOnly', '1')
+  }
 
   const response = await fetch(`${API_BASE_URL}/products.php?${params.toString()}`, {
     method: 'GET',

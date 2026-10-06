@@ -1,0 +1,21 @@
+/*
+ *
+ * mixin style
+ * language: stylus
+ *
+ */
+
+hover-color = #2988cc
+
+cfix()
+	zoom: 1
+	&:after
+		display: block
+		clear: both
+		height: 0
+		visibility: hidden
+		line-height: 0
+		content: "."
+
+size(_size)
+	round(_size/1399*100, 3)

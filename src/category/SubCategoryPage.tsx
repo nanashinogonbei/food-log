@@ -9,10 +9,12 @@ import {
 } from './data.ts'
 import { useProductsByCategory } from '../product/useProducts.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
+import { useBodyId } from '../components/useBodyId.ts'
 
 const ALL_TAB = 'all'
 
 function SubCategoryPage() {
+  useBodyId('CATEGORY-SMALL')
   const { categoryLabel, middleCategoryLabel, subCategoryLabel } = useParams<{
     categoryLabel: string
     middleCategoryLabel: string

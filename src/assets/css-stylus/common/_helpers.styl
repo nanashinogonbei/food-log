@@ -1,0 +1,84 @@
+/*
+ *
+ * helpers style
+ * language: stylus
+ *
+ */
+@import "./_mixin"
+
+
+
+._small
+	font-size: 0.8em
+
+._bold
+	font-weight: bold
+
+._pcView
+	display: block
+
+._pcViewIB
+	display: inline-block
+
+._spView
+	display: none
+
+._red
+	color: base-red
+
+._taC
+	text-align: center
+
+._txt
+	line-height: 1.75
+
+._txt + ._txt
+	margin-top: 1em
+
+._cfix
+	zoom: 1
+	&:after
+		display: block
+		clear: both
+		height: 0
+		visibility: hidden
+		line-height: 0
+		content: "."
+
+
+
+
+
+/*
+ *	width: ~768px
+ */
+
+@media (max-width: 768px)
+
+	._pcView
+		display: none
+
+	._pcViewIB
+		display: none
+
+
+
+
+
+/*
+ *	width: ~600px
+ */
+
+@media (max-width: 600px)
+
+	._pcView
+		display: none
+
+	._pcViewIB
+		display: none
+
+	._spView
+		display: block
+
+	._taC
+		text-align: left

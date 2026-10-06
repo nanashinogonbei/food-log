@@ -43,8 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
  *   指定した商品を1件取得する（製品ページ、商品評価ページの事前選択用）。
  *   userId も併せて指定された場合、その商品の申請者（requested_by）本人であれば
  *   pending（承認待ち）の商品も取得できる。
- * GET /api/products.php?name=xxx
- *   商品名の部分一致で検索する（商品評価ページのオートコンプリート用）。
+ * GET /api/products.php?name=xxx[&publicOnly=1]
+ *   商品名の部分一致で検索する（商品評価ページ／トップページのオートコンプリート用）。
+ *   publicOnly=1 を付けると承認待ち(pending)の商品を除外する（トップページ用）。
  * GET /api/products.php?userId=xxx
  *   指定したユーザーが申請した商品一覧を返す（マイページの商品申請タブ用）。
  * GET /api/products.php?categoryIds=1,9,39
@@ -65,7 +66,9 @@ function handleListProducts(): void
     }
 
     if ($name !== '') {
-        handleSearchProductsByName($name);
+        // publicOnly=1 の場合は承認待ち(pending)を除外する（トップページの商品名検索用）
+        $publicOnly = ($_GET['publicOnly'] ?? '') === '1';
+        handleSearchProductsByName($name, $publicOnly);
         return;
     }
 
@@ -192,20 +195,23 @@ function handleListProductsByUser(string $userId): void
  * 商品名の部分一致で商品を検索する。
  * 呼び出し側(フロント)は3文字以上で呼び出す想定だが、サーバー側では簡易な下限のみ課す。
  *
- * 注意: このエンドポイントのみ、status='pending'（承認待ち）の商品も含めて返す。
+ * 注意: $publicOnly が false（既定）の場合のみ、status='pending'（承認待ち）の商品も含めて返す。
+ * $publicOnly が true の場合は pending を除外する（トップページの商品名検索用）。
  * 商品評価 投稿ページ(/[userID]/valuation/post)のオートコンプリートでは、
  * 承認待ちの商品も「（保留中）」を付けて選択できる仕様のため。
  * それ以外の一覧・取得系エンドポイントでは pending の商品は除外している。
  */
-function handleSearchProductsByName(string $name): void
+function handleSearchProductsByName(string $name, bool $publicOnly = false): void
 {
     try {
         $pdo = getPdoConnection();
 
+        $statusCondition = $publicOnly ? "AND status != 'pending'" : '';
+
         $stmt = $pdo->prepare(
             "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
              FROM products
-             WHERE name LIKE :name
+             WHERE name LIKE :name $statusCondition
              ORDER BY name ASC
              LIMIT " . NAME_SEARCH_LIMIT
         );

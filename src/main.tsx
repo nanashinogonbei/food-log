@@ -13,6 +13,8 @@ import AdminProductApprovalPage from './admin/AdminProductApprovalPage.tsx'
 import AdminProductManagePage from './admin/AdminProductManagePage.tsx'
 import AdminReportPage from './admin/AdminReportPage.tsx'
 import FeaturedProductsRanking from './components/FeaturedProductsRanking.tsx'
+import ProductSearchBox from './components/ProductSearchBox.tsx'
+import { useBodyId } from './components/useBodyId.ts'
 import CategoryListPage from './category/CategoryListPage.tsx'
 import CategoryPage from './category/CategoryPage.tsx'
 import MiddleCategoryPage from './category/MiddleCategoryPage.tsx'
@@ -29,13 +31,15 @@ import NotFoundPage from './NotFoundPage.tsx'
 
 // トップページ (/)
 function TopPage() {
+  useBodyId('TOP')
   const { categories, isLoading, error } = useCategories()
   const mainCategories = getMainCategories(categories)
 
   return (
-    <div className="page">
-      <h1 className="page__title">トップページ</h1>
-      <p>不特定多数が商品を評価するコミュニティサイトです。</p>
+    <>
+	
+      <div className="product-fv"><ProductSearchBox /></div>
+      
 
       <h2>
         カテゴリーから探す <Link to="/category">（一覧を見る）</Link>
@@ -74,7 +78,7 @@ function TopPage() {
 
       <h2>注目の商品</h2>
       <FeaturedProductsRanking />
-    </div>
+    </>
   )
 }
 

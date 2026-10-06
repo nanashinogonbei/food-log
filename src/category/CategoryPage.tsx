@@ -2,8 +2,10 @@ import { Link, useParams } from 'react-router-dom'
 import { useCategories } from './useCategories.ts'
 import { findMainCategoryByLabel, getMiddleCategories } from './data.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
+import { useBodyId } from '../components/useBodyId.ts'
 
 function CategoryPage() {
+  useBodyId('CATEGORY-BIG')
   const { categoryLabel } = useParams<{ categoryLabel: string }>()
   const { categories, isLoading, error } = useCategories()
 
