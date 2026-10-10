@@ -15,6 +15,7 @@ const ALLOWED_MIME_TYPES = [
     'image/webp' => 'webp',
 ];
 const NAME_SEARCH_LIMIT = 20;
+const RECENT_PRODUCTS_LIMIT = 5;
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');
@@ -51,7 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
  * GET /api/products.php?categoryIds=1,9,39
  *   指定したカテゴリーID群のいずれかに category1 または category2 が一致する商品一覧を返す。
  *   (カテゴリーページで「すべて」タブ＝親＋子カテゴリー群のIDをまとめて渡す使い方を想定)
- * id, name, userId, categoryIds はこの優先順位で1つだけ処理する。いずれも未指定の場合は空を返す。
+ * GET /api/products.php?recent=1
+ *   最近追加された（承認済みの）商品を新しい順に最大5件返す（トップページの「新着」タブ用）。
+ * id, name, userId, recent, categoryIds はこの優先順位で1つだけ処理する。いずれも未指定の場合は空を返す。
  * ただし id 指定時は userId を同時に指定してもよい（上記の pending 取得の判定に使う）。
  */
 function handleListProducts(): void
@@ -74,6 +77,11 @@ function handleListProducts(): void
 
     if ($userId !== '') {
         handleListProductsByUser($userId);
+        return;
+    }
+
+    if (($_GET['recent'] ?? '') === '1') {
+        handleListRecentProducts();
         return;
     }
 
@@ -164,6 +172,31 @@ function handleGetProductById(string $id, string $userId): void
     } catch (Throwable $e) {
         http_response_code(500);
         echo json_encode(['error' => '商品の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
+ * 最近追加された商品を新しい順に最大 RECENT_PRODUCTS_LIMIT 件取得する（トップページの「新着」タブ用）。
+ * 承認済み(approved)の商品のみを対象とし、承認待ち・却下の商品は含めない。
+ */
+function handleListRecentProducts(): void
+{
+    try {
+        $pdo = getPdoConnection();
+
+        $stmt = $pdo->query(
+            "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
+             FROM products
+             WHERE status = 'approved'
+             ORDER BY created_at DESC, id DESC
+             LIMIT " . RECENT_PRODUCTS_LIMIT
+        );
+        $products = $stmt->fetchAll();
+
+        echo json_encode(attachPhotosAndFormat($pdo, $products), JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '最近追加された商品の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
     }
 }
 

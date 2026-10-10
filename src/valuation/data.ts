@@ -112,6 +112,13 @@ export async function fetchProductRanking(period: RankingPeriod): Promise<Produc
 }
 
 /**
+ * 最近投稿された評価を新しい順に最大5件取得する（トップページの「評価」タブ用）。
+ */
+export function fetchRecentValuations(): Promise<ValuationSummary[]> {
+  return fetchValuations({ recent: true })
+}
+
+/**
  * 指定したユーザーが投稿した評価一覧を取得する（マイページの商品評価タブ用）。
  */
 export function fetchValuationsByUser(userId: string): Promise<ValuationSummary[]> {
@@ -125,8 +132,15 @@ export function fetchValuationsByProduct(productId: string): Promise<ValuationSu
   return fetchValuations({ productId })
 }
 
-async function fetchValuations(query: { userId?: string; productId?: string }): Promise<ValuationSummary[]> {
+async function fetchValuations(query: {
+  userId?: string
+  productId?: string
+  recent?: boolean
+}): Promise<ValuationSummary[]> {
   const params = new URLSearchParams()
+  if (query.recent) {
+    params.set('recent', '1')
+  }
   if (query.userId) {
     params.set('userId', query.userId)
   }

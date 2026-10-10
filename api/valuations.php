@@ -13,6 +13,7 @@ const SCORE_LABELS = [
     'love' => '大好き',
 ];
 
+const RECENT_VALUATIONS_LIMIT = 5;
 const COMMENT_MIN_LENGTH = 10;
 const COMMENT_MAX_LENGTH = 2000;
 const PURCHASE_PRICE_MAX_LENGTH = 10;
@@ -63,7 +64,9 @@ function respondError(int $status, string $message): never
  *   指定ユーザーが投稿した評価一覧を返す（マイページの商品評価タブ用）。
  * GET /api/valuations.php?productId=1
  *   指定商品に投稿された評価一覧を返す（製品ページ用）。
- * ranking, userId+productId はこの優先順位で1つだけ処理する。いずれも未指定の場合は空配列を返す。
+ * GET /api/valuations.php?recent=1
+ *   最近投稿された評価を新しい順に最大5件返す（トップページの「評価」タブ用）。
+ * ranking, recent, userId+productId はこの優先順位で1つだけ処理する。いずれも未指定の場合は空配列を返す。
  */
 function handleListValuations(): void
 {
@@ -71,6 +74,11 @@ function handleListValuations(): void
 
     if ($ranking !== '') {
         handleProductRanking($ranking);
+        return;
+    }
+
+    if (($_GET['recent'] ?? '') === '1') {
+        handleRecentValuations();
         return;
     }
 
@@ -116,51 +124,93 @@ function handleListValuations(): void
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
 
-        $productIds = array_values(array_unique(
-            array_map(static fn (array $row): int => (int) $row['product_id'], $rows)
-        ));
-        $photoByProductId = [];
-
-        if (count($productIds) > 0) {
-            $photoPlaceholders = implode(',', array_fill(0, count($productIds), '?'));
-            $photoStmt = $pdo->prepare(
-                "SELECT product_id, filename FROM product_photos
-                 WHERE product_id IN ($photoPlaceholders)
-                 ORDER BY product_id ASC, display_order ASC"
-            );
-            $photoStmt->execute($productIds);
-
-            foreach ($photoStmt->fetchAll() as $photoRow) {
-                $pid = (int) $photoRow['product_id'];
-                if (!isset($photoByProductId[$pid])) {
-                    $photoByProductId[$pid] = UPLOAD_URL_BASE . $photoRow['filename'];
-                }
-            }
-        }
-
-        $result = array_map(static function (array $row) use ($photoByProductId): array {
-            $pid = (int) $row['product_id'];
-
-            return [
-                'id' => (int) $row['id'],
-                'productId' => $pid,
-                'productName' => $row['product_name'],
-                'productPhoto' => $photoByProductId[$pid] ?? null,
-                'userId' => $row['user_id'],
-                'score' => $row['score'],
-                'scoreLabel' => SCORE_LABELS[$row['score']] ?? $row['score'],
-                'comment' => $row['comment'],
-                'purchasePrice' => $row['purchase_price'],
-                'purchaseStore' => $row['purchase_store'],
-                'createdAt' => $row['created_at'],
-                'updatedAt' => $row['updated_at'],
-            ];
-        }, $rows);
+        $result = formatValuationRows($pdo, $rows);
 
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     } catch (Throwable $e) {
         http_response_code(500);
         echo json_encode(['error' => '評価一覧の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
+ * product_valuations と products を結合した行の配列を、フロントに返すJSON形式に整形する
+ * （商品の1枚目の写真URLを付与する）。
+ *
+ * @param list<array<string,mixed>> $rows v.id, v.product_id, product_name, v.user_id, v.score, v.comment,
+ *                                        v.purchase_price, v.purchase_store, v.created_at, v.updated_at を含む行
+ * @return list<array<string,mixed>>
+ */
+function formatValuationRows(PDO $pdo, array $rows): array
+{
+    $productIds = array_values(array_unique(
+        array_map(static fn (array $row): int => (int) $row['product_id'], $rows)
+    ));
+    $photoByProductId = [];
+
+    if (count($productIds) > 0) {
+        $photoPlaceholders = implode(',', array_fill(0, count($productIds), '?'));
+        $photoStmt = $pdo->prepare(
+            "SELECT product_id, filename FROM product_photos
+             WHERE product_id IN ($photoPlaceholders)
+             ORDER BY product_id ASC, display_order ASC"
+        );
+        $photoStmt->execute($productIds);
+
+        foreach ($photoStmt->fetchAll() as $photoRow) {
+            $pid = (int) $photoRow['product_id'];
+            if (!isset($photoByProductId[$pid])) {
+                $photoByProductId[$pid] = UPLOAD_URL_BASE . $photoRow['filename'];
+            }
+        }
+    }
+
+    $result = array_map(static function (array $row) use ($photoByProductId): array {
+        $pid = (int) $row['product_id'];
+
+        return [
+            'id' => (int) $row['id'],
+            'productId' => $pid,
+            'productName' => $row['product_name'],
+            'productPhoto' => $photoByProductId[$pid] ?? null,
+            'userId' => $row['user_id'],
+            'score' => $row['score'],
+            'scoreLabel' => SCORE_LABELS[$row['score']] ?? $row['score'],
+            'comment' => $row['comment'],
+            'purchasePrice' => $row['purchase_price'],
+            'purchaseStore' => $row['purchase_store'],
+            'createdAt' => $row['created_at'],
+            'updatedAt' => $row['updated_at'],
+        ];
+    }, $rows);
+
+    return $result;
+}
+
+/**
+ * 最近投稿された評価を新しい順に最大 RECENT_VALUATIONS_LIMIT 件返す（トップページの「評価」タブ用）。
+ * 承認済み(approved)の商品に対する評価のみを対象とする。
+ */
+function handleRecentValuations(): void
+{
+    try {
+        $pdo = getPdoConnection();
+
+        $stmt = $pdo->query(
+            "SELECT v.id, v.product_id, p.name AS product_name, v.user_id, v.score, v.comment,
+                    v.purchase_price, v.purchase_store, v.created_at, v.updated_at
+             FROM product_valuations v
+             INNER JOIN products p ON p.id = v.product_id
+             WHERE p.status = 'approved'
+             ORDER BY v.created_at DESC, v.id DESC
+             LIMIT " . RECENT_VALUATIONS_LIMIT
+        );
+        $rows = $stmt->fetchAll();
+
+        echo json_encode(formatValuationRows($pdo, $rows), JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '最近の評価の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
     }
 }
 
