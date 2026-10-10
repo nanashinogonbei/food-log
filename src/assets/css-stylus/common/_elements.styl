@@ -15,24 +15,38 @@
 
 
 
-
 /********************
 * list
 ********************/
 
-.list-styleA
-	padding-left: 1.5em
-	list-style-type: disc
-	.item + .item
-		margin-top: 0.5em
-
-.list-notes-typeA
-	line-height: 1.75
+.list-autocomplete
+	overflow: hidden
+	position: absolute
+	top: calc( 100% + 10px )
+	width: 100%
+	border-radius: 10px
+	box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.2)
+	background-color: #fff
 	.item
-		padding-left: 2.7em
-		text-indent: -2.7em
-	.item + .item
-		margin-top: 0.5em
+		padding: 10px
+		cursor: pointer
+		&.-active
+			background-color: #FAF6E1
+		img
+			width: 40px
+			margin-right: 10px
+			vertical-align: middle
+	
+.list-link-typeA
+	display: flex
+	flex-wrap: wrap
+	gap: 20px 30px
+	.item
+		a
+			display: block
+			padding-left: 20px
+			background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 0 4px / 14px auto
+	
 
 
 
@@ -81,6 +95,17 @@
 		background: url("../img/icon-blank.svg") no-repeat 0 0 / 12px auto
 
 
+/********************
+* form
+********************/
+
+input
+	border: none
+	border-radius: 100px
+	transition: box-shadow ease-in-out 0.2s
+	&:focus
+		outline: none
+		box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.2)
 
 
 

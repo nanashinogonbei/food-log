@@ -10,6 +10,7 @@ import { formatJapaneseDate } from '../valuation/format.ts'
 import { useCategories } from '../category/useCategories.ts'
 import { getCategoryPath } from '../category/data.ts'
 import { useBodyId } from '../components/useBodyId.ts'
+import '../assets/css/product.css'
 
 type ValuationTab = 'positive' | 'negative'
 

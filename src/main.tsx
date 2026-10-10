@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import { ClerkProvider } from '@clerk/clerk-react'
 import { jaJP } from '@clerk/localizations'
-import './index.css'
-import './App.css'
+import './assets/css/common.css'
+import './assets/css/top.css'
 import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
 import RequireAdmin from './components/RequireAdmin.tsx'
@@ -31,55 +31,60 @@ import NotFoundPage from './NotFoundPage.tsx'
 
 // トップページ (/)
 function TopPage() {
-  useBodyId('TOP')
-  const { categories, isLoading, error } = useCategories()
-  const mainCategories = getMainCategories(categories)
+	useBodyId('TOP')
+	const { categories, isLoading, error } = useCategories()
+	const mainCategories = getMainCategories(categories)
 
-  return (
-    <>
+	return (
+		<>
 	
-      <div className="product-fv"><ProductSearchBox /></div>
-      
-
-      <h2>
-        カテゴリーから探す <Link to="/category">（一覧を見る）</Link>
-      </h2>
-      {isLoading && <p>読み込み中...</p>}
-      {error && <p>{error}</p>}
-      {mainCategories.map((category) => {
-        const middleCategories = getMiddleCategories(categories, category.slug)
-
-        return (
-          <div key={category.slug} class="category-group">
-			<figure class="col-image">
-				<img
-				  src={`/assets/images/category/${category.filename}`}
-				  alt={category.name}
-				/>
-			</figure>
-			<div class="col-text">
-				<h3 class="heading-typeA">
-				  <Link to={`/category/${category.label}`}>{category.name}</Link>
-				</h3>
-				<div className="card-grid">
-				  {middleCategories.map((middleCategory) => (
-					<Link
-					  key={middleCategory.slug}
-					  to={`/category/${category.label}/${middleCategory.label}`}
-					>
-					  {middleCategory.name}
-					</Link>
-				  ))}
-				</div>
+			<div className="product-fv">
+				<ul className="list-bg">
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+				</ul>
+				<ProductSearchBox />
 			</div>
-		</div>
-        )
-      })}
 
-      <h2>注目の商品</h2>
-      <FeaturedProductsRanking />
-    </>
-  )
+			<div className="product-content">
+				<section className="product-category">
+				
+					{isLoading && <p>読み込み中...</p>}
+					{error && <p>{error}</p>}
+					{mainCategories.map((category) => {
+						const middleCategories = getMiddleCategories(categories, category.slug)
+						return (
+							<div key={category.slug} class="stack-category">
+								<h2 class="heading">
+								  <Link to={`/category/${category.label}`}>{category.name}</Link>
+								</h2>
+								<ul className="list-link-typeA">
+								  {middleCategories.map((middleCategory) => (
+									<li className="item">
+										<Link
+										  key={middleCategory.slug}
+										  to={`/category/${category.label}/${middleCategory.label}`}
+										>
+										  {middleCategory.name}
+										</Link>
+									</li>
+								  ))}
+								</ul>
+							</div>
+						)
+					})}
+					
+				</section>
+				
+				<aside className="product-subContent">
+					<FeaturedProductsRanking />
+				</aside>
+			</div>
+			
+		</>
+	)
 }
 
 function App() {

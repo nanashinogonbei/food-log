@@ -16,6 +16,7 @@ var _format = require("../valuation/format.ts");
 var _useCategories = require("../category/useCategories.ts");
 var _data2 = require("../category/data.ts");
 var _useBodyId = require("../components/useBodyId.ts");
+require("../assets/css/product.css");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function ProductPage() {
   (0, _useBodyId.useBodyId)('PRODUCT');

@@ -3,6 +3,7 @@ import { useCategories } from './useCategories.ts'
 import { findMainCategoryByLabel, findMiddleCategoryByLabel, getSubCategories } from './data.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 import { useBodyId } from '../components/useBodyId.ts'
+import '../assets/css/category-middle.css'
 
 function MiddleCategoryPage() {
   useBodyId('CATEGORY-MIDDLE')

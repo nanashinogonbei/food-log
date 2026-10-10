@@ -11,6 +11,7 @@ var _data = require("./data.ts");
 var _useProducts = require("../product/useProducts.ts");
 var _NotFoundPage = _interopRequireDefault(require("../NotFoundPage.tsx"));
 var _useBodyId = require("../components/useBodyId.ts");
+require("../assets/css/category-small.css");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 const ALL_TAB = 'all';
 function SubCategoryPage() {

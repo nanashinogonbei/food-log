@@ -106,16 +106,16 @@ function ProductSearchBox() {
     }
   };
   return <div className="product-search" ref={containerRef}>
-      <input type="search" className="product-search__input" placeholder="商品名を入力（2文字以上）" value={query} autoComplete="off" role="combobox" aria-label="商品名で検索" aria-expanded={showSuggestions && candidates.length > 0} aria-controls={LIST_ID} aria-autocomplete="list" aria-activedescendant={hasActiveCandidate ? `${LIST_ID}-${candidates[activeIndex].id}` : undefined} onChange={handleChange} onFocus={() => setIsOpen(true)} onKeyDown={handleKeyDown} onCompositionStart={() => setIsComposing(true)} onCompositionEnd={() => setIsComposing(false)} />
+      <input type="search" className="elem-input" placeholder="商品名を入力してください" value={query} autoComplete="off" role="combobox" aria-label="商品名で検索" aria-expanded={showSuggestions && candidates.length > 0} aria-controls={LIST_ID} aria-autocomplete="list" aria-activedescendant={hasActiveCandidate ? `${LIST_ID}-${candidates[activeIndex].id}` : undefined} onChange={handleChange} onFocus={() => setIsOpen(true)} onKeyDown={handleKeyDown} onCompositionStart={() => setIsComposing(true)} onCompositionEnd={() => setIsComposing(false)} />
 
       {showSuggestions && <>
-          {isSearching && <p className="product-search__message">検索中...</p>}
-          {error && <p className="product-search__message">{error}</p>}
-          {!isSearching && !error && candidates.length === 0 && <p className="product-search__message">該当する商品が見つかりませんでした。</p>}
-          {candidates.length > 0 && <ul className="autocomplete__list" id={LIST_ID} role="listbox">
-              {candidates.map((candidate, index) => <li key={candidate.id} id={`${LIST_ID}-${candidate.id}`} role="option" aria-selected={index === activeIndex} className={`autocomplete__item${index === activeIndex ? ' autocomplete__item--active' : ''}`} onMouseEnter={() => setActiveIndex(index)} onClick={() => goToProduct(candidate.id)}>
+          {isSearching && <p className="elem-message">検索中...</p>}
+          {error && <p className="elem-error">{error}</p>}
+          {!isSearching && !error && candidates.length === 0 && <p className="elem-error">該当する商品が見つかりませんでした。</p>}
+          {candidates.length > 0 && <ul className="list-autocomplete" id={LIST_ID} role="listbox">
+              {candidates.map((candidate, index) => <li key={candidate.id} id={`${LIST_ID}-${candidate.id}`} role="option" aria-selected={index === activeIndex} className={`item${index === activeIndex ? ' -active' : ''}`} onMouseEnter={() => setActiveIndex(index)} onClick={() => goToProduct(candidate.id)}>
                   {candidate.photos[0] && <img src={`http://production-null.work/food-log${candidate.photos[0]}`} alt={candidate.name} />}
-                  <span className="autocomplete__item-name">
+                  <span className="name">
                     <HighlightedName name={candidate.name} query={trimmedQuery} />
                   </span>
                 </li>)}

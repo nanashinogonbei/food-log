@@ -10,6 +10,7 @@ import {
 import { useProductsByCategory } from '../product/useProducts.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 import { useBodyId } from '../components/useBodyId.ts'
+import '../assets/css/category-small.css'
 
 const ALL_TAB = 'all'
 

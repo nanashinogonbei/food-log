@@ -9,6 +9,7 @@ var _useCategories = require("./useCategories.ts");
 var _data = require("./data.ts");
 var _NotFoundPage = _interopRequireDefault(require("../NotFoundPage.tsx"));
 var _useBodyId = require("../components/useBodyId.ts");
+require("../assets/css/category-big.css");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function CategoryPage() {
   (0, _useBodyId.useBodyId)('CATEGORY-BIG');

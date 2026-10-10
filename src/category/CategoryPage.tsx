@@ -3,6 +3,7 @@ import { useCategories } from './useCategories.ts'
 import { findMainCategoryByLabel, getMiddleCategories } from './data.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 import { useBodyId } from '../components/useBodyId.ts'
+import '../assets/css/category-big.css'
 
 function CategoryPage() {
   useBodyId('CATEGORY-BIG')

@@ -5,8 +5,8 @@ var _client = require("react-dom/client");
 var _reactRouterDom = require("react-router-dom");
 var _clerkReact = require("@clerk/clerk-react");
 var _localizations = require("@clerk/localizations");
-require("./index.css");
-require("./App.css");
+require("./assets/css/common.css");
+require("./assets/css/top.css");
 var _Header = _interopRequireDefault(require("./components/Header.tsx"));
 var _RequireAuth = _interopRequireDefault(require("./components/RequireAuth.tsx"));
 var _RequireAdmin = _interopRequireDefault(require("./components/RequireAdmin.tsx"));
@@ -42,36 +42,45 @@ function TopPage() {
   const mainCategories = (0, _data.getMainCategories)(categories);
   return <>
 	
-      <div className="product-fv"><_ProductSearchBox.default /></div>
-      
-
-      <h2>
-        カテゴリーから探す <_reactRouterDom.Link to="/category">（一覧を見る）</_reactRouterDom.Link>
-      </h2>
-      {isLoading && <p>読み込み中...</p>}
-      {error && <p>{error}</p>}
-      {mainCategories.map(category => {
-      const middleCategories = (0, _data.getMiddleCategories)(categories, category.slug);
-      return <div key={category.slug} class="category-group">
-			<figure class="col-image">
-				<img src={`/assets/images/category/${category.filename}`} alt={category.name} />
-			</figure>
-			<div class="col-text">
-				<h3 class="heading-typeA">
-				  <_reactRouterDom.Link to={`/category/${category.label}`}>{category.name}</_reactRouterDom.Link>
-				</h3>
-				<div className="card-grid">
-				  {middleCategories.map(middleCategory => <_reactRouterDom.Link key={middleCategory.slug} to={`/category/${category.label}/${middleCategory.label}`}>
-					  {middleCategory.name}
-					</_reactRouterDom.Link>)}
-				</div>
+			<div className="product-fv">
+				<ul className="list-bg">
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+					<li className="item"><img src="./assets/img/top-kv06_re7.webp" /></li>
+				</ul>
+				<_ProductSearchBox.default />
 			</div>
-		</div>;
-    })}
 
-      <h2>注目の商品</h2>
-      <_FeaturedProductsRanking.default />
-    </>;
+			<div className="product-content">
+				<section className="product-category">
+				
+					{isLoading && <p>読み込み中...</p>}
+					{error && <p>{error}</p>}
+					{mainCategories.map(category => {
+          const middleCategories = (0, _data.getMiddleCategories)(categories, category.slug);
+          return <div key={category.slug} class="stack-category">
+								<h2 class="heading">
+								  <_reactRouterDom.Link to={`/category/${category.label}`}>{category.name}</_reactRouterDom.Link>
+								</h2>
+								<ul className="list-link-typeA">
+								  {middleCategories.map(middleCategory => <li className="item">
+										<_reactRouterDom.Link key={middleCategory.slug} to={`/category/${category.label}/${middleCategory.label}`}>
+										  {middleCategory.name}
+										</_reactRouterDom.Link>
+									</li>)}
+								</ul>
+							</div>;
+        })}
+					
+				</section>
+				
+				<aside className="product-subContent">
+					<_FeaturedProductsRanking.default />
+				</aside>
+			</div>
+			
+		</>;
 }
 function App() {
   return <>

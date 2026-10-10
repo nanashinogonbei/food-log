@@ -1,0 +1,5 @@
+/* 小カテゴリーページ (/category/[label]/[label]/[label])
+   <body id="CATEGORY-SMALL"> のときだけ効くよう、セレクタは #CATEGORY-SMALL から書く */
+
+#CATEGORY-SMALL {
+}
