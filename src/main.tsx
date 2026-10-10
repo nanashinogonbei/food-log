@@ -13,6 +13,7 @@ import AdminProductApprovalPage from './admin/AdminProductApprovalPage.tsx'
 import AdminProductManagePage from './admin/AdminProductManagePage.tsx'
 import AdminReportPage from './admin/AdminReportPage.tsx'
 import FeaturedProductsRanking from './components/FeaturedProductsRanking.tsx'
+import RecentItems from './components/RecentItems.tsx'
 import ProductSearchBox from './components/ProductSearchBox.tsx'
 import { useBodyId } from './components/useBodyId.ts'
 import CategoryListPage from './category/CategoryListPage.tsx'
@@ -80,6 +81,7 @@ function TopPage() {
 				
 				<aside className="product-subContent">
 					<FeaturedProductsRanking />
+					<RecentItems />
 				</aside>
 			</div>
 			

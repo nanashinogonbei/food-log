@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchProductRanking, fetchValuationsByProduct, fetchValuationsByUser } from './data.ts'
+import { fetchProductRanking, fetchRecentValuations, fetchValuationsByProduct, fetchValuationsByUser } from './data.ts'
 import type { ProductRanking, RankingPeriod, ValuationSummary } from './data.ts'
 
 interface UseProductRankingResult {
@@ -46,6 +46,48 @@ export function useProductRanking(period: RankingPeriod): UseProductRankingResul
   }, [period])
 
   return { ranking, isLoading, error }
+}
+
+interface UseRecentValuationsResult {
+  valuations: ValuationSummary[]
+  isLoading: boolean
+  error: string | null
+}
+
+/**
+ * 最近投稿された評価（最大5件）を取得する（トップページの「評価」タブ用）。
+ */
+export function useRecentValuations(): UseRecentValuationsResult {
+  const [valuations, setValuations] = useState<ValuationSummary[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    fetchRecentValuations()
+      .then((data) => {
+        if (isMounted) {
+          setValuations(data)
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : '最近の評価の取得に失敗しました')
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  return { valuations, isLoading, error }
 }
 
 interface UseValuationsResult {

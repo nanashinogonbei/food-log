@@ -62,7 +62,8 @@
 		.product-subContent
 			width: 35%
 
-	.product-ranking
+	.product-ranking,
+	.product-recent
 		padding: 15px
 		background-color: #F5F5F5
 		
@@ -91,7 +92,8 @@
 		.elem-functionTxt
 			padding: 20px
 			line-height: 1.4
-			
+
+	.product-ranking
 		.list-ranking
 			padding: 20px 15px
 			.item
@@ -112,6 +114,58 @@
 					.elem-count
 						display: block
 						font-size: 1.4rem
+
+
+	.product-recent
+		margin-top: 30px
+
+		.stack-tabs
+			.item
+				border: 0
+				font-family: inherit
+				color: inherit
+				cursor: pointer
+
+		.list-recent
+			padding: 20px 15px
+			.item
+				+ .item
+					margin-top: 15px
+				.inner
+					display: flex
+					gap: 10px
+					align-items: center
+				.elem-img
+					flex-shrink: 0
+					width: 80px
+					height: 80px
+					object-fit: cover
+				.cluster-txt
+					min-width: 0
+					span
+						display: block
+					.elem-name
+						font-weight: bold
+						line-height: 1.4
+					.elem-score
+						margin-top: 4px
+						font-size: 1.3rem
+						font-weight: bold
+						&.-poor
+							color: #777
+						&.-like
+							color: #E67300
+						&.-love
+							color: #D9363E
+					.elem-comment
+						margin-top: 4px
+						font-size: 1.3rem
+						line-height: 1.5
+						color: #555
+					.elem-date
+						margin-top: 4px
+						font-size: 1.2rem
+						color: #888
 
 
 /*

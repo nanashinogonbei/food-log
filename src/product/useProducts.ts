@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import { fetchProductById, fetchProductsByCategoryIds, fetchProductsByUser, searchProductsByName } from './data.ts'
+import {
+  fetchProductById,
+  fetchProductsByCategoryIds,
+  fetchProductsByUser,
+  fetchRecentProducts,
+  searchProductsByName,
+} from './data.ts'
 import type { ProductSummary } from './data.ts'
 
 interface UseProductsByCategoryResult {
@@ -62,6 +68,48 @@ export function useProductsByCategory(categoryIds: string[]): UseProductsByCateg
   if (!hasCategoryIds) {
     return { products: [], isLoading: false, error: null }
   }
+
+  return { products, isLoading, error }
+}
+
+interface UseRecentProductsResult {
+  products: ProductSummary[]
+  isLoading: boolean
+  error: string | null
+}
+
+/**
+ * 最近追加された商品（最大5件）を取得する（トップページの「新着」タブ用）。
+ */
+export function useRecentProducts(): UseRecentProductsResult {
+  const [products, setProducts] = useState<ProductSummary[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    fetchRecentProducts()
+      .then((data) => {
+        if (isMounted) {
+          setProducts(data)
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : '最近追加された商品の取得に失敗しました')
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   return { products, isLoading, error }
 }
