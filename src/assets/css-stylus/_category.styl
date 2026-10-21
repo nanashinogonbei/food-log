@@ -1,0 +1,121 @@
+/*
+ *
+ * category page style
+ * language: stylus
+ *
+ */
+@import "./common/_mixin"
+
+
+
+#CATEGORY-MIDDLE
+
+	#l-content
+		margin-top: 15px
+
+	.product-pickup.-ranking
+		margin: 60px 0
+
+	.product-pickup
+	
+		.heading
+			margin-bottom: 20px
+			font-size: 2.8rem
+	
+		.stack-tabs
+			.item
+				font-size: 1.6rem
+	
+		.stack-list
+			display: flex
+			flex-wrap: wrap
+			gap: 12px 10px
+			.item
+				width: calc( (100% - 20px) / 3 )
+				a
+					padding: 15px
+					border: 1px solid border-c
+					border-radius: 4px
+					box-shadow: 0 2px 0 border-c
+				a:hover
+					border-color: #F0DACC
+					box-shadow: 0 2px 0 #F0DACC
+					background-color: #FFF3EB
+
+
+
+#CATEGORY-SMALL
+	
+	#l-content
+		margin-top: 15px
+	
+	.product-content
+		display: flex
+		gap: 0 4%
+
+		.cluster-side
+			width: 25%
+			
+			.stack-categoryList
+				padding: 10px
+				background-color: #F5F5F5
+				.item
+					background-color: #fff
+					&.-active
+						font-weight: bold
+						a
+							background-color: #FFF2EB
+					+ .item
+						border-top: 1px solid #E6E6E6
+					a
+						display: block
+						padding: 15px 15px 15px 35px
+						background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 15px 19px / 14px auto
+					a:hover
+						font-weight: bold
+						background-color: #FFF2EB
+
+		.cluster-main
+			width: 71%
+
+	.stack-card
+		.item
+			.inner
+				display: flex
+				align-items: center
+				gap: 4%
+				padding: 30px 0
+				border-bottom: 1px solid border-c
+				.cluster-img
+					width: 30%
+					text-align: center
+					img
+						max-height: 150px
+				.cluster-txt
+					width: 66%
+					.elem-name
+						margin-bottom: 10px
+						font-size: 2.4rem
+						font-weight: bold
+
+
+
+
+
+/*
+ *	width: ~768px
+ */
+
+@media (max-width: 768px)
+	// 
+
+
+
+
+
+/*
+ *	width: ~600px
+ */
+
+@media (max-width: 600px)
+	// 

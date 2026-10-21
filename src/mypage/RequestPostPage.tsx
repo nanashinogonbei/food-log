@@ -81,13 +81,12 @@ function RequestPostPage() {
   }
 
   return (
-    <div className="page">
-      <h1 className="page__title">商品申請 投稿</h1>
+    <div id="l-content">
+      <h1 className="heading -typeA">商品申請 投稿</h1>
+      <p><Link to={`/${userId}/request`} className="elem-link -typeA">申請一覧に戻る</Link></p>
 
-      <p>
-        <Link to={`/${userId}/request`}>申請一覧に戻る</Link>
-      </p>
 
+			<section className="product-content">
       {categoriesError && <p>{categoriesError}</p>}
       {submitSuccess && (
         <>
@@ -105,17 +104,16 @@ function RequestPostPage() {
 
       {!submitSuccess && (
       <form onSubmit={handleSubmit}>
-        <label htmlFor="name">商品名【必須】</label>
-        <br />
-        <input
-          id="name"
-          type="text"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          required
-        />
-        <br />
-        <br />
+        <p className="elem-label"><label htmlFor="name">商品名【必須】</label></p>
+        <div className="elem-parts">
+					<input
+						id="name"
+						type="text"
+						value={name}
+						onChange={(event) => setName(event.target.value)}
+						required
+					/>
+				</div>
 
         <label htmlFor="category1">カテゴリー1【必須】</label>
         <br />
@@ -179,6 +177,8 @@ function RequestPostPage() {
         </button>
       </form>
       )}
+			</section>
+			
     </div>
   )
 }

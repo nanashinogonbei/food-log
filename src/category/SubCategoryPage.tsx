@@ -10,7 +10,6 @@ import {
 import { useProductsByCategory } from '../product/useProducts.ts'
 import NotFoundPage from '../NotFoundPage.tsx'
 import { useBodyId } from '../components/useBodyId.ts'
-import '../assets/css/category-small.css'
 
 const ALL_TAB = 'all'
 
@@ -57,74 +56,80 @@ function SubCategoryPage() {
   }
 
   return (
-    <div className="page">
-      <p>
+	 	<div id="l-content">
+		
+			<div id="l-breadcrumb">
+				<Link to="/">HOME</Link> &gt;{' '}
         <Link to={`/category/${category.label}`}>{category.name}</Link> &gt;{' '}
         <Link to={`/category/${category.label}/${middleCategory.label}`}>{middleCategory.name}</Link> &gt;{' '}
         {subCategory.name}
-      </p>
-      <h1 className="page__title">{subCategory.name}</h1>
-
-		<div className="group-endCategory">
-		
-			<div className="colmun-side">
-				{childCategories.length > 0 && (
-				<ul className="li-category">
-					<li
-						className={`item${activeTab === ALL_TAB ? ' -active' : ''}`}
-					>
-					<Link
-						onClick={() => setActiveTab(ALL_TAB)}
-					>
-					すべて
-					</Link>
-					</li>
-					{childCategories.map((child) => (
-						<li
-							className="item"
-							className={`item${activeTab === child.slug ? ' -active' : ''}`}
-						>
-						<Link
-						  key={child.slug}
-						  onClick={() => setActiveTab(child.slug)}
-						>
-						{child.name}
-						</Link>
-						</li>
-					))}
-				</ul>
-				)}
-			</div>
-
-			<div className="colmun-main">
-				{isProductsLoading && <p>読み込み中...</p>}
-				{productsError && <p>{productsError}</p>}
-
-				{!isProductsLoading && !productsError && products.length === 0 && <p>該当する商品はまだありません。</p>}
-
-				<div className="card-product">
-				{products.map((product) => (
-					<div
-						key={product.id}
-						className="card-item"
-					>
-						<Link to={`/product/${product.id}`}>
-						{product.photos[0] && (
-						  <figure className="col-image">
-							<img src={`http://production-null.work/food-log${product.photos[0]}`} alt={product.name} />
-						  </figure>
-						)}
-						<div className="col-txt">
-							<p className="elem-distributor">{product.distributor}</p>
-							<p className="elem-name">{product.name}</p>
-						</div>
-						</Link>
-					</div>
-				))}
-				</div>
 			</div>
 			
-		</div>
+			<h1 className="heading -typeA">{subCategory.name}</h1>
+
+			<div className="product-content">
+			
+				<div className="cluster-side">
+					{childCategories.length > 0 && (
+					<ul className="stack-categoryList">
+						<li
+							className={`item${activeTab === ALL_TAB ? ' -active' : ''}`}
+						>
+						<Link
+							onClick={() => setActiveTab(ALL_TAB)}
+						>
+						すべて
+						</Link>
+						</li>
+						{childCategories.map((child) => (
+							<li
+								className={`item${activeTab === child.slug ? ' -active' : ''}`}
+							>
+							<Link
+								key={child.slug}
+								onClick={() => setActiveTab(child.slug)}
+							>
+							{child.name}
+							</Link>
+							</li>
+						))}
+					</ul>
+					)}
+				</div>
+
+				<div className="cluster-main">
+					
+					{isProductsLoading && <p>読み込み中...</p>}
+					{productsError && <p>{productsError}</p>}
+
+					{!isProductsLoading && !productsError && products.length === 0 && <p>該当する商品はまだありません。</p>}
+
+					<div className="stack-card">
+					{products.map((product) => (
+						<div
+							key={product.id}
+							className="item"
+						>
+							<Link
+								to={`/product/${product.id}`}
+								className="inner"
+							>
+							{product.photos[0] && (
+								<figure className="cluster-img">
+								<img src={`http://production-null.work/food-log${product.photos[0]}`} alt={product.name} />
+								</figure>
+							)}
+							<div className="cluster-txt">
+								<p className="elem-name">{product.name}</p>
+								<p className="elem-distributor">販売会社:{product.distributor}</p>
+							</div>
+							</Link>
+						</div>
+					))}
+					</div>
+				</div>
+				
+			</div>
 		
     </div>
   )

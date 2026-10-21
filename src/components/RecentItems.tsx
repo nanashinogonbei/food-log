@@ -19,36 +19,40 @@ function toExcerpt(comment: string): string {
 	return text.length > COMMENT_EXCERPT_LENGTH ? `${text.slice(0, COMMENT_EXCERPT_LENGTH)}…` : text
 }
 
+interface RecentItemsProps {
+	/** 指定すると、そのカテゴリー（ID群）に属する商品・評価だけを対象にする（中カテゴリーページ用）。未指定なら全体 */
+	categoryIds?: string[]
+}
+
 /**
- * トップページの「最近追加」: 最近追加された商品 / 最近投稿された評価を5件ずつタブで切り替えて表示する。
- * 初期表示は「商品」タブ。
+ * 「最近追加」: 最近追加された商品 / 最近投稿された評価を5件ずつタブで切り替えて表示する。
+ * 初期表示は「商品」タブ。トップページでは全体、中カテゴリーページではそのカテゴリー内が対象。
  */
-function RecentItems() {
+function RecentItems({ categoryIds }: RecentItemsProps = {}) {
 	const [tab, setTab] = useState<RecentTab>('product')
-	const { products, isLoading: isProductsLoading, error: productsError } = useRecentProducts()
-	const { valuations, isLoading: isValuationsLoading, error: valuationsError } = useRecentValuations()
+	const { products, isLoading: isProductsLoading, error: productsError } = useRecentProducts(categoryIds)
+	const { valuations, isLoading: isValuationsLoading, error: valuationsError } = useRecentValuations(categoryIds)
 
 	const isLoading = tab === 'product' ? isProductsLoading : isValuationsLoading
 	const error = tab === 'product' ? productsError : valuationsError
 	const isEmpty = tab === 'product' ? products.length === 0 : valuations.length === 0
 
 	return (
-		<div className="product-recent">
+		<div className="product-pickup -recent">
 			<h2 className="heading">最近追加</h2>
 			<div className="inner">
 
 				<div className="stack-tabs" role="tablist">
 					{TAB_OPTIONS.map((option) => (
-						<button
+						<Link
 							key={option.value}
-							type="button"
 							role="tab"
 							aria-selected={tab === option.value}
 							className={`item${tab === option.value ? ' -active' : ''}`}
 							onClick={() => setTab(option.value)}
 						>
 							{option.label}
-						</button>
+						</Link>
 					))}
 				</div>
 
@@ -61,7 +65,7 @@ function RecentItems() {
 				)}
 
 				{!isLoading && !error && tab === 'product' && products.length > 0 && (
-					<ul className="list-recent">
+					<ul className="stack-list">
 						{products.map((product) => (
 							<li key={product.id} className="item">
 								<Link to={`/product/${product.id}`} className="inner">
@@ -83,7 +87,7 @@ function RecentItems() {
 				)}
 
 				{!isLoading && !error && tab === 'valuation' && valuations.length > 0 && (
-					<ul className="list-recent">
+					<ul className="stack-list">
 						{valuations.map((valuation) => (
 							<li key={valuation.id} className="item">
 								<Link to={`/product/${valuation.productId}`} className="inner">

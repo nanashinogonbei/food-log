@@ -115,3 +115,31 @@ function isUserRestricted(PDO $pdo, string $userId): bool
 {
     return countActiveReporters($pdo, $userId) >= REPORT_RESTRICTION_THRESHOLD;
 }
+
+/**
+ * クエリの categoryIds（カンマ区切りのカテゴリーID）を数字のみの重複なしID配列にして返す。
+ * 未指定・不正な値のみの場合は空配列を返す。
+ *
+ * @return list<string>
+ */
+function parseCategoryIdsParam(string $param): array
+{
+    return array_values(array_unique(array_filter(
+        array_map('trim', explode(',', $param)),
+        static fn (string $id): bool => ctype_digit($id)
+    )));
+}
+
+/**
+ * 商品テーブル（エイリアス $alias）の category1 / category2 が指定カテゴリーIDのいずれかに
+ * 一致する条件のSQL断片を返す（プレースホルダーは位置指定の ? を ID数×2 個使う）。
+ * バインドする値は array_merge($categoryIds, $categoryIds) の順で渡すこと。
+ *
+ * @param list<string> $categoryIds 1件以上
+ */
+function buildCategoryFilterSql(string $alias, array $categoryIds): string
+{
+    $placeholders = implode(',', array_fill(0, count($categoryIds), '?'));
+
+    return "({$alias}.category1 IN ($placeholders) OR {$alias}.category2 IN ($placeholders))";
+}

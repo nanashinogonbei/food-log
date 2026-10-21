@@ -12,6 +12,25 @@
 * headline
 ********************/
 
+.heading
+	&.-typeA
+		margin-bottom: 30px
+		font-size: 3.6rem
+		font-weight: bold
+	&.-typeB
+		padding: 12px 15px 15px
+		margin-bottom: 30px
+		font-size: 2.2rem
+		font-weight: bold
+		background-color: #f5f5f5
+	&.-typeC
+		margin-bottom: 15px
+		font-size: 2.6rem
+		font-weight: bold
+	&.-typeD
+		margin-bottom: 10px
+		font-size: 1.8rem
+		font-weight: bold
 
 
 
@@ -37,17 +56,25 @@
 			margin-right: 10px
 			vertical-align: middle
 	
-.list-link-typeA
-	display: flex
-	flex-wrap: wrap
-	gap: 20px 30px
-	.item
-		a
-			display: block
-			padding-left: 20px
-			background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 0 4px / 14px auto
+.stack-linkLink
+	&.-typeA
+		display: flex
+		flex-wrap: wrap
+		gap: 12px 10px
+		padding-bottom: 2px
+		.item
+			a
+				display: block
+				padding: 20px 20px 20px 40px
+				border: 1px solid border-c
+				border-radius: 4px
+				box-shadow: 0 2px 0 border-c
+				background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 20px 24px / 14px auto
+			a:hover
+				border-color: border-hc
+				box-shadow: 0 2px 0 border-hc
+				background-color: bg-hc
 	
-
 
 
 /********************
@@ -71,12 +98,92 @@
 	justify-content: space-between
 
 
+.stack-tabs
+	display: flex
+	gap: 1px
+	border-bottom: 2px solid main-c
+	.item
+		width: calc( 100% - 4px / 3 )
+		padding: 8px 0 10px
+		text-align: center
+		font-size: 1.4rem
+		background-color: #EBEBEB
+		cursor: pointer
+		&.-active
+			font-weight: bold
+			background-color: #DBDBDB
+
+
+.product-pickup
+	
+	.heading
+		font-weight: bold
+				
+	.elem-functionTxt
+		padding: 20px
+		line-height: 1.4
+
+	.stack-list
+		padding: 20px 15px
+		.item
+			.inner
+				display: flex
+				gap: 15px
+				align-items: center
+			.elem-img
+				flex-shrink: 0
+				width: 80px
+				height: 80px
+				object-fit: cover
+			.cluster-txt
+				min-width: 0
+				span
+					display: block
+				.elem-name
+					font-weight: bold
+					line-height: 1.4
+				.elem-score
+					margin-top: 4px
+					font-size: 1.3rem
+					font-weight: bold
+					&.-poor
+						color: #777
+					&.-like
+						color: #E67300
+					&.-love
+						color: #D9363E
+				.elem-comment
+					margin-top: 4px
+					font-size: 1.3rem
+					line-height: 1.5
+					color: #555
+				.elem-count,
+				.elem-date
+					margin-top: 4px
+					font-size: 1.2rem
+					color: #888
+
+
+
 /********************
 * btn
 ********************/
 
-
-
+.elem-button
+	position: relative
+	cursor: pointer
+	&.-typeA
+		top: 0
+		padding: 18px 30px 20px
+		border: 1px solid border-c
+		box-shadow: 0 2px 0 border-c
+		border-radius: 6px
+		background: linear-gradient(0deg, #F0F0F0 0%, #fff 100%)
+		&:hover
+			top: 1px
+			border-color: border-hc
+			box-shadow: 0 1px 0 border-hc
+			background: bg-hc
 
 
 
@@ -84,29 +191,33 @@
 * txt
 ********************/
 
-.link-typeA
-	margin-top: 0.8em
-	&::after
-		display: inline-block
-		content: ''
-		width: 12px
-		height: 10px
-		margin-left: 5px
-		background: url("../img/icon-blank.svg") no-repeat 0 0 / 12px auto
+.elem-link
+	&.-typeA
+		color: #297ACC
+		text-decoration: underline
+		&:hover
+			color: main-c
+			text-decoration: none
 
+.elem-notes
+	&.-typeA
+		color: #808080
+		font-size: 1.4rem
+		
 
 /********************
 * form
 ********************/
 
 input
+	padding: 10px
 	border: none
-	border-radius: 100px
-	transition: box-shadow ease-in-out 0.2s
+	border-radius: 6px
+	background-color: #EBEBEB
 	&:focus
 		outline: none
-		box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.2)
-
+		box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.1)
+		background-color: #E6F0FA
 
 
 /*

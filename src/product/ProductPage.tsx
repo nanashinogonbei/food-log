@@ -10,8 +10,6 @@ import { formatJapaneseDate } from '../valuation/format.ts'
 import { useCategories } from '../category/useCategories.ts'
 import { getCategoryPath } from '../category/data.ts'
 import { useBodyId } from '../components/useBodyId.ts'
-import '../assets/css/product.css'
-
 type ValuationTab = 'positive' | 'negative'
 
 function ProductPage() {
@@ -86,11 +84,9 @@ function ProductPage() {
 
   if (!product) {
     return (
-      <div className="page">
-        <h1 className="page__title">商品が見つかりません</h1>
-        <p>
-          <Link to="/">トップページに戻る</Link>
-        </p>
+      <div id="l-content">
+        <h1 className="heading -typeA">商品が見つかりません</h1>
+        <p><Link to="/" className="elem-link -typeA">トップページに戻る</Link></p>
       </div>
     )
   }
@@ -108,158 +104,175 @@ function ProductPage() {
       : null
 
   return (
-    <div className="page product-page">
+    <div id="l-content">
 
-		<section className="section-product">
-			{product.photos.length > 0 && (
-				<div className="product-page__photos">
-					<figure className="product-page__photo-main">
-					  <img
-						src={`http://production-null.work/food-log${product.photos[activePhotoIndex] ?? product.photos[0]}`}
-						alt={product.name}
-					  />
-					</figure>
 
-					{product.photos.length > 1 && (
-					  <div className="product-page__photo-thumbs">
-						{product.photos.map((photo, index) => (
-						  <Link
-							key={photo}
-							className={`product-page__photo-thumb${
-							  index === activePhotoIndex ? ' product-page__photo-thumb--active' : ''
-							}`}
-							onMouseEnter={() => setActivePhotoIndex(index)}
-							onFocus={() => setActivePhotoIndex(index)}
-							onClick={() => setActivePhotoIndex(index)}
-							aria-label={`${index + 1}枚目の画像を表示`}
-						  >
-							<img src={`http://production-null.work/food-log${photo}`} alt="" />
-						  </Link>
-						))}
-					  </div>
+			<section className="product-info">
+				{product.photos.length > 0 && (
+					<div className="cluster-img">
+					
+						<figure className="stack-imgMain">
+							<img
+							src={`http://production-null.work/food-log${product.photos[activePhotoIndex] ?? product.photos[0]}`}
+							alt={product.name}
+							/>
+						</figure>
+
+						{product.photos.length > 1 && (
+							<div className="stack-imgThumb">
+							{product.photos.map((photo, index) => (
+								<Link
+									key={photo}
+									className={`item${index === activePhotoIndex ? ' -active' : ''}`}
+									onMouseEnter={() => setActivePhotoIndex(index)}
+									onFocus={() => setActivePhotoIndex(index)}
+									onClick={() => setActivePhotoIndex(index)}
+									aria-label={`${index + 1}枚目の画像を表示`}
+								>
+								<img src={`http://production-null.work/food-log${photo}`} alt="" />
+								</Link>
+							))}
+							</div>
+						)}
+					</div>
+				)}
+
+				<div className="cluster-txt">
+					<h1 className="heading -typeA">{product.name}</h1>
+					
+					{categoryPaths.length > 0 && (
+						<div className="stack-catgory" aria-label="カテゴリー">
+							{categoryPaths.map((path) => (
+								<p className="elem-category" key={path[path.length - 1].slug}>{path.map((category) => category.name).join(' > ')}</p>
+							))}
+						</div>
 					)}
+					
+					{priceRange && (
+						<div className="stack-price">
+							<h2 className="heading -typeD">価格帯</h2>
+							<p className="elem-priceRange">
+								{priceRange.min}円～{priceRange.max}円
+							</p>
+							<p className="elem-notes -typeA">※ユーザの投稿から算出</p>
+						</div>
+					)}
+					
+					<div className="stack-company">
+						<div className="cluster-distributor">
+							<h2 className="heading -typeD">販売会社</h2>
+							<div>{product.distributor}</div>
+						</div>					
+						{product.manufacturing && (
+							<div className="cluster-manufacturing">
+								<h2 className="heading -typeD">製造会社</h2>
+								<div>{product.manufacturing}</div>
+							</div>
+						)}
+					</div>
+					
 				</div>
-			)}
+			</section>
 
-			<div className="product-page__meta">
-				{categoryPaths.length > 0 && (
-					<nav className="product-page__breadcrumb" aria-label="カテゴリー">
-						{categoryPaths.map((path) => (
-							<p key={path[path.length - 1].slug}>{path.map((category) => category.name).join(' > ')}</p>
-						))}
-					</nav>
-				)}
-				<h1 className="page__title">{product.name}</h1>
-				{priceRange && (
-					<p className="product-page__price-range">
-						{priceRange.min}円～{priceRange.max}円
-					</p>
-				)}
-				<h2>販売会社</h2>
-				<div>{product.distributor}</div>
-				{product.manufacturing && (
-				  <>
-					<h2>製造会社</h2>
-					<div>{product.manufacturing}</div>
-				  </>
-				)}
-			</div>
-		</section>
 
 		  {!hasEvaluated && (
-			<SignedIn>
-			<div class="stack-valuation">
-			  <button type="button" onClick={handleEvaluateClick}>
-				この製品を評価する
-			  </button>
-			</div>
-			</SignedIn>
+				<SignedIn>
+					<div class="stack-valuation">
+						<button type="button" onClick={handleEvaluateClick}>この製品を評価する</button>
+					</div>
+				</SignedIn>
 		  )}
 		  <SignedOut>
-			<div class="stack-valuation">
-			<p>
-			  <a href="/login.html">ログイン</a>すると、この製品を評価できます。
-			</p>
-			</div>
+				<div class="stack-valuation">
+					<p><a href="/login.html" className="elem-link -typeA">ログイン</a>すると、この製品を評価できます。</p>
+				</div>
 		  </SignedOut>
 
-      <h2>みんなの評価</h2>
-      {isValuationsLoading && <p>読み込み中...</p>}
-      {valuationsError && <p>{valuationsError}</p>}
-      {!isValuationsLoading && (
-        <div className="valuation-tabs" role="tablist">
-          <div
-            role="tab"
-            tabIndex={0}
-            aria-selected={valuationTab === 'positive'}
-            className={`valuation-tabs__tab${valuationTab === 'positive' ? ' valuation-tabs__tab--active' : ''}`}
-            onClick={() => setValuationTab('positive')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                setValuationTab('positive')
-              }
-            }}
-          >
-            ポジティブ評価（{positiveValuations.length}）
-          </div>
-          <div
-            role="tab"
-            tabIndex={0}
-            aria-selected={valuationTab === 'negative'}
-            className={`valuation-tabs__tab${valuationTab === 'negative' ? ' valuation-tabs__tab--active' : ''}`}
-            onClick={() => setValuationTab('negative')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                setValuationTab('negative')
-              }
-            }}
-          >
-            ネガティブ評価（{negativeValuations.length}）
-          </div>
-        </div>
-      )}
-      {!isValuationsLoading && valuations.length === 0 && <p>まだ評価がありません。</p>}
-      {!isValuationsLoading && valuations.length > 0 && visibleValuations.length === 0 && (
-        <p>該当する評価はまだありません。</p>
-      )}
-      <ul className="valuation-list">
-        {visibleValuations.map((valuation) => (
-          <li key={valuation.id} className="valuation-list__item">
-            <p className="valuation-list__date">
-              投稿日: {formatJapaneseDate(valuation.createdAt)}
-              {valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
-            </p>
-            <p className="valuation-list__score">{valuation.scoreLabel}</p>
-            <p className="valuation-list__comment">{valuation.comment}</p>
-            {(valuation.purchasePrice || valuation.purchaseStore) && (
-              <p className="valuation-list__purchase">
-                {valuation.purchasePrice && <>購入金額: {valuation.purchasePrice}円 </>}
-                {valuation.purchaseStore && <>購入店舗: {valuation.purchaseStore}</>}
-              </p>
-            )}
-            {user && valuation.userId === user.id && (
-              <p className="valuation-list__actions">
-                <Link to={`/${user.id}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
-                <button type="button" onClick={() => handleDeleteClick(valuation.id)}>
-                  削除
-                </button>
-              </p>
-            )}
-            {user && valuation.userId !== user.id && (
-              <p className="valuation-list__actions">
-                <ValuationReportButton
-                  valuationId={valuation.id}
-                  reporterUserId={user.id}
-                  isReported={reportedIds.has(valuation.id)}
-                  onReported={markReported}
-                />
-              </p>
-            )}
-          </li>
-        ))}
-      </ul>
+
+			<section className="product-valuation">
+			
+				<h2 className="heading -typeC">みんなの評価</h2>
+				{isValuationsLoading && <p>読み込み中...</p>}
+				{valuationsError && <p>{valuationsError}</p>}
+				{!isValuationsLoading && (
+					<div className="stack-tabs" role="tablist">
+						<a
+							role="tab"
+							tabIndex={0}
+							aria-selected={valuationTab === 'positive'}
+							className={`item${valuationTab === 'positive' ? ' -active' : ''}`}
+							onClick={() => setValuationTab('positive')}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault()
+									setValuationTab('positive')
+								}
+							}}
+						>
+							ポジティブ評価（{positiveValuations.length}）
+						</a>
+						<a
+							role="tab"
+							tabIndex={0}
+							aria-selected={valuationTab === 'negative'}
+							className={`item${valuationTab === 'negative' ? ' -active' : ''}`}
+							onClick={() => setValuationTab('negative')}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault()
+									setValuationTab('negative')
+								}
+							}}
+						>
+							ネガティブ評価（{negativeValuations.length}）
+						</a>
+					</div>
+				)}
+				
+				{!isValuationsLoading && valuations.length === 0 && <p className="elem-noneTxt">まだ評価がありません。</p>}
+				{!isValuationsLoading && valuations.length > 0 && visibleValuations.length === 0 && ( <p className="elem-noneTxt">該当する評価はまだありません。</p> )}
+				
+				<ul className="stack-listValuation">
+					{visibleValuations.map((valuation) => (
+						<li key={valuation.id} className="item">
+							<div className="cluster-content">
+								<p className="elem-date">
+									投稿日: {formatJapaneseDate(valuation.createdAt)}
+									{valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
+								</p>
+								{(valuation.purchasePrice || valuation.purchaseStore) && (
+									<p className="elem-purchase">
+										{valuation.purchasePrice && <>購入金額: {valuation.purchasePrice}円　</>}
+										{valuation.purchaseStore && <>購入店舗: {valuation.purchaseStore}</>}
+									</p>
+								)}
+								<p className="elem-score">{valuation.scoreLabel}</p>
+								<p className="elem-comment">{valuation.comment}</p>
+							</div>
+							<div className="cluster-action">
+								{user && valuation.userId === user.id && (
+									<p className="elem-actions">
+										<Link to={`/${user.id}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
+										<button type="button" onClick={() => handleDeleteClick(valuation.id)}>削除</button>
+									</p>
+								)}
+								{user && valuation.userId !== user.id && (
+									<p className="elem-actions">
+										<ValuationReportButton
+											valuationId={valuation.id}
+											reporterUserId={user.id}
+											isReported={reportedIds.has(valuation.id)}
+											onReported={markReported}
+										/>
+									</p>
+								)}
+							</div>
+						</li>
+					))}
+				</ul>
+			</section>
+			
+			
     </div>
   )
 }

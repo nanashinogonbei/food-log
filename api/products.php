@@ -52,8 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
  * GET /api/products.php?categoryIds=1,9,39
  *   指定したカテゴリーID群のいずれかに category1 または category2 が一致する商品一覧を返す。
  *   (カテゴリーページで「すべて」タブ＝親＋子カテゴリー群のIDをまとめて渡す使い方を想定)
- * GET /api/products.php?recent=1
- *   最近追加された（承認済みの）商品を新しい順に最大5件返す（トップページの「新着」タブ用）。
+ * GET /api/products.php?recent=1[&categoryIds=1,9,39]
+ *   最近追加された（承認済みの）商品を新しい順に最大5件返す（トップページ／中カテゴリーページの「最近追加」の商品タブ用）。
+ *   categoryIds を付けると、そのカテゴリーに属する商品だけに絞り込む。
  * id, name, userId, recent, categoryIds はこの優先順位で1つだけ処理する。いずれも未指定の場合は空を返す。
  * ただし id 指定時は userId を同時に指定してもよい（上記の pending 取得の判定に使う）。
  */
@@ -181,16 +182,21 @@ function handleGetProductById(string $id, string $userId): void
  */
 function handleListRecentProducts(): void
 {
+    $categoryIds = parseCategoryIdsParam(trim((string) ($_GET['categoryIds'] ?? '')));
+
     try {
         $pdo = getPdoConnection();
 
-        $stmt = $pdo->query(
+        $categoryCondition = count($categoryIds) > 0 ? 'AND ' . buildCategoryFilterSql('products', $categoryIds) : '';
+
+        $stmt = $pdo->prepare(
             "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
              FROM products
-             WHERE status = 'approved'
+             WHERE status = 'approved' $categoryCondition
              ORDER BY created_at DESC, id DESC
              LIMIT " . RECENT_PRODUCTS_LIMIT
         );
+        $stmt->execute(count($categoryIds) > 0 ? array_merge($categoryIds, $categoryIds) : []);
         $products = $stmt->fetchAll();
 
         echo json_encode(attachPhotosAndFormat($pdo, $products), JSON_UNESCAPED_UNICODE);

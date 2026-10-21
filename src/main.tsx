@@ -4,7 +4,6 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import { ClerkProvider } from '@clerk/clerk-react'
 import { jaJP } from '@clerk/localizations'
 import './assets/css/common.css'
-import './assets/css/top.css'
 import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
 import RequireAdmin from './components/RequireAdmin.tsx'
@@ -61,7 +60,7 @@ function TopPage() {
 								<h2 class="heading">
 								  <Link to={`/category/${category.label}`}>{category.name}</Link>
 								</h2>
-								<ul className="list-link-typeA">
+								<ul className="stack-linkLink -typeA">
 								  {middleCategories.map((middleCategory) => (
 									<li className="item">
 										<Link

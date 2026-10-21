@@ -89,6 +89,30 @@ export function getSubCategories(categories: CategoryRecord[], middleSlug: strin
   return categories.filter((category) => category.parentSlug === middleSlug)
 }
 
+/**
+ * 指定したカテゴリー(slug)の配下（子・孫…すべての階層）のカテゴリーを返す。指定したカテゴリー自身は含まない。
+ * 中カテゴリーページで、小カテゴリーと細区分までまとめて商品を集めるために使う。
+ */
+export function getDescendantCategories(categories: CategoryRecord[], slug: string): CategoryRecord[] {
+  const result: CategoryRecord[] = []
+  const queue = [slug]
+  const visited = new Set<string>(queue)
+
+  while (queue.length > 0) {
+    const parentSlug = queue.shift() as string
+
+    for (const child of categories) {
+      if (child.parentSlug === parentSlug && !visited.has(child.slug)) {
+        visited.add(child.slug)
+        result.push(child)
+        queue.push(child.slug)
+      }
+    }
+  }
+
+  return result
+}
+
 /** slug からカテゴリー(大中小いずれも)を1件取得する */
 export function findCategoryBySlug(categories: CategoryRecord[], slug: string | undefined): CategoryRecord | undefined {
   return categories.find((category) => category.slug === slug)

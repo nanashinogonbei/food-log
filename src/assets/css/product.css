@@ -1,5 +1,0 @@
-/* 製品ページ (/product/[id])
-   <body id="PRODUCT"> のときだけ効くよう、セレクタは #PRODUCT から書く */
-
-#PRODUCT {
-}

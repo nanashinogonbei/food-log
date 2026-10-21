@@ -79,17 +79,21 @@ interface UseRecentProductsResult {
 }
 
 /**
- * 最近追加された商品（最大5件）を取得する（トップページの「新着」タブ用）。
+ * 最近追加された商品（最大5件）を取得する（「最近追加」の商品タブ用）。
+ * categoryIds を渡すと、そのカテゴリー群に属する商品に絞り込む（中身が変わったときだけ再取得する）。
  */
-export function useRecentProducts(): UseRecentProductsResult {
+export function useRecentProducts(categoryIds: string[] = []): UseRecentProductsResult {
   const [products, setProducts] = useState<ProductSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 配列の参照ではなく中身で再取得の要否を判定する
+  const categoryIdsKey = [...categoryIds].sort().join(',')
+
   useEffect(() => {
     let isMounted = true
 
-    fetchRecentProducts()
+    fetchRecentProducts(categoryIdsKey === '' ? [] : categoryIdsKey.split(','))
       .then((data) => {
         if (isMounted) {
           setProducts(data)
@@ -109,7 +113,7 @@ export function useRecentProducts(): UseRecentProductsResult {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [categoryIdsKey])
 
   return { products, isLoading, error }
 }

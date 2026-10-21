@@ -9,15 +9,21 @@ const PERIOD_OPTIONS: { value: RankingPeriod; label: string }[] = [
   { value: 'quarterly', label: '四半期' },
 ]
 
+interface FeaturedProductsRankingProps {
+	/** 指定すると、そのカテゴリー（ID群）に属する商品だけを対象にする（中カテゴリーページ用）。未指定なら全商品 */
+	categoryIds?: string[]
+}
+
 /**
- * トップページの「注目の商品」: 週間/月間/四半期で評価された数の多い商品を1〜5位で表示する。
+ * 「注目の商品」: 週間/月間/四半期で評価された数の多い商品を1〜5位で表示する。
+ * トップページでは全商品、中カテゴリーページではそのカテゴリー内の商品が対象。
  */
-function FeaturedProductsRanking() {
+function FeaturedProductsRanking({ categoryIds }: FeaturedProductsRankingProps = {}) {
 	const [period, setPeriod] = useState<RankingPeriod>('weekly')
-	const { ranking, isLoading, error } = useProductRanking(period)
+	const { ranking, isLoading, error } = useProductRanking(period, categoryIds)
 
 	return (
-		<div className="product-ranking">
+		<div className="product-pickup -ranking">
 			<h2 className="heading">注目の商品</h2>
 			<div className="inner">
 			
@@ -40,7 +46,7 @@ function FeaturedProductsRanking() {
 				{!isLoading && !error && ranking.length === 0 && <p className="elem-functionTxt">この期間に評価された商品はまだありません。</p>}
 
 				{!isLoading && !error && ranking.length > 0 && (
-					<ul className="list-ranking">
+					<ul className="stack-list">
 					  {ranking.map((item) => (
 						<li key={item.productId} className="item">
 						  <Link

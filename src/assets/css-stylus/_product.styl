@@ -1,0 +1,126 @@
+/*
+ *
+ * product style
+ * language: stylus
+ *
+ */
+@import "./common/_mixin"
+
+
+
+#PRODUCT
+
+	.product-info
+		display: flex
+		gap: 4%
+		
+		.cluster-img
+			width: 35%
+			
+			.stack-imgMain
+				height: 300px
+				text-align: center
+				img
+					max-height: 100%
+					object-fit: contain
+						
+			.stack-imgThumb
+				display: flex
+				flex-wrap: wrap
+				gap: 4%
+				margin-top: 10px
+				.item
+					width: 100%
+					max-width: calc( 96% / 3 )
+					text-align: center
+					img
+						max-height: 100px
+
+		.cluster-txt
+			width: 61%
+			
+			.stack-catgory
+				margin-bottom: 30px
+				font-size: 1.4rem
+				.elem-category + .elem-category
+					margin-top: 6px
+
+			.stack-price
+				margin-bottom: 30px
+				.elem-priceRange
+					margin-bottom: 8px
+					
+			.stack-company
+				display: grid
+				grid-template-columns: repeat(2, 1fr)
+				gap: 5%
+
+			
+	.stack-valuation
+		margin-top: 30px
+		padding: 13px 0 15px
+		text-align: center
+		background-color: #f5f5f5
+	
+	
+	.product-valuation
+		margin-top: 60px
+	
+		.stack-tabs
+			.item
+				padding: 15px
+				font-size: 1.6rem
+
+		.elem-noneTxt
+			padding: 50px
+			text-align: center
+
+		.stack-listValuation
+			.item
+				display: flex
+				align-items: center
+				margin-top: 15px
+				padding: 15px
+				border: 1px solid border-c
+				
+				.cluster-content
+					width: calc( 100% - 150px )
+					.elem-date
+						margin-bottom: 5px
+						color: #808080
+						font-size: 1.4rem
+					.elem-purchase
+						margin-bottom: 15px
+						color: #808080
+						font-size: 1.4rem
+					.elem-score
+						margin-bottom: 4px
+						font-size: 2.0rem
+						font-weight: bold
+					.elem-comment
+						line-height: 1.6
+						
+				.cluster-action
+					.elem-actions
+						//
+
+
+
+
+/*
+ *	width: ~768px
+ */
+
+@media (max-width: 768px)
+	// 
+
+
+
+
+
+/*
+ *	width: ~600px
+ */
+
+@media (max-width: 600px)
+	// 

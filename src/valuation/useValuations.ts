@@ -12,10 +12,13 @@ interface UseProductRankingResult {
  * 指定した期間（週間/月間/四半期）の評価数ランキング（最大5件）を取得する
  * （トップページの「注目の商品」用）。
  */
-export function useProductRanking(period: RankingPeriod): UseProductRankingResult {
+export function useProductRanking(period: RankingPeriod, categoryIds: string[] = []): UseProductRankingResult {
   const [ranking, setRanking] = useState<ProductRanking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // 配列の参照ではなく中身で再取得の要否を判定する
+  const categoryIdsKey = [...categoryIds].sort().join(',')
 
   useEffect(() => {
     let isMounted = true
@@ -23,7 +26,7 @@ export function useProductRanking(period: RankingPeriod): UseProductRankingResul
     setIsLoading(true)
     setError(null)
 
-    fetchProductRanking(period)
+    fetchProductRanking(period, categoryIdsKey === '' ? [] : categoryIdsKey.split(','))
       .then((data) => {
         if (isMounted) {
           setRanking(data)
@@ -43,7 +46,7 @@ export function useProductRanking(period: RankingPeriod): UseProductRankingResul
     return () => {
       isMounted = false
     }
-  }, [period])
+  }, [period, categoryIdsKey])
 
   return { ranking, isLoading, error }
 }
@@ -55,17 +58,21 @@ interface UseRecentValuationsResult {
 }
 
 /**
- * 最近投稿された評価（最大5件）を取得する（トップページの「評価」タブ用）。
+ * 最近投稿された評価（最大5件）を取得する（「最近追加」の評価タブ用）。
+ * categoryIds を渡すと、そのカテゴリー群に属する商品への評価に絞り込む（中身が変わったときだけ再取得する）。
  */
-export function useRecentValuations(): UseRecentValuationsResult {
+export function useRecentValuations(categoryIds: string[] = []): UseRecentValuationsResult {
   const [valuations, setValuations] = useState<ValuationSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 配列の参照ではなく中身で再取得の要否を判定する
+  const categoryIdsKey = [...categoryIds].sort().join(',')
+
   useEffect(() => {
     let isMounted = true
 
-    fetchRecentValuations()
+    fetchRecentValuations(categoryIdsKey === '' ? [] : categoryIdsKey.split(','))
       .then((data) => {
         if (isMounted) {
           setValuations(data)
@@ -85,7 +92,7 @@ export function useRecentValuations(): UseRecentValuationsResult {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [categoryIdsKey])
 
   return { valuations, isLoading, error }
 }

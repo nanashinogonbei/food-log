@@ -17,18 +17,20 @@ const PERIOD_OPTIONS = [{
   value: 'quarterly',
   label: '四半期'
 }];
-
 /**
- * トップページの「注目の商品」: 週間/月間/四半期で評価された数の多い商品を1〜5位で表示する。
+ * 「注目の商品」: 週間/月間/四半期で評価された数の多い商品を1〜5位で表示する。
+ * トップページでは全商品、中カテゴリーページではそのカテゴリー内の商品が対象。
  */
-function FeaturedProductsRanking() {
+function FeaturedProductsRanking({
+  categoryIds
+} = {}) {
   const [period, setPeriod] = (0, _react.useState)('weekly');
   const {
     ranking,
     isLoading,
     error
-  } = (0, _useValuations.useProductRanking)(period);
-  return <div className="product-ranking">
+  } = (0, _useValuations.useProductRanking)(period, categoryIds);
+  return <div className="product-pickup -ranking">
 			<h2 className="heading">注目の商品</h2>
 			<div className="inner">
 			
@@ -42,7 +44,7 @@ function FeaturedProductsRanking() {
 				{error && <p className="elem-functionTxt">{error}</p>}
 				{!isLoading && !error && ranking.length === 0 && <p className="elem-functionTxt">この期間に評価された商品はまだありません。</p>}
 
-				{!isLoading && !error && ranking.length > 0 && <ul className="list-ranking">
+				{!isLoading && !error && ranking.length > 0 && <ul className="stack-list">
 					  {ranking.map(item => <li key={item.productId} className="item">
 						  <_reactRouterDom.Link to={`/product/${item.productId}`} className="inner">
 							{item.productPhoto && <img src={`http://production-null.work/food-log${item.productPhoto}`} className="elem-img" alt={item.productName} />}

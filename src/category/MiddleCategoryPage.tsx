@@ -1,9 +1,15 @@
 import { Link, useParams } from 'react-router-dom'
 import { useCategories } from './useCategories.ts'
-import { findMainCategoryByLabel, findMiddleCategoryByLabel, getSubCategories } from './data.ts'
+import {
+  findMainCategoryByLabel,
+  findMiddleCategoryByLabel,
+  getDescendantCategories,
+  getSubCategories,
+} from './data.ts'
+import FeaturedProductsRanking from '../components/FeaturedProductsRanking.tsx'
+import RecentItems from '../components/RecentItems.tsx'
 import NotFoundPage from '../NotFoundPage.tsx'
 import { useBodyId } from '../components/useBodyId.ts'
-import '../assets/css/category-middle.css'
 
 function MiddleCategoryPage() {
   useBodyId('CATEGORY-MIDDLE')
@@ -30,24 +36,33 @@ function MiddleCategoryPage() {
 
   const subCategories = getSubCategories(categories, middleCategory.slug)
 
-  return (
-    <div className="page">
-      <p>
-        <Link to={`/category/${category.label}`}>{category.name}</Link> &gt; {middleCategory.name}
-      </p>
-      <h1 className="page__title">{middleCategory.name}</h1>
+  // 中カテゴリー自身と、その配下（小カテゴリー・細区分）すべてに属する商品を対象にする
+  const categoryIds = [middleCategory.slug, ...getDescendantCategories(categories, middleCategory.slug).map((c) => c.slug)]
 
-      <div className="card-grid">
-        {subCategories.map((subCategory) => (
-          <Link
-            key={subCategory.slug}
-            to={`/category/${category.label}/${middleCategory.label}/${subCategory.label}`}
-          >
-            {subCategory.name}
-          </Link>
-        ))}
-      </div>
-    </div>
+  return (
+ 	<div id="l-content">
+		<div id="l-breadcrumb">
+			<Link to="/">HOME</Link> &gt;{' '}
+			<Link to={`/category/${category.label}`}>{category.name}</Link> &gt;{' '}
+			{middleCategory.name}
+		</div>
+		<h1 className="heading -typeA">{middleCategory.name}</h1>
+		<ul className="stack-linkLink -typeA">
+			{subCategories.map((subCategory) => (
+			<li className="item">
+			<Link
+				key={subCategory.slug}
+				to={`/category/${category.label}/${middleCategory.label}/${subCategory.label}`}
+			>
+				{subCategory.name}
+			</Link>
+			</li>
+			))}
+		</ul>
+		{/* key: 別の中カテゴリーへ移動したときに、タブ選択や取得済みの表示をリセットして作り直す */}
+		<FeaturedProductsRanking key={`ranking-${middleCategory.slug}`} categoryIds={categoryIds} />
+		<RecentItems key={`recent-${middleCategory.slug}`} categoryIds={categoryIds} />
+	</div>
   )
 }
 

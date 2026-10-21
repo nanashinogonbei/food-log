@@ -94,8 +94,11 @@ export async function submitValuation(payload: ValuationPayload): Promise<Valuat
  * 指定した期間（週間/月間/四半期）に投稿された評価数の多い順に商品を最大5件取得する
  * （トップページの「注目の商品」ランキング用）。
  */
-export async function fetchProductRanking(period: RankingPeriod): Promise<ProductRanking[]> {
+export async function fetchProductRanking(period: RankingPeriod, categoryIds: string[] = []): Promise<ProductRanking[]> {
   const params = new URLSearchParams({ ranking: period })
+  if (categoryIds.length > 0) {
+    params.set('categoryIds', categoryIds.join(','))
+  }
 
   const response = await fetch(`${API_BASE_URL}/valuations.php?${params.toString()}`, {
     method: 'GET',
@@ -112,10 +115,11 @@ export async function fetchProductRanking(period: RankingPeriod): Promise<Produc
 }
 
 /**
- * 最近投稿された評価を新しい順に最大5件取得する（トップページの「評価」タブ用）。
+ * 最近投稿された評価を新しい順に最大5件取得する（「最近追加」の評価タブ用）。
+ * categoryIds を渡すと、そのカテゴリー群に属する商品への評価に絞り込む。
  */
-export function fetchRecentValuations(): Promise<ValuationSummary[]> {
-  return fetchValuations({ recent: true })
+export function fetchRecentValuations(categoryIds: string[] = []): Promise<ValuationSummary[]> {
+  return fetchValuations({ recent: true, categoryIds })
 }
 
 /**
@@ -136,10 +140,14 @@ async function fetchValuations(query: {
   userId?: string
   productId?: string
   recent?: boolean
+  categoryIds?: string[]
 }): Promise<ValuationSummary[]> {
   const params = new URLSearchParams()
   if (query.recent) {
     params.set('recent', '1')
+  }
+  if (query.categoryIds && query.categoryIds.length > 0) {
+    params.set('categoryIds', query.categoryIds.join(','))
   }
   if (query.userId) {
     params.set('userId', query.userId)

@@ -57,15 +57,16 @@ function respondError(int $status, string $message): never
 }
 
 /**
- * GET /api/valuations.php?ranking=weekly|monthly|quarterly
+ * GET /api/valuations.php?ranking=weekly|monthly|quarterly[&categoryIds=1,9,39]
  *   期間内（週間=直近7日/月間=直近1ヶ月/四半期=直近3ヶ月）に投稿された評価数の多い順に
- *   商品を最大5件返す（トップページの「注目の商品」ランキング用）。
+ *   商品を最大5件返す（トップページ／中カテゴリーページの「注目の商品」ランキング用）。
+ *   categoryIds を付けると、そのカテゴリーに属する商品だけを対象にする。
  * GET /api/valuations.php?userId=xxx
  *   指定ユーザーが投稿した評価一覧を返す（マイページの商品評価タブ用）。
  * GET /api/valuations.php?productId=1
  *   指定商品に投稿された評価一覧を返す（製品ページ用）。
- * GET /api/valuations.php?recent=1
- *   最近投稿された評価を新しい順に最大5件返す（トップページの「評価」タブ用）。
+ * GET /api/valuations.php?recent=1[&categoryIds=1,9,39]
+ *   最近投稿された評価を新しい順に最大5件返す（トップページ／中カテゴリーページの「最近追加」の評価タブ用）。
  * ranking, recent, userId+productId はこの優先順位で1つだけ処理する。いずれも未指定の場合は空配列を返す。
  */
 function handleListValuations(): void
@@ -73,12 +74,12 @@ function handleListValuations(): void
     $ranking = trim((string) ($_GET['ranking'] ?? ''));
 
     if ($ranking !== '') {
-        handleProductRanking($ranking);
+        handleProductRanking($ranking, parseCategoryIdsParam(trim((string) ($_GET['categoryIds'] ?? ''))));
         return;
     }
 
     if (($_GET['recent'] ?? '') === '1') {
-        handleRecentValuations();
+        handleRecentValuations(parseCategoryIdsParam(trim((string) ($_GET['categoryIds'] ?? ''))));
         return;
     }
 
@@ -188,23 +189,29 @@ function formatValuationRows(PDO $pdo, array $rows): array
 }
 
 /**
- * 最近投稿された評価を新しい順に最大 RECENT_VALUATIONS_LIMIT 件返す（トップページの「評価」タブ用）。
+ * 最近投稿された評価を新しい順に最大 RECENT_VALUATIONS_LIMIT 件返す（「最近追加」の評価タブ用）。
  * 承認済み(approved)の商品に対する評価のみを対象とする。
+ * $categoryIds が指定された場合は、そのカテゴリーに属する商品への評価に絞り込む。
+ *
+ * @param list<string> $categoryIds
  */
-function handleRecentValuations(): void
+function handleRecentValuations(array $categoryIds = []): void
 {
     try {
         $pdo = getPdoConnection();
 
-        $stmt = $pdo->query(
+        $categoryCondition = count($categoryIds) > 0 ? 'AND ' . buildCategoryFilterSql('p', $categoryIds) : '';
+
+        $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, v.user_id, v.score, v.comment,
                     v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN products p ON p.id = v.product_id
-             WHERE p.status = 'approved'
+             WHERE p.status = 'approved' $categoryCondition
              ORDER BY v.created_at DESC, v.id DESC
              LIMIT " . RECENT_VALUATIONS_LIMIT
         );
+        $stmt->execute(count($categoryIds) > 0 ? array_merge($categoryIds, $categoryIds) : []);
         $rows = $stmt->fetchAll();
 
         echo json_encode(formatValuationRows($pdo, $rows), JSON_UNESCAPED_UNICODE);
@@ -218,8 +225,11 @@ function handleRecentValuations(): void
  * 期間内に投稿された評価数の多い順に商品を最大5件返す（トップページのランキング用）。
  * period は 'weekly'（直近7日）/ 'monthly'（直近1ヶ月）/ 'quarterly'（直近3ヶ月）のいずれか。
  * 不正な period の場合は空配列を返す。
+ * $categoryIds が指定された場合は、そのカテゴリーに属する（承認待ちでない）商品だけを集計対象にする。
+ *
+ * @param list<string> $categoryIds
  */
-function handleProductRanking(string $period): void
+function handleProductRanking(string $period, array $categoryIds = []): void
 {
     $intervals = [
         'weekly' => '7 DAY',
@@ -236,14 +246,22 @@ function handleProductRanking(string $period): void
         $pdo = getPdoConnection();
 
         // $intervals はホワイトリストの固定値のみを埋め込むため、SQLインジェクションの心配はない。
-        $stmt = $pdo->query(
+        $hasCategoryFilter = count($categoryIds) > 0;
+        $categoryJoin = $hasCategoryFilter ? 'INNER JOIN products p ON p.id = v.product_id' : '';
+        $categoryCondition = $hasCategoryFilter
+            ? "AND p.status != 'pending' AND " . buildCategoryFilterSql('p', $categoryIds)
+            : '';
+
+        $stmt = $pdo->prepare(
             "SELECT v.product_id, COUNT(*) AS valuation_count
              FROM product_valuations v
-             WHERE v.created_at >= NOW() - INTERVAL {$intervals[$period]}
+             $categoryJoin
+             WHERE v.created_at >= NOW() - INTERVAL {$intervals[$period]} $categoryCondition
              GROUP BY v.product_id
              ORDER BY valuation_count DESC, v.product_id ASC
              LIMIT 5"
         );
+        $stmt->execute($hasCategoryFilter ? array_merge($categoryIds, $categoryIds) : []);
         $rankingRows = $stmt->fetchAll();
 
         if (count($rankingRows) === 0) {

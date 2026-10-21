@@ -4,21 +4,15 @@ function MyPage() {
   const { userId } = useParams<{ userId: string }>()
 
   return (
-    <div className="page">
-      <h1 className="page__title">マイページ</h1>
+    <div id="l-content">
+      <h1 className="heading -typeA">マイページ</h1>
       <p>
         ユーザーID: <strong>{userId}</strong>
       </p>
-
-      <nav className="mypage-tabs">
-        <NavLink to={`/${userId}/request`} className={({ isActive }) => (isActive ? 'active' : '')}>
-          商品申請
-        </NavLink>
-        <NavLink to={`/${userId}/valuation`} className={({ isActive }) => (isActive ? 'active' : '')}>
-          商品評価
-        </NavLink>
-      </nav>
-      {/* TODO: プロフィール情報や活動履歴などを表示 */}
+      <ul className="stack-linkLink -typeA">
+        <li className="item"><NavLink to={`/${userId}/request`} className={({ isActive }) => (isActive ? '-active' : '')}>商品申請</NavLink></li>
+        <li className="item"><NavLink to={`/${userId}/valuation`} className={({ isActive }) => (isActive ? '-active' : '')}>商品評価</NavLink></li>
+      </ul>
     </div>
   )
 }

@@ -56,11 +56,14 @@ export async function fetchProductsByCategoryIds(categoryIds: string[]): Promise
 }
 
 /**
- * 最近追加された商品を新しい順に最大5件取得する（トップページの「新着」タブ用）。
- * 承認済みの商品のみが返る。
+ * 最近追加された商品を新しい順に最大5件取得する（「最近追加」の商品タブ用）。
+ * 承認済みの商品のみが返る。categoryIds を渡すと、そのカテゴリー群に属する商品に絞り込む。
  */
-export async function fetchRecentProducts(): Promise<ProductSummary[]> {
+export async function fetchRecentProducts(categoryIds: string[] = []): Promise<ProductSummary[]> {
   const params = new URLSearchParams({ recent: '1' })
+  if (categoryIds.length > 0) {
+    params.set('categoryIds', categoryIds.join(','))
+  }
 
   const response = await fetch(`${API_BASE_URL}/products.php?${params.toString()}`, {
     method: 'GET',
