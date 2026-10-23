@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useUserProducts } from '../product/useProducts.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 // 承認待ち/却下のみバッジ表示する（承認済み(approved)は通常表示のため対象外）
 const STATUS_LABELS: Record<string, string> = {
@@ -12,6 +13,7 @@ const PAGE_SIZE = 10
 
 /** マイページの商品申請タブ: ログインユーザー自身が申請した商品の一覧を表示する */
 function RequestPage() {
+  useBodyId('MYPAGE')
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const { products, isLoading, error } = useUserProducts(userId)

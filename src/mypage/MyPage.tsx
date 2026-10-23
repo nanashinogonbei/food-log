@@ -1,6 +1,8 @@
 import { NavLink, useParams } from 'react-router-dom'
+import { useBodyId } from '../components/useBodyId.ts'
 
 function MyPage() {
+  useBodyId('MYPAGE')
   const { userId } = useParams<{ userId: string }>()
 
   return (

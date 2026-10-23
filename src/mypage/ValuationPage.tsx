@@ -4,11 +4,13 @@ import { useUser } from '@clerk/clerk-react'
 import { deleteValuation } from '../valuation/data.ts'
 import { useUserValuations } from '../valuation/useValuations.ts'
 import { formatJapaneseDate } from '../valuation/format.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 const PAGE_SIZE = 10
 
 /** マイページの商品評価タブ: ログインユーザー自身が投稿した評価の一覧を表示する */
 function ValuationPage() {
+  useBodyId('MYPAGE')
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const { user } = useUser()

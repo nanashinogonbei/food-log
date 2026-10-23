@@ -5,8 +5,10 @@ import { useCategories } from '../category/useCategories.ts'
 import { isCategoryPathComplete } from '../category/data.ts'
 import CategoryCascadeSelect from '../components/CategoryCascadeSelect.tsx'
 import { submitProductRequest } from '../product/data.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 function RequestPostPage() {
+  useBodyId('MYPAGE')
   const { userId } = useParams<{ userId: string }>()
   const { categories, isLoading: isCategoriesLoading, error: categoriesError } = useCategories()
 
@@ -87,96 +89,108 @@ function RequestPostPage() {
 
 
 			<section className="product-content">
-      {categoriesError && <p>{categoriesError}</p>}
-      {submitSuccess && (
-        <>
-          <p>商品を申請しました。ご協力ありがとうございます。</p>
-          {submittedProductId !== null && (
-            <p>
-              <Link to={`/${userId}/valuation/post?productId=${submittedProductId}`}>
-                この商品の評価を投稿する
-              </Link>
-            </p>
-          )}
-        </>
-      )}
-      {submitError && <p>{submitError}</p>}
+				{categoriesError && <p>{categoriesError}</p>}
+				{submitSuccess && (
+					<>
+						<p>商品を申請しました。ご協力ありがとうございます。</p>
+						{submittedProductId !== null && (
+							<p>
+								<Link to={`/${userId}/valuation/post?productId=${submittedProductId}`}>
+									この商品の評価を投稿する
+								</Link>
+							</p>
+						)}
+					</>
+				)}
+				{submitError && <p>{submitError}</p>}
 
-      {!submitSuccess && (
-      <form onSubmit={handleSubmit}>
-        <p className="elem-label"><label htmlFor="name">商品名【必須】</label></p>
-        <div className="elem-parts">
-					<input
-						id="name"
-						type="text"
-						value={name}
-						onChange={(event) => setName(event.target.value)}
-						required
-					/>
-				</div>
+				{!submitSuccess && (
+				<form onSubmit={handleSubmit}>
+					
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="name"><img className="icon-required" src="/assets/img/icon-required.png" />商品名</label></p>
+						<div className="elem-parts">
+							<input
+								id="name"
+								type="text"
+								value={name}
+								onChange={(event) => setName(event.target.value)}
+								required
+							/>
+						</div>
+					</div>
 
-        <label htmlFor="category1">カテゴリー1【必須】</label>
-        <br />
-        <CategoryCascadeSelect
-          idPrefix="category1"
-          categories={categories}
-          path={category1Path}
-          onChange={setCategory1Path}
-          disabled={isCategoriesLoading}
-        />
-        <br />
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="category1"><img className="icon-required" src="/assets/img/icon-required.png" />カテゴリー1</label></p>
+						<div className="elem-parts">
+							<CategoryCascadeSelect
+								idPrefix="category1"
+								categories={categories}
+								path={category1Path}
+								onChange={setCategory1Path}
+								disabled={isCategoriesLoading}
+							/>
+						</div>
+					</div>
 
-        <label htmlFor="category2">カテゴリー2</label>
-        <br />
-        <CategoryCascadeSelect
-          idPrefix="category2"
-          categories={categories}
-          path={category2Path}
-          onChange={setCategory2Path}
-          disabled={isCategoriesLoading}
-        />
-        <br />
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="category2">カテゴリー2</label></p>
+						<div className="elem-parts">
+							<CategoryCascadeSelect
+								idPrefix="category2"
+								categories={categories}
+								path={category2Path}
+								onChange={setCategory2Path}
+								disabled={isCategoriesLoading}
+							/>
+						</div>
+					</div>
 
-        <label htmlFor="distributor">販売会社【必須】</label>
-        <br />
-        <input
-          id="distributor"
-          type="text"
-          value={distributor}
-          onChange={(event) => setDistributor(event.target.value)}
-          required
-        />
-        <br />
-        <br />
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="distributor"><img className="icon-required" src="/assets/img/icon-required.png" />販売会社</label></p>
+						<div className="elem-parts">
+							<input
+								id="distributor"
+								type="text"
+								value={distributor}
+								onChange={(event) => setDistributor(event.target.value)}
+								required
+							/>
+						</div>
+					</div>
 
-        <label htmlFor="manufacturing">製造会社</label>
-        <br />
-        <input
-          id="manufacturing"
-          type="text"
-          value={manufacturing}
-          onChange={(event) => setManufacturing(event.target.value)}
-        />
-        <br />
-        <br />
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="manufacturing">製造会社</label></p>
+						<div className="elem-parts">
+							<input
+								id="manufacturing"
+								type="text"
+								value={manufacturing}
+								onChange={(event) => setManufacturing(event.target.value)}
+							/>
+						</div>
+					</div>
 
-        <label htmlFor="photo">商品写真（複数）【必須】</label>
-        <br />
-        <input id="photo" type="file" accept="image/*" multiple onChange={handlePhotoChange} required />
-        {photos.length > 0 && (
-          <ul>
-            {photos.map((photo) => (
-              <li key={`${photo.name}-${photo.lastModified}`}>{photo.name}</li>
-            ))}
-          </ul>
-        )}
-        <br />
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="photo">商品写真（複数）【必須】</label></p>
+						<div className="elem-parts">
+							<input id="photo" type="file" accept="image/*" multiple onChange={handlePhotoChange} required />
+							{photos.length > 0 && (
+								<ul>
+									{photos.map((photo) => (
+										<li key={`${photo.name}-${photo.lastModified}`}>{photo.name}</li>
+									))}
+								</ul>
+							)}
+						</div>
+					</div>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? '送信中...' : '申請する'}
-        </button>
-      </form>
-      )}
+					<button type="submit" disabled={isSubmitting}>
+						{isSubmitting ? '送信中...' : '申請する'}
+					</button>
+					
+				</form>
+				)}
 			</section>
 			
     </div>

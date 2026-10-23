@@ -8,6 +8,7 @@ import { submitValuation, VALUATION_SCORE_OPTIONS } from '../valuation/data.ts'
 import type { ValuationScore } from '../valuation/data.ts'
 import { useUserValuations } from '../valuation/useValuations.ts'
 import { toHalfWidthDigits } from '../valuation/format.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 const COMMENT_MIN_LENGTH = 10
 const COMMENT_MAX_LENGTH = 2000
@@ -16,6 +17,7 @@ const PURCHASE_STORE_MAX_LENGTH = 50
 const PRODUCT_NAME_MIN_LENGTH = 3
 
 function ValuationPostPage() {
+  useBodyId('MYPAGE')
   const { userId } = useParams<{ userId: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const preselectedProductId = searchParams.get('productId')

@@ -204,20 +204,48 @@
 		color: #808080
 		font-size: 1.4rem
 		
+.elem-link
+	&.-typeA
+		display: block
+		padding: 0 0 0 20px
+		background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 0 4px / 14px auto
+
+
 
 /********************
 * form
 ********************/
 
-input
+input[type="text"]
 	padding: 10px
-	border: none
+	border: 1px solid #ccc
 	border-radius: 6px
-	background-color: #EBEBEB
-	&:focus
+	&:focus, &:focus-visible
 		outline: none
 		box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.1)
 		background-color: #E6F0FA
+
+select
+	padding: 10px
+	border: 1px solid #ccc
+	border-radius: 6px	
+
+
+form
+
+	.stack-formRow
+		margin-bottom: 30px
+
+	.elem-label
+		margin-bottom: 10px
+		font-weight: bold
+
+	.icon-required
+		width: 40px
+		margin-right: 8px
+		vertical-align: -3px
+
+
 
 
 /*

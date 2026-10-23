@@ -7,101 +7,113 @@
 @import "./common/_mixin"
 
 
-.heading .count
-	font-size: 1.6rem
-	font-weight: 400
 
-.product-content
-	margin-top: 60px
 
-.list-request
-	display: flex
-	flex-wrap: wrap
-	gap: 20px
-	.item
+#MYPAGE
+
+	.heading .count
+		font-size: 1.6rem
+		font-weight: 400
+
+	.product-content
+		margin-top: 60px
+
+	.list-request
 		display: flex
-		position: relative
-		align-items: center
-		gap: 10px
-		width: calc( (100% - 40px) / 3 )
-		padding: 15px
-		
-		&.-approved
-			border: 1px solid #DBDBDB
-		&.-pending
-			background-color: #F0F0F0
-		
-		img
-			max-width: 80px
-		
-		.cluster-txt
-			line-height: 1.4
-			.name
-				margin-bottom: 6px
-				line-height: 1.4
-				font-weight: bold
-			.distributor
-				font-size: 1.4rem
-			.manufacturing
-				margin-top: 6px
-				font-size: 1.4rem
-			.label
-				display: block
-				font-size: 1.2rem
-			.status
-				position: absolute
-				top: 0
-				right: 0
-				padding: 3px 7px 4px
-				font-size: 1.2rem
-				font-weight: bold
-				background-color: #DBDBDB
-
-
-
-.product-listValuation
-	display: flex
-	flex-wrap: wrap
-	gap: 20px
-	.item
-		position: relative
-		width: calc( (100% - 40px) / 3 )
-		padding: 15px 15px 40px
-		border: 1px solid border-c
-		.elem-img
-			height: 150px
-			margin: 0 auto 15px
-			text-align: center
+		flex-wrap: wrap
+		gap: 20px
+		.item
+			display: flex
+			position: relative
+			align-items: center
+			gap: 10px
+			width: calc( (100% - 40px) / 3 )
+			padding: 15px
+			
+			&.-approved
+				border: 1px solid #DBDBDB
+			&.-pending
+				background-color: #F0F0F0
+			
 			img
-				object-fit: contain
-				max-height: 100%
-		.elem-name
-			margin-bottom: 15px
-			font-weight: bold
-		.elem-date
-			font-size: 1.4rem
-		.elem-price
-			margin-top: 5px
-			font-size: 1.4rem
-		.elem-store
-			margin-top: 5px
-			font-size: 1.4rem
-		.elem-score
-			margin-top: 15px
-			font-size: 2.0rem
-			font-weight: bold
-		.elem-comment
-			margin-top: 3px
-			line-height: 1.4
-		.elem-actions
-			display: grid
-			grid-template-columns: repeat(2, 1fr)
-			position: absolute
-			bottom: 0
-			left: 0
-			width: 100%
+				max-width: 80px
+			
+			.cluster-txt
+				line-height: 1.4
+				.name
+					margin-bottom: 6px
+					line-height: 1.4
+					font-weight: bold
+				.distributor
+					font-size: 1.4rem
+				.manufacturing
+					margin-top: 6px
+					font-size: 1.4rem
+				.label
+					display: block
+					font-size: 1.2rem
+				.status
+					position: absolute
+					top: 0
+					right: 0
+					padding: 3px 7px 4px
+					font-size: 1.2rem
+					font-weight: bold
+					background-color: #DBDBDB
 
 
+
+	.product-listValuation
+		display: flex
+		flex-wrap: wrap
+		gap: 20px
+		.item
+			position: relative
+			width: calc( (100% - 40px) / 3 )
+			padding: 15px 15px 40px
+			border: 1px solid border-c
+			.elem-img
+				height: 150px
+				margin: 0 auto 15px
+				text-align: center
+				img
+					object-fit: contain
+					max-height: 100%
+			.elem-name
+				margin-bottom: 15px
+				font-weight: bold
+			.elem-date
+				font-size: 1.4rem
+			.elem-price
+				margin-top: 5px
+				font-size: 1.4rem
+			.elem-store
+				margin-top: 5px
+				font-size: 1.4rem
+			.elem-score
+				margin-top: 15px
+				font-size: 2.0rem
+				font-weight: bold
+			.elem-comment
+				margin-top: 3px
+				line-height: 1.4
+			.elem-actions
+				display: grid
+				grid-template-columns: repeat(2, 1fr)
+				position: absolute
+				bottom: 0
+				left: 0
+				width: 100%
+
+
+	.stack-formRow
+		.elem-parts
+			.category-cascade
+				select + select
+					margin-left: 10px
+					
+	input[type="text"]
+		min-width: 20em
 
 
 
