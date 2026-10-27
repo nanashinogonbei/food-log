@@ -41,7 +41,8 @@
 .list-autocomplete
 	overflow: hidden
 	position: absolute
-	top: calc( 100% + 10px )
+	z-index: 10
+	top: 68px
 	width: 100%
 	border-radius: 10px
 	box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.2)
@@ -89,13 +90,15 @@
 * box
 ********************/
 
-.col2-box
+.stack-selectUI
 	display: flex
-	justify-content: space-between
-
-.col3-box
-	display: flex
-	justify-content: space-between
+	gap: 20px
+	label
+		padding: 15px 20px
+		border: 1px solid #ccc
+		border-radius: 8px
+	label:has(input[type="radio"]:checked)
+		background-color: #E6F0FA
 
 
 .stack-tabs
@@ -163,6 +166,11 @@
 					font-size: 1.2rem
 					color: #888
 
+.stack-button
+	padding: 20px
+	text-align: center
+	background-color: #f0f0f0
+
 
 
 /********************
@@ -174,15 +182,17 @@
 	cursor: pointer
 	&.-typeA
 		top: 0
+		min-width: 250px
 		padding: 18px 30px 20px
-		border: 1px solid border-c
-		box-shadow: 0 2px 0 border-c
+		border: 1px solid #ccc
+		box-shadow: 0 2px 0 #ccc
 		border-radius: 6px
 		background: linear-gradient(0deg, #F0F0F0 0%, #fff 100%)
 		&:hover
 			top: 1px
 			border-color: border-hc
 			box-shadow: 0 1px 0 border-hc
+			color: #FF8233
 			background: bg-hc
 
 
@@ -191,24 +201,25 @@
 * txt
 ********************/
 
+.elem-nomalTxt
+	line-height: 1.6
+
 .elem-link
 	&.-typeA
+		padding: 0 0 0 20px
 		color: #297ACC
 		text-decoration: underline
+		background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 0 8px / 14px auto
 		&:hover
 			color: main-c
 			text-decoration: none
 
 .elem-notes
 	&.-typeA
+		margin-top: 8px
 		color: #808080
 		font-size: 1.4rem
-		
-.elem-link
-	&.-typeA
-		display: block
-		padding: 0 0 0 20px
-		background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 0 4px / 14px auto
+
 
 
 
@@ -216,20 +227,29 @@
 * form
 ********************/
 
-input[type="text"]
-	padding: 10px
+input[type="text"],
+textarea
+	width: 100%
+	padding: 15px
 	border: 1px solid #ccc
 	border-radius: 6px
+	&::placeholder
+		color: #999
 	&:focus, &:focus-visible
 		outline: none
 		box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.1)
 		background-color: #E6F0FA
 
+input[type="radio"]
+	width: 24px
+	height: 24px
+	margin-right: 6px
+	vertical-align: -6px
+
 select
 	padding: 10px
 	border: 1px solid #ccc
 	border-radius: 6px	
-
 
 form
 
@@ -244,6 +264,10 @@ form
 		width: 40px
 		margin-right: 8px
 		vertical-align: -3px
+
+	.input-10em
+		width: 10em
+		margin-right: 10px
 
 
 

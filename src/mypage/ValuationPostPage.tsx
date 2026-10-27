@@ -194,141 +194,147 @@ function ValuationPostPage() {
   }
 
   return (
-    <div className="page">
-      <h1 className="page__title">商品評価 投稿</h1>
+    <div id="l-content">
+			<h1 className="heading -typeA">商品評価 投稿</h1>
 
-      <p>
-        <Link to={`/${userId}/valuation`}>評価一覧に戻る</Link>
-      </p>
+      <p><Link to={`/${userId}/valuation`} className="elem-link -typeA">評価一覧に戻る</Link></p>
 
-      {isLoadingPreselected && <p>選択中の商品を読み込んでいます...</p>}
-      {preselectedError && <p>{preselectedError}</p>}
-      {submitSuccessAction === 'created' && <p>評価を投稿しました。ご協力ありがとうございます。</p>}
-      {submitSuccessAction === 'updated' && <p>評価を修正しました。ご協力ありがとうございます。</p>}
-      {submitError && <p>{submitError}</p>}
+			<section className="product-content">
+				{isLoadingPreselected && <p>選択中の商品を読み込んでいます...</p>}
+				{preselectedError && <p>{preselectedError}</p>}
+				{submitSuccessAction === 'created' && <p>評価を投稿しました。ご協力ありがとうございます。</p>}
+				{submitSuccessAction === 'updated' && <p>評価を修正しました。ご協力ありがとうございます。</p>}
+				{submitError && <p>{submitError}</p>}
 
-      {!submitSuccessAction && (
-      <form className="valuation-form" onSubmit={handleSubmit}>
-        <div className="valuation-form__field autocomplete">
-          <label htmlFor="productName">商品名【必須】</label>
-          <input
-            id="productName"
-            type="text"
-            value={productName}
-            onChange={handleProductNameChange}
-            autoComplete="off"
-            required
-          />
-          <p className="field-hint">3文字以上入力すると候補が表示されます。</p>
+				{!submitSuccessAction && (
+				<form className="valuation-form" onSubmit={handleSubmit}>
+				
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="productName"><img className="icon-required" src="/assets/img/icon-required.png" />商品名</label></p>
+						<div className="elem-parts">
+							<input
+								id="productName"
+								type="text"
+								value={productName}
+								onChange={handleProductNameChange}
+								autoComplete="off"
+								required
+							/>
+							<p className="elem-notes -typeA">3文字以上入力すると候補が表示されます。</p>
+							{selectedProduct && isProductConfirmed && (
+								<div className="stack-selectedProduct">
+									{selectedProduct.photos[0] && <img src={`http://production-null.work/food-log${selectedProduct.photos[0]}`} alt={selectedProduct.name} />}
+									<span>
+										「{selectedProduct.name}
+										{selectedProduct.status === 'pending' && <>（保留中）</>}」を選択中
+									</span>
+									{isEditingExisting && (
+										<p className="elem-alert">（この商品はすでに評価済みです。内容を修正して再投稿できます。）</p>
+									)}
+								</div>
+							)}
+							{showCandidateList && (
+								<>
+									{isSearching && <p className="field-hint">検索中...</p>}
+									{!isSearching && candidates.length === 0 && (
+										<p className="field-hint">一致する商品が見つかりません。</p>
+									)}
+									{candidates.length > 0 && (
+										<ul className="list-autocomplete">
+											{candidates.map((candidate) => (
+												<li
+													key={candidate.id}
+													className="item"
+													onClick={() => handleSelectCandidate(candidate)}
+												>
+													{candidate.photos[0] && <img src={`http://production-null.work/food-log${candidate.photos[0]}`} alt={candidate.name} />}
+													<span className="name">
+														{candidate.name}
+														{candidate.status === 'pending' && <>（保留中）</>}
+													</span>
+												</li>
+											))}
+										</ul>
+									)}
+								</>
+							)}
+						</div>
+					</div>
 
-          {selectedProduct && isProductConfirmed && (
-            <div className="selected-product">
-              {selectedProduct.photos[0] && <img src={`http://production-null.work/food-log${selectedProduct.photos[0]}`} alt={selectedProduct.name} />}
-              <span>
-                「{selectedProduct.name}
-                {selectedProduct.status === 'pending' && <>（保留中）</>}」を選択中
-              </span>
-              {isEditingExisting && (
-                <p className="field-hint">
-                  この商品はすでに評価済みです。内容を修正して再投稿できます。
-                </p>
-              )}
-            </div>
-          )}
+					<div className="stack-formRow">
+						<p className="elem-label"><img className="icon-required" src="/assets/img/icon-required.png" />評価</p>
+						<div className="elem-parts stack-selectUI">
+							{VALUATION_SCORE_OPTIONS.map((option) => (
+								<label key={option.value}>
+									<input
+										type="radio"
+										name="score"
+										value={option.value}
+										checked={score === option.value}
+										onChange={() => setScore(option.value)}
+										required
+									/>
+									{option.label}
+								</label>
+							))}
+						</div>
+					</div>
 
-          {showCandidateList && (
-            <>
-              {isSearching && <p className="field-hint">検索中...</p>}
-              {!isSearching && candidates.length === 0 && (
-                <p className="field-hint">一致する商品が見つかりません。</p>
-              )}
-              {candidates.length > 0 && (
-                <ul className="autocomplete__list">
-                  {candidates.map((candidate) => (
-                    <li
-                      key={candidate.id}
-                      className="autocomplete__item"
-                      onClick={() => handleSelectCandidate(candidate)}
-                    >
-                      {candidate.photos[0] && <img src={`http://production-null.work/food-log${candidate.photos[0]}`} alt={candidate.name} />}
-                      <span className="autocomplete__item-name">
-                        {candidate.name}
-                        {candidate.status === 'pending' && <>（保留中）</>}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          )}
-        </div>
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="purchasePrice">購入金額</label></p>
+						<div className="elem-parts">
+							<input
+								id="purchasePrice"
+								className="input-10em"
+								type="text"
+								inputMode="numeric"
+								value={purchasePrice}
+								onChange={handlePurchasePriceChange}
+								maxLength={PURCHASE_PRICE_MAX_LENGTH}
+							/>
+							円
+							<p className="elem-notes -typeA">数字{PURCHASE_PRICE_MAX_LENGTH}桁以内（全角数字は自動で半角に変換されます）</p>
+						</div>
+					</div>
 
-        <div className="valuation-form__field">
-          <span>評価【必須】</span>
-          <div className="score-options">
-            {VALUATION_SCORE_OPTIONS.map((option) => (
-              <label key={option.value}>
-                <input
-                  type="radio"
-                  name="score"
-                  value={option.value}
-                  checked={score === option.value}
-                  onChange={() => setScore(option.value)}
-                  required
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-        </div>
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="purchaseStore">購入場所</label></p>
+						<div className="elem-parts">
+							<input
+								id="purchaseStore"
+								type="text"
+								value={purchaseStore}
+								onChange={(event) => setPurchaseStore(event.target.value)}
+								maxLength={PURCHASE_STORE_MAX_LENGTH}
+								placeholder="例）◯×マート 東京駅店、東京都渋谷区、ECサイト名など"
+							/>
+						</div>
+					</div>
 
-        <div className="valuation-form__field">
-          <label htmlFor="purchasePrice">購入金額</label>
-		  <div>
-			  <input
-				id="purchasePrice"
-				type="text"
-				inputMode="numeric"
-				value={purchasePrice}
-				onChange={handlePurchasePriceChange}
-				maxLength={PURCHASE_PRICE_MAX_LENGTH}
-			  />
-			  円
-		  </div>
-          <p className="field-hint">数字{PURCHASE_PRICE_MAX_LENGTH}桁以内（全角数字は自動で半角に変換されます）</p>
-        </div>
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="comment">コメント【必須】</label></p>
+						<div className="elem-parts">
+							<textarea
+								id="comment"
+								value={comment}
+								onChange={(event) => setComment(event.target.value)}
+								rows={4}
+								required
+							/>
+							<p className="elem-notes -typeA">{commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）</p>
+						</div>
+					</div>
 
-        <div className="valuation-form__field">
-          <label htmlFor="purchaseStore">購入場所</label>
-          <input
-            id="purchaseStore"
-            type="text"
-            value={purchaseStore}
-            onChange={(event) => setPurchaseStore(event.target.value)}
-            maxLength={PURCHASE_STORE_MAX_LENGTH}
-			placeholder="例）成城石井 グランゲート東京駅店 or 東京都渋谷区"
-          />
-        </div>
-
-        <div className="valuation-form__field">
-          <label htmlFor="comment">コメント【必須】</label>
-          <textarea
-            id="comment"
-            value={comment}
-            onChange={(event) => setComment(event.target.value)}
-            rows={6}
-            required
-          />
-          <p className="field-hint">
-            {commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）
-          </p>
-        </div>
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? '送信中...' : isEditingExisting ? '評価を修正する' : '評価を投稿する'}
-        </button>
-      </form>
-      )}
+					<div className="stack-button">
+						<button type="submit" className="elem-button -typeA" disabled={isSubmitting}>
+							{isSubmitting ? '送信中...' : isEditingExisting ? '評価を修正する' : '評価を投稿する'}
+						</button>
+					</div>
+					
+				</form>
+				)}
+				
+			</section>
 
     </div>
   )
