@@ -175,8 +175,15 @@ function RequestPostPage() {
 
   return (
     <div id="l-content">
+      <div id="l-breadcrumb">
+        <Link to="/">HOME</Link> &gt;{' '}
+        <Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
+        <Link to={`/${userId}/request`}>商品申請</Link> &gt;{' '}
+        商品申請 投稿
+      </div>
+
       <h1 className="heading -typeA">商品申請 投稿</h1>
-      <p><Link to={`/${userId}/request`} className="elem-link -typeA">申請一覧に戻る</Link></p>
+      <p><Link to={`/${userId}/request`} className="elem-link -typeB">申請一覧に戻る</Link></p>
 
 
 			<section className="product-content">
@@ -197,7 +204,7 @@ function RequestPostPage() {
 				{submitError && <p>{submitError}</p>}
 
 				{!submitSuccess && (
-				<form onSubmit={handleSubmit}>
+				<form className="product-form" onSubmit={handleSubmit}>
 					
 					<div className="stack-formRow">
 						<p className="elem-label"><label htmlFor="name"><img className="icon-required" src="/assets/img/icon-required.png" />商品名</label></p>

@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import { useBodyId } from '../components/useBodyId.ts'
 
 /**
  * 管理者専用ページ (/admin)
@@ -6,19 +7,19 @@ import { Link } from 'react-router-dom'
  * ユーザーのみ表示される。アクセス制御自体は RequireAdmin コンポーネント側で行っている。
  */
 function AdminPage() {
+  useBodyId('ADMIN')
   return (
-    <div className="page">
-      <h1 className="page__title">管理者ページ</h1>
-      <ul>
-        <li>
-          <Link to="/admin/product-approval">商品承認 管理</Link>
-        </li>
-        <li>
-          <Link to="/admin/product">商品 管理</Link>
-        </li>
-        <li>
-          <Link to="/admin/report">通報 管理</Link>
-        </li>
+    <div id="l-content">
+      <div id="l-breadcrumb">
+        <Link to="/">HOME</Link> &gt;{' '}
+        管理者ページ
+      </div>
+
+      <h1 className="heading -typeA">管理者ページ</h1>
+      <ul className="stack-linkLink -typeA">
+        <li className="item"><NavLink to="/admin/product-approval" className={({ isActive }) => (isActive ? '-active' : '')}>商品承認 管理</NavLink></li>
+        <li className="item"><NavLink to="/admin/product" className={({ isActive }) => (isActive ? '-active' : '')}>商品 管理</NavLink></li>
+        <li className="item"><NavLink to="/admin/report" className={({ isActive }) => (isActive ? '-active' : '')}>通報 管理</NavLink></li>
       </ul>
     </div>
   )

@@ -195,9 +195,16 @@ function ValuationPostPage() {
 
   return (
     <div id="l-content">
+			<div id="l-breadcrumb">
+				<Link to="/">HOME</Link> &gt;{' '}
+				<Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
+				<Link to={`/${userId}/valuation`}>商品評価</Link> &gt;{' '}
+				商品評価 投稿
+			</div>
+
 			<h1 className="heading -typeA">商品評価 投稿</h1>
 
-      <p><Link to={`/${userId}/valuation`} className="elem-link -typeA">評価一覧に戻る</Link></p>
+      <p><Link to={`/${userId}/valuation`} className="elem-link -typeB">評価一覧に戻る</Link></p>
 
 			<section className="product-content">
 				{isLoadingPreselected && <p>選択中の商品を読み込んでいます...</p>}
@@ -207,7 +214,7 @@ function ValuationPostPage() {
 				{submitError && <p>{submitError}</p>}
 
 				{!submitSuccessAction && (
-				<form className="valuation-form" onSubmit={handleSubmit}>
+				<form className="product-form" onSubmit={handleSubmit}>
 				
 					<div className="stack-formRow">
 						<p className="elem-label"><label htmlFor="productName"><img className="icon-required" src="/assets/img/icon-required.png" />商品名</label></p>

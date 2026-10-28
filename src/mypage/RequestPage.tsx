@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUserProducts } from '../product/useProducts.ts'
 import { useBodyId } from '../components/useBodyId.ts'
 
@@ -32,6 +32,12 @@ function RequestPage() {
 
   return (
 	<div id="l-content">
+		<div id="l-breadcrumb">
+			<Link to="/">HOME</Link> &gt;{' '}
+			<Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
+			商品申請
+		</div>
+
 		<h1 className="heading -typeA">商品申請</h1>
 		<button type="button" className="elem-button -typeA" onClick={handlePostClick}>商品を申請する</button>
 
@@ -54,7 +60,7 @@ function RequestPage() {
 					<figure><img src={`http://production-null.work/food-log${product.photos[0]}`} alt={product.name} /></figure>
 				  )}
 				  <div className="cluster-txt">
-					<p className="name">{product.name}</p>
+					<p className="name"><Link to={`/product/${product.id}`} className="elem-link -typeA">{product.name}</Link></p>
 					<p className="distributor"><span className="label">販売会社</span>{product.distributor}</p>
 						{product.manufacturing && (
 					<p className="manufacturing"><span className="label">製造会社</span>{product.manufacturing}</p>

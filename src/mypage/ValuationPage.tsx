@@ -24,6 +24,10 @@ function ValuationPage() {
     navigate(`/${userId}/valuation/post`)
   }
 
+  const handleEditClick = (productId: number) => {
+    navigate(`/${userId}/valuation/post?productId=${productId}`)
+  }
+
   const handleShowMoreClick = () => {
     setVisibleCount((count) => count + PAGE_SIZE)
   }
@@ -45,6 +49,12 @@ function ValuationPage() {
 
   return (
     <div id="l-content">
+      <div id="l-breadcrumb">
+        <Link to="/">HOME</Link> &gt;{' '}
+        <Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
+        商品評価
+      </div>
+
       <h1 className="heading -typeA">商品評価</h1>
       <button type="button" className="elem-button -typeA" onClick={handlePostClick}>商品を評価する</button>
 
@@ -78,7 +88,9 @@ function ValuationPage() {
 							<p className="elem-comment">{valuation.comment}</p>
 							{user && valuation.userId === user.id && (
 								<p className="elem-actions">
-									<Link to={`/${user.id}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
+									<button type="button" onClick={() => handleEditClick(valuation.productId)}>
+										編集
+									</button>{' '}
 									<button type="button" onClick={() => handleDeleteClick(valuation.id)}>
 										削除
 									</button>

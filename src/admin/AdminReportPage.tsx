@@ -4,6 +4,7 @@ import { useUser } from '@clerk/clerk-react'
 import { formatJapaneseDate } from '../valuation/format.ts'
 import { fetchManagedReports, updateReportStatus } from './reportManage.ts'
 import type { ManagedReport, ReportStatus } from './reportManage.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 const STATUS_LABELS: Record<ReportStatus, string> = {
   pending: '有効',
@@ -17,6 +18,7 @@ const STATUS_LABELS: Record<ReportStatus, string> = {
  * 誤通報などは「棄却」でカウント対象から外せる（3人未満に戻れば投稿制限も自動で解除される）。
  */
 function AdminReportPage() {
+  useBodyId('ADMIN')
   const { user } = useUser()
   const adminUserId = user?.id
 
@@ -84,34 +86,44 @@ function AdminReportPage() {
   const visibleReports = showDismissed ? reports : reports.filter((report) => report.status === 'pending')
 
   return (
-    <div className="page">
-      <h1 className="page__title">通報 管理</h1>
+    <div id="l-content">
+      <div id="l-breadcrumb">
+        <Link to="/">HOME</Link> &gt;{' '}
+        <Link to="/admin">管理者ページ</Link> &gt;{' '}
+        通報 管理
+      </div>
 
-      <p>
-        商品評価への通報の一覧です。有効な通報を{threshold}人以上から受けたアカウントは、
-        商品申請・商品評価を投稿できなくなります。
-      </p>
+      <h1 className="heading -typeA">通報 管理</h1>
 
-      <p>
-        <label>
-          <input
-            type="checkbox"
-            checked={showDismissed}
-            onChange={(event) => setShowDismissed(event.target.checked)}
-          />{' '}
-          棄却済みの通報も表示する
-        </label>
-      </p>
+      <section className="product-content">
+        <p>
+          商品評価への通報の一覧です。有効な通報を{threshold}人以上から受けたアカウントは、
+          商品申請・商品評価を投稿できなくなります。
+        </p>
 
-      {isLoading && <p>読み込み中...</p>}
-      {error && <p>{error}</p>}
-      {updateError && <p>{updateError}</p>}
-      {!isLoading && !error && (
+        <p>
+          <label>
+            <input
+              type="checkbox"
+              checked={showDismissed}
+              onChange={(event) => setShowDismissed(event.target.checked)}
+            />{' '}
+            棄却済みの通報も表示する
+          </label>
+        </p>
+
+        <h2 className="heading -typeB">
+          通報一覧
+          {!isLoading && !error && (
+            <span className="count">（有効 {pendingCount}件 / 表示中 {visibleReports.length}件）</span>
+          )}
+        </h2>
+        {isLoading && <p>読み込み中...</p>}
+        {error && <p>{error}</p>}
+        {updateError && <p>{updateError}</p>}
+        {!isLoading && !error && visibleReports.length === 0 && <p>該当する通報はありません。</p>}
+        {!isLoading && !error && (
         <>
-          <p>
-            有効な通報 {pendingCount}件 / 表示中 {visibleReports.length}件
-          </p>
-          {visibleReports.length === 0 && <p>該当する通報はありません。</p>}
 
           <ul className="admin-product-list">
             {visibleReports.map((report) => (
@@ -174,7 +186,8 @@ function AdminReportPage() {
             ))}
           </ul>
         </>
-      )}
+        )}
+      </section>
     </div>
   )
 }

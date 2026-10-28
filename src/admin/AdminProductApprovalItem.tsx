@@ -123,139 +123,151 @@ function AdminProductApprovalItem({ product, categories, categoriesLoading, admi
   const statusLabel = STATUS_LABELS[product.status] ?? product.status
 
   return (
-    <li className="admin-product-list__item">
-      <p className="admin-product-list__name">
-        {product.name}
-        <span className={`product-list__status product-list__status--${product.status}`}>{statusLabel}</span>
-      </p>
-      <p className="admin-product-list__meta">
-        申請者User ID: {product.requestedBy} / 申請日: {product.createdAt}
-      </p>
-      <p className="admin-product-list__meta">
-        販売会社: {product.distributor}
-        {product.manufacturing && <> / 製造会社: {product.manufacturing}</>}
-      </p>
+    <li className="item">
+			<div className="inner">
+				<p className="elem-name">
+					{product.name}
+					<span className={`elem-status -${product.status}`}>（{statusLabel}）</span>
+				</p>
+				<p className="elem-metaUser">
+					申請者: {product.requestedBy} / 申請日: {product.createdAt}
+				</p>
+				<p className="elem-metaCompany">
+					販売会社: {product.distributor}
+					{product.manufacturing && <> / 製造会社: {product.manufacturing}</>}
+				</p>
+				{product.photos.length > 0 && (
+					<>
+						{photoError && <p>{photoError}</p>}
+						<ul className="stack-photos">
+							{product.photos.map((photo) => (
+								<li key={photo.id} className="item">
+									<img src={`http://production-null.work/food-log${photo.url}`} alt={product.name} />
+									<button
+										type="button"
+										className="button-delete"
+										onClick={() => void handleDeletePhoto(photo.id)}
+										disabled={deletingPhotoId === photo.id}
+										aria-label="この写真を削除"
+										title="この写真を削除"
+									>
+										×
+									</button>
+								</li>
+							))}
+						</ul>
+					</>
+				)}
 
-      {product.photos.length > 0 && (
-        <>
-          {photoError && <p>{photoError}</p>}
-          <ul className="admin-product-list__photos">
-            {product.photos.map((photo) => (
-              <li key={photo.id} className="admin-product-list__photo">
-                <img src={`http://production-null.work/food-log${photo.url}`} alt={product.name} />
-                <button
-                  type="button"
-                  className="admin-product-list__photo-delete"
-                  onClick={() => void handleDeletePhoto(photo.id)}
-                  disabled={deletingPhotoId === photo.id}
-                  aria-label="この写真を削除"
-                  title="この写真を削除"
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+				{isEditing && (
+					<div className="product-form">
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor={`admin-name-${product.id}`}>商品名</label></p>
+							<div className="elem-parts">
+								<input
+									id={`admin-name-${product.id}`}
+									type="text"
+									value={name}
+									onChange={(event) => setName(event.target.value)}
+								/>
+							</div>
+						</div>
 
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor={`admin-cat1-${product.id}`}>カテゴリー1</label></p>
+							<div className="elem-parts">
+								<CategoryCascadeSelect
+									idPrefix={`admin-cat1-${product.id}`}
+									categories={categories}
+									path={category1Path}
+									onChange={setCategory1Path}
+								/>
+							</div>
+						</div>
+
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor={`admin-cat2-${product.id}`}>カテゴリー2</label></p>
+							<div className="elem-parts">
+								<CategoryCascadeSelect
+									idPrefix={`admin-cat2-${product.id}`}
+									categories={categories}
+									path={category2Path}
+									onChange={setCategory2Path}
+								/>
+							</div>
+						</div>
+
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor={`admin-distributor-${product.id}`}>販売会社</label></p>
+							<div className="elem-parts">
+								<input
+									id={`admin-distributor-${product.id}`}
+									type="text"
+									value={distributor}
+									onChange={(event) => setDistributor(event.target.value)}
+								/>
+							</div>
+						</div>
+
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor={`admin-manufacturing-${product.id}`}>製造会社</label></p>
+							<div className="elem-parts">
+								<input
+									id={`admin-manufacturing-${product.id}`}
+									type="text"
+									value={manufacturing}
+									onChange={(event) => setManufacturing(event.target.value)}
+								/>
+							</div>
+						</div>
+
+						<div className="stack-formRow">
+						<p className="elem-label">ステータス</p>
+						<div className="elem-parts admin-product-list__status-buttons" role="group" aria-label="ステータス">
+							{STATUS_OPTIONS.map((option) => (
+								<button
+									key={option.value}
+									type="button"
+									className={`admin-product-list__status-button${
+										status === option.value ? ' admin-product-list__status-button--active' : ''
+									}`}
+									onClick={() => setStatus(option.value)}
+									disabled={isSaving}
+									aria-pressed={status === option.value}
+								>
+									{option.label}
+								</button>
+							))}
+						</div>
+						</div>
+
+						{saveError && <p>{saveError}</p>}
+
+						<button type="button" onClick={() => void save()} disabled={isSaving}>
+							{isSaving ? '保存中...' : '保存する'}
+						</button>{' '}
+						<button type="button" onClick={() => setIsEditing(false)} disabled={isSaving}>
+							キャンセル
+						</button>
+					</div>
+				)}
+			
+			</div>
+			
       {!isEditing && (
-        <p>
+        <div className="stack-button">
           <button
             type="button"
+						className="elem-button -typeA"
             onClick={handleStartEditing}
             disabled={isEditActionDisabled}
             title={categoriesLoading ? 'カテゴリー情報を読み込み中です' : undefined}
           >
             確認・編集する
           </button>
-        </p>
-      )}
-
-      {isEditing && (
-        <div className="admin-product-list__edit">
-          <label htmlFor={`admin-name-${product.id}`}>商品名</label>
-          <br />
-          <input
-            id={`admin-name-${product.id}`}
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <br />
-          <br />
-
-          <label htmlFor={`admin-cat1-${product.id}`}>カテゴリー1</label>
-          <br />
-          <CategoryCascadeSelect
-            idPrefix={`admin-cat1-${product.id}`}
-            categories={categories}
-            path={category1Path}
-            onChange={setCategory1Path}
-          />
-          <br />
-
-          <label htmlFor={`admin-cat2-${product.id}`}>カテゴリー2</label>
-          <br />
-          <CategoryCascadeSelect
-            idPrefix={`admin-cat2-${product.id}`}
-            categories={categories}
-            path={category2Path}
-            onChange={setCategory2Path}
-          />
-          <br />
-
-          <label htmlFor={`admin-distributor-${product.id}`}>販売会社</label>
-          <br />
-          <input
-            id={`admin-distributor-${product.id}`}
-            type="text"
-            value={distributor}
-            onChange={(event) => setDistributor(event.target.value)}
-          />
-          <br />
-          <br />
-
-          <label htmlFor={`admin-manufacturing-${product.id}`}>製造会社</label>
-          <br />
-          <input
-            id={`admin-manufacturing-${product.id}`}
-            type="text"
-            value={manufacturing}
-            onChange={(event) => setManufacturing(event.target.value)}
-          />
-          <br />
-          <br />
-
-          <p className="admin-product-list__field-label">ステータス</p>
-          <div className="admin-product-list__status-buttons" role="group" aria-label="ステータス">
-            {STATUS_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`admin-product-list__status-button${
-                  status === option.value ? ' admin-product-list__status-button--active' : ''
-                }`}
-                onClick={() => setStatus(option.value)}
-                disabled={isSaving}
-                aria-pressed={status === option.value}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <br />
-
-          {saveError && <p>{saveError}</p>}
-
-          <button type="button" onClick={() => void save()} disabled={isSaving}>
-            {isSaving ? '保存中...' : '保存する'}
-          </button>{' '}
-          <button type="button" onClick={() => setIsEditing(false)} disabled={isSaving}>
-            キャンセル
-          </button>
         </div>
       )}
+			
     </li>
   )
 }

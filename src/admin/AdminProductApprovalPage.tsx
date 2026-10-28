@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useCategories } from '../category/useCategories.ts'
 import AdminProductApprovalItem from './AdminProductApprovalItem.tsx'
 import { fetchAdminProducts } from './productApproval.ts'
 import type { AdminProductSummary } from './productApproval.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 /**
  * 商品承認 管理ページ (/admin/product-approval)
@@ -12,6 +14,7 @@ import type { AdminProductSummary } from './productApproval.ts'
  * サーバー側で申請者への完了メールが送信される。
  */
 function AdminProductApprovalPage() {
+  useBodyId('ADMIN')
   const { user } = useUser()
   const adminUserId = user?.id
   const { categories, isLoading: categoriesLoading } = useCategories()
@@ -56,17 +59,29 @@ function AdminProductApprovalPage() {
   const reload = () => setReloadCount((count) => count + 1)
 
   return (
-    <div className="page">
-      <h1 className="page__title">商品承認 管理</h1>
+    <div id="l-content">
+      
+			<div id="l-breadcrumb">
+        <Link to="/">HOME</Link> &gt;{' '}
+        <Link to="/admin">管理者ページ</Link> &gt;{' '}
+        商品承認 管理
+      </div>
 
-      {isLoading && <p>読み込み中...</p>}
-      {error && <p>{error}</p>}
-      {!isLoading && !error && (
+      <h1 className="heading -typeA">商品承認 管理</h1>
+
+      <section className="product-content">
+        
+				<h2 className="heading -typeB">
+          商品申請一覧
+          {!isLoading && !error && <span className="count">（全{products.length}件）</span>}
+        </h2>
+				
+        {isLoading && <p>読み込み中...</p>}
+        {error && <p>{error}</p>}
+        {!isLoading && !error && products.length === 0 && <p>商品申請はまだありません。</p>}
+        {!isLoading && !error && (
         <>
-          <p>全{products.length}件</p>
-          {products.length === 0 && <p>商品申請はまだありません。</p>}
-
-          <ul className="admin-product-list">
+          <ul className="product-listApplication">
             {products.map((product) => (
               <AdminProductApprovalItem
                 key={product.id}
@@ -79,7 +94,10 @@ function AdminProductApprovalPage() {
             ))}
           </ul>
         </>
-      )}
+        )}
+				
+      </section>
+			
     </div>
   )
 }

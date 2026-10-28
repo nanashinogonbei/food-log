@@ -1,4 +1,4 @@
-import { NavLink, useParams } from 'react-router-dom'
+import { Link, NavLink, useParams } from 'react-router-dom'
 import { useBodyId } from '../components/useBodyId.ts'
 
 function MyPage() {
@@ -7,6 +7,11 @@ function MyPage() {
 
   return (
     <div id="l-content">
+      <div id="l-breadcrumb">
+        <Link to="/">HOME</Link> &gt;{' '}
+        マイページ
+      </div>
+
       <h1 className="heading -typeA">マイページ</h1>
       <p>
         ユーザーID: <strong>{userId}</strong>

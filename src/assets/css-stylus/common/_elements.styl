@@ -195,6 +195,23 @@
 			color: #FF8233
 			background: bg-hc
 
+.button-delete
+	position: absolute
+	top: -13px
+	right: -13px
+	width: 26px
+	height: 26px
+	padding: 0
+	color: #fff
+	font-size: 1.2rem
+	font-weight: bold
+	border: none
+	border-radius: 100px
+	background-color: #666
+	cursor: pointer
+	&:hover
+		background-color: #aaa
+
 
 
 /********************
@@ -205,14 +222,20 @@
 	line-height: 1.6
 
 .elem-link
-	&.-typeA
-		padding: 0 0 0 20px
+	&:link, &:visited
 		color: #297ACC
 		text-decoration: underline
-		background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 0 8px / 14px auto
-		&:hover
-			color: main-c
-			text-decoration: none
+	&:hover
+		color: main-c
+		text-decoration: none	
+		
+	&.-typeA
+		display: block
+		padding: 0 0 0 20px
+		background: url(/assets/img/icon-arrow-typeA.svg) no-repeat 0 6px / 14px auto
+	&.-typeB
+		@extend .elem-link.-typeA
+		background-position: 0 4px
 
 .elem-notes
 	&.-typeA
@@ -251,7 +274,8 @@ select
 	border: 1px solid #ccc
 	border-radius: 6px	
 
-form
+
+.product-form
 
 	.stack-formRow
 		margin-bottom: 30px

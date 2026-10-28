@@ -178,13 +178,13 @@ function ProductPage() {
 		  {!hasEvaluated && (
 				<SignedIn>
 					<div class="stack-valuation">
-						<button type="button" onClick={handleEvaluateClick}>この製品を評価する</button>
+						<button type="button" onClick={handleEvaluateClick} className="elem-button -typeA">この製品を評価する</button>
 					</div>
 				</SignedIn>
 		  )}
 		  <SignedOut>
 				<div class="stack-valuation">
-					<p><a href="/login.html" className="elem-link -typeA">ログイン</a>すると、この製品を評価できます。</p>
+					<p><a href="/login.html" className="elem-link">ログイン</a>すると、この製品を評価できます。</p>
 				</div>
 		  </SignedOut>
 

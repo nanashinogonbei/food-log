@@ -151,58 +151,65 @@ function AdminProductManageItem({
 
       {isEditing && (
         <div className="admin-product-list__edit">
-          <label htmlFor={`manage-name-${product.id}`}>商品名</label>
-          <br />
-          <input
-            id={`manage-name-${product.id}`}
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <br />
-          <br />
+          <div className="stack-formRow">
+            <p className="elem-label"><label htmlFor={`manage-name-${product.id}`}>商品名</label></p>
+            <div className="elem-parts">
+              <input
+                id={`manage-name-${product.id}`}
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </div>
+          </div>
 
-          <label htmlFor={`manage-cat1-${product.id}`}>カテゴリー1</label>
-          <br />
-          <CategoryCascadeSelect
-            idPrefix={`manage-cat1-${product.id}`}
-            categories={categories}
-            path={category1Path}
-            onChange={setCategory1Path}
-          />
-          <br />
+          <div className="stack-formRow">
+            <p className="elem-label"><label htmlFor={`manage-cat1-${product.id}`}>カテゴリー1</label></p>
+            <div className="elem-parts">
+              <CategoryCascadeSelect
+                idPrefix={`manage-cat1-${product.id}`}
+                categories={categories}
+                path={category1Path}
+                onChange={setCategory1Path}
+              />
+            </div>
+          </div>
 
-          <label htmlFor={`manage-cat2-${product.id}`}>カテゴリー2</label>
-          <br />
-          <CategoryCascadeSelect
-            idPrefix={`manage-cat2-${product.id}`}
-            categories={categories}
-            path={category2Path}
-            onChange={setCategory2Path}
-          />
-          <br />
+          <div className="stack-formRow">
+            <p className="elem-label"><label htmlFor={`manage-cat2-${product.id}`}>カテゴリー2</label></p>
+            <div className="elem-parts">
+              <CategoryCascadeSelect
+                idPrefix={`manage-cat2-${product.id}`}
+                categories={categories}
+                path={category2Path}
+                onChange={setCategory2Path}
+              />
+            </div>
+          </div>
 
-          <label htmlFor={`manage-distributor-${product.id}`}>販売会社</label>
-          <br />
-          <input
-            id={`manage-distributor-${product.id}`}
-            type="text"
-            value={distributor}
-            onChange={(event) => setDistributor(event.target.value)}
-          />
-          <br />
-          <br />
+          <div className="stack-formRow">
+            <p className="elem-label"><label htmlFor={`manage-distributor-${product.id}`}>販売会社</label></p>
+            <div className="elem-parts">
+              <input
+                id={`manage-distributor-${product.id}`}
+                type="text"
+                value={distributor}
+                onChange={(event) => setDistributor(event.target.value)}
+              />
+            </div>
+          </div>
 
-          <label htmlFor={`manage-manufacturing-${product.id}`}>製造会社</label>
-          <br />
-          <input
-            id={`manage-manufacturing-${product.id}`}
-            type="text"
-            value={manufacturing}
-            onChange={(event) => setManufacturing(event.target.value)}
-          />
-          <br />
-          <br />
+          <div className="stack-formRow">
+            <p className="elem-label"><label htmlFor={`manage-manufacturing-${product.id}`}>製造会社</label></p>
+            <div className="elem-parts">
+              <input
+                id={`manage-manufacturing-${product.id}`}
+                type="text"
+                value={manufacturing}
+                onChange={(event) => setManufacturing(event.target.value)}
+              />
+            </div>
+          </div>
 
           {saveError && <p>{saveError}</p>}
 

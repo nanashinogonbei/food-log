@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useCategories } from '../category/useCategories.ts'
 import AdminProductManageItem from './AdminProductManageItem.tsx'
 import { fetchManagedProducts } from './productManage.ts'
 import type { ManagedProductSummary } from './productManage.ts'
+import { useBodyId } from '../components/useBodyId.ts'
 
 /**
  * 商品 管理ページ (/admin/product)
@@ -12,6 +14,7 @@ import type { ManagedProductSummary } from './productManage.ts'
  * 完了メールの送信は行わない。商品名・カテゴリー・会社名の編集と、写真の削除ができる。
  */
 function AdminProductManagePage() {
+  useBodyId('ADMIN')
   const { user } = useUser()
   const adminUserId = user?.id
   const { categories, isLoading: categoriesLoading } = useCategories()
@@ -63,28 +66,39 @@ function AdminProductManagePage() {
       : products.filter((product) => product.name.toLowerCase().includes(normalizedQuery))
 
   return (
-    <div className="page">
-      <h1 className="page__title">商品 管理</h1>
-
-      <div className="admin-product-search">
-        <label htmlFor="admin-product-search-input">商品名で検索</label>
-        <br />
-        <input
-          id="admin-product-search-input"
-          type="search"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="商品名を入力"
-        />
+    <div id="l-content">
+      <div id="l-breadcrumb">
+        <Link to="/">HOME</Link> &gt;{' '}
+        <Link to="/admin">管理者ページ</Link> &gt;{' '}
+        商品 管理
       </div>
 
-      {isLoading && <p>読み込み中...</p>}
-      {error && <p>{error}</p>}
-      {!isLoading && !error && (
+      <h1 className="heading -typeA">商品 管理</h1>
+
+      <section className="product-content">
+        <div className="stack-formRow admin-product-search">
+          <p className="elem-label"><label htmlFor="admin-product-search-input">商品名で検索</label></p>
+          <div className="elem-parts">
+            <input
+              id="admin-product-search-input"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="商品名を入力"
+            />
+          </div>
+        </div>
+
+        <h2 className="heading -typeB">
+          商品一覧
+          {!isLoading && !error && <span className="count">（全{filteredProducts.length}件）</span>}
+        </h2>
+        {isLoading && <p>読み込み中...</p>}
+        {error && <p>{error}</p>}
+        {!isLoading && !error && products.length === 0 && <p>商品はまだありません。</p>}
+        {!isLoading && !error && products.length > 0 && filteredProducts.length === 0 && <p>該当する商品が見つかりませんでした。</p>}
+        {!isLoading && !error && (
         <>
-          <p>全{filteredProducts.length}件</p>
-          {products.length === 0 && <p>商品はまだありません。</p>}
-          {products.length > 0 && filteredProducts.length === 0 && <p>該当する商品が見つかりませんでした。</p>}
 
           <ul className="admin-product-list">
             {filteredProducts.map((product) => (
@@ -99,7 +113,8 @@ function AdminProductManagePage() {
             ))}
           </ul>
         </>
-      )}
+        )}
+      </section>
     </div>
   )
 }
