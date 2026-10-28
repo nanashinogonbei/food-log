@@ -281,7 +281,7 @@ function RequestPostPage() {
 											<img src={photo.previewUrl} alt={photo.file.name} title={photo.file.name} />
 											<button
 												type="button"
-												className="elem-remove"
+												className="button-remove"
 												aria-label={`${photo.file.name} を削除`}
 												onClick={() => removePhoto(photo.id)}
 											>

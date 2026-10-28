@@ -145,7 +145,7 @@ function AdminProductApprovalItem({ product, categories, categoriesLoading, admi
 									<img src={`http://production-null.work/food-log${photo.url}`} alt={product.name} />
 									<button
 										type="button"
-										className="button-delete"
+										className="button-remove"
 										onClick={() => void handleDeletePhoto(photo.id)}
 										disabled={deletingPhotoId === photo.id}
 										aria-label="この写真を削除"
