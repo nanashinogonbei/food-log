@@ -101,6 +101,12 @@
 		background-color: #E6F0FA
 
 
+.stack-error
+	padding: 13px 20px 15px 42px
+	color: #CC0000
+	font-weight: bold
+	background: #FAEBED url(/assets/img/icon-attention.svg) no-repeat 20px 15px / 18px auto
+
 .stack-tabs
 	display: flex
 	gap: 1px
@@ -180,6 +186,8 @@
 .elem-button
 	position: relative
 	cursor: pointer
+	+ .elem-button
+		margin-left: 20px
 	&.-typeA
 		top: 0
 		min-width: 250px
@@ -188,7 +196,8 @@
 		box-shadow: 0 2px 0 #ccc
 		border-radius: 6px
 		background: linear-gradient(0deg, #F0F0F0 0%, #fff 100%)
-		&:hover
+		&:hover,
+		&.-active
 			top: 1px
 			border-color: border-hc
 			box-shadow: 0 1px 0 border-hc

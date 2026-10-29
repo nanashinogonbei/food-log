@@ -222,38 +222,40 @@ function AdminProductApprovalItem({ product, categories, categoriesLoading, admi
 						</div>
 
 						<div className="stack-formRow">
-						<p className="elem-label">ステータス</p>
-						<div className="elem-parts admin-product-list__status-buttons" role="group" aria-label="ステータス">
-							{STATUS_OPTIONS.map((option) => (
-								<button
-									key={option.value}
-									type="button"
-									className={`admin-product-list__status-button${
-										status === option.value ? ' admin-product-list__status-button--active' : ''
-									}`}
-									onClick={() => setStatus(option.value)}
-									disabled={isSaving}
-									aria-pressed={status === option.value}
-								>
-									{option.label}
-								</button>
-							))}
-						</div>
+							<p className="elem-label">ステータス</p>
+							<div className="elem-parts" role="group" aria-label="ステータス">
+								{STATUS_OPTIONS.map((option) => (
+									<button
+										key={option.value}
+										type="button"
+										className={`elem-button -typeA${status === option.value ? ' -active' : ''}`}
+										onClick={() => setStatus(option.value)}
+										disabled={isSaving}
+										aria-pressed={status === option.value}
+									>
+										{option.label}
+									</button>
+								))}
+							</div>
 						</div>
 
-						{saveError && <p>{saveError}</p>}
+						{saveError && <p className="stack-error">{saveError}</p>}
 
-						<button type="button" onClick={() => void save()} disabled={isSaving}>
-							{isSaving ? '保存中...' : '保存する'}
-						</button>{' '}
-						<button type="button" onClick={() => setIsEditing(false)} disabled={isSaving}>
-							キャンセル
-						</button>
 					</div>
 				)}
 			
 			</div>
-			
+
+			{isEditing && (
+				<div className="stack-button">
+					<button type="button" className="elem-button -typeA" onClick={() => void save()} disabled={isSaving}>
+						{isSaving ? '保存中...' : '保存する'}
+					</button>{' '}
+					<button type="button" className="elem-button -typeA" onClick={() => setIsEditing(false)} disabled={isSaving}>
+						キャンセル
+					</button>
+				</div>
+			)}			
       {!isEditing && (
         <div className="stack-button">
           <button
