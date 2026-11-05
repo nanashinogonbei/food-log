@@ -3,9 +3,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUserProducts } from '../product/useProducts.ts'
 import { useBodyId } from '../components/useBodyId.ts'
 
-// 承認待ち/却下のみバッジ表示する（承認済み(approved)は通常表示のため対象外）
+// 承認待ち/非公開/却下のみバッジ表示する（公開(approved)は通常表示のため対象外）
 const STATUS_LABELS: Record<string, string> = {
   pending: '申請中',
+  private: '非公開',
   rejected: '却下',
 }
 

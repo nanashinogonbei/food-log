@@ -11,7 +11,8 @@ require __DIR__ . '/db.php';
  *   ステータスが「申請中(pending)」の商品申請一覧のみを返す（申請者のUser IDも含む）。
  *   承認/却下の処理をすると、その商品はこの一覧から外れる。
  * POST   /api/admin-product-approval.php (adminUserId, productId, name, category1, category2, distributor, manufacturing, status)
- *   商品情報とステータスを更新する。ステータスが pending から approved/rejected に
+ *   商品情報とステータス（公開=approved / 非公開=private / 却下=rejected）を更新する。
+ *   ステータスが pending から approved/rejected に
  *   変わった（＝処理が確定した）場合、Clerk Backend APIで申請者のメールアドレスを取得し、
  *   完了メールを送信する。
  * DELETE /api/admin-product-approval.php?adminUserId=xxx&photoId=123
@@ -25,7 +26,8 @@ require __DIR__ . '/db.php';
 // products.php で保存された商品写真の参照先と合わせる
 const UPLOAD_DIR = __DIR__ . '/../uploads/products/';
 const UPLOAD_URL_BASE = '/uploads/products/';
-const VALID_STATUSES = ['pending', 'approved', 'rejected'];
+// approved=公開 / private=非公開 / rejected=却下 / pending=申請中
+const VALID_STATUSES = ['pending', 'approved', 'private', 'rejected'];
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');

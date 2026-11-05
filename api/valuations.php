@@ -249,7 +249,7 @@ function handleProductRanking(string $period, array $categoryIds = []): void
         $hasCategoryFilter = count($categoryIds) > 0;
         $categoryJoin = $hasCategoryFilter ? 'INNER JOIN products p ON p.id = v.product_id' : '';
         $categoryCondition = $hasCategoryFilter
-            ? "AND p.status != 'pending' AND " . buildCategoryFilterSql('p', $categoryIds)
+            ? "AND p.status NOT IN ('pending', 'private') AND " . buildCategoryFilterSql('p', $categoryIds)
             : '';
 
         $stmt = $pdo->prepare(
@@ -272,7 +272,7 @@ function handleProductRanking(string $period, array $categoryIds = []): void
         $productIds = array_map(static fn (array $row): int => (int) $row['product_id'], $rankingRows);
         $placeholders = implode(',', array_fill(0, count($productIds), '?'));
 
-        $productStmt = $pdo->prepare("SELECT id, name FROM products WHERE id IN ($placeholders) AND status != 'pending'");
+        $productStmt = $pdo->prepare("SELECT id, name FROM products WHERE id IN ($placeholders) AND status NOT IN ('pending', 'private')");
         $productStmt->execute($productIds);
         $nameByProductId = [];
         foreach ($productStmt->fetchAll() as $row) {

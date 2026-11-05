@@ -31,6 +31,8 @@ export interface ManagedProductUpdatePayload {
   category2?: string
   distributor: string
   manufacturing?: string
+  /** 公開(approved) / 非公開(private)。却下の商品を変更しない場合は現在のステータスをそのまま渡す */
+  status: string
 }
 
 /**
@@ -65,7 +67,7 @@ export async function fetchManagedProducts(adminUserId: string): Promise<Managed
 }
 
 /**
- * 商品情報を更新する（ステータスは変更しない）。
+ * 商品情報と公開状態（公開 / 非公開）を更新する。
  */
 export async function updateManagedProduct(payload: ManagedProductUpdatePayload): Promise<ManagedProductSummary> {
   const body = new URLSearchParams()
@@ -80,6 +82,7 @@ export async function updateManagedProduct(payload: ManagedProductUpdatePayload)
   if (payload.manufacturing) {
     body.set('manufacturing', payload.manufacturing)
   }
+  body.set('status', payload.status)
 
   const response = await fetch(`${API_BASE_URL}/admin-products-manage.php`, {
     method: 'POST',

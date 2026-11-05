@@ -100,7 +100,7 @@ function AdminProductManagePage() {
         {!isLoading && !error && (
         <>
 
-          <ul className="admin-product-list">
+          <ul className="product-listApplication">
             {filteredProducts.map((product) => (
               <AdminProductManageItem
                 key={product.id}

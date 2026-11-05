@@ -14,8 +14,10 @@ require __DIR__ . '/db.php';
  *
  * GET    /api/admin-products-manage.php?adminUserId=xxx
  *   ステータスが「申請中(pending)」以外の商品一覧を返す。
- * POST   /api/admin-products-manage.php (adminUserId, productId, name, category1, category2, distributor, manufacturing)
- *   商品情報を更新する（ステータスは変更しない）。
+ * POST   /api/admin-products-manage.php (adminUserId, productId, name, category1, category2, distributor, manufacturing, status)
+ *   商品情報と公開状態を更新する。statusは approved(公開) / private(非公開) のみ指定できる
+ *   （省略時、または却下(rejected)の商品で変更しない場合は現在のステータスを維持する）。
+ *   完了メールの送信は行わない。
  * DELETE /api/admin-products-manage.php?adminUserId=xxx&photoId=123
  *   商品写真を1枚削除する（DBのレコードとアップロード済みファイルの両方）。
  *
@@ -220,6 +222,7 @@ $category1 = trim((string) ($_POST['category1'] ?? ''));
 $category2 = trim((string) ($_POST['category2'] ?? ''));
 $distributor = trim((string) ($_POST['distributor'] ?? ''));
 $manufacturing = trim((string) ($_POST['manufacturing'] ?? ''));
+$status = trim((string) ($_POST['status'] ?? ''));
 
 if (!ctype_digit($productId)) {
     respondError(400, '商品IDが不正です。');
@@ -244,11 +247,21 @@ if ($distributor === '') {
 try {
     $pdo = getPdoConnection();
 
-    $existingStmt = $pdo->prepare("SELECT id FROM products WHERE id = :id AND status <> 'pending'");
+    $existingStmt = $pdo->prepare("SELECT id, status FROM products WHERE id = :id AND status <> 'pending'");
     $existingStmt->execute(['id' => $productId]);
+    $existing = $existingStmt->fetch();
 
-    if ($existingStmt->fetch() === false) {
+    if ($existing === false) {
         respondError(404, '商品が見つかりません。');
+    }
+
+    // 公開(approved)・非公開(private)のみ変更できる。未指定・現在と同じ値(却下のままなど)は現状維持。
+    if ($status === '') {
+        $status = (string) $existing['status'];
+    }
+
+    if (!in_array($status, ['approved', 'private'], true) && $status !== $existing['status']) {
+        respondError(400, 'ステータスの指定が不正です。');
     }
 
     $checkStmt = $pdo->prepare('SELECT id FROM categories WHERE id = :id');
@@ -268,7 +281,7 @@ try {
     $updateStmt = $pdo->prepare(
         'UPDATE products
          SET name = :name, category1 = :category1, category2 = :category2,
-             distributor = :distributor, manufacturing = :manufacturing
+             distributor = :distributor, manufacturing = :manufacturing, status = :status
          WHERE id = :id'
     );
     $updateStmt->execute([
@@ -277,6 +290,7 @@ try {
         'category2' => $category2 !== '' ? $category2 : null,
         'distributor' => $distributor,
         'manufacturing' => $manufacturing !== '' ? $manufacturing : null,
+        'status' => $status,
         'id' => $productId,
     ]);
 

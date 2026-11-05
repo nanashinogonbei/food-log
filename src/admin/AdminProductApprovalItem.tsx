@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { CategoryRecord } from '../category/data.ts'
 import { getCategoryPath, isCategoryPathComplete } from '../category/data.ts'
 import CategoryCascadeSelect from '../components/CategoryCascadeSelect.tsx'
@@ -6,13 +6,15 @@ import { deleteAdminProductPhoto, updateAdminProduct } from './productApproval.t
 import type { AdminProductStatus, AdminProductSummary } from './productApproval.ts'
 
 const STATUS_OPTIONS: { value: AdminProductStatus; label: string }[] = [
-  { value: 'approved', label: '承認済み' },
+  { value: 'approved', label: '公開' },
+  { value: 'private', label: '非公開' },
   { value: 'rejected', label: '却下' },
 ]
 
 const STATUS_LABELS: Record<string, string> = {
   pending: '申請中',
-  approved: '承認済み',
+  approved: '公開',
+  private: '非公開',
   rejected: '却下',
 }
 
@@ -44,6 +46,24 @@ function AdminProductApprovalItem({ product, categories, categoriesLoading, admi
   const [deletingPhotoId, setDeletingPhotoId] = useState<number | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
 
+  const itemRef = useRef<HTMLLIElement>(null)
+
+  /** キャンセル: 編集フォームを閉じ、この .item の位置までスクロールする */
+  const handleCancelEditing = () => {
+    setIsEditing(false)
+    // フォームが閉じて高さが変わった後の位置で計算するため、描画後に実行する
+    requestAnimationFrame(() => {
+      const item = itemRef.current
+      if (!item) {
+        return
+      }
+      // 固定ヘッダーに隠れないよう、ヘッダーの高さ分だけ手前にずらす
+      const headerHeight = document.getElementById('l-header')?.offsetHeight ?? 0
+      const top = item.getBoundingClientRect().top + window.scrollY - headerHeight
+      window.scrollTo({ top, behavior: 'smooth' })
+    })
+  }
+
   const handleStartEditing = () => {
     setName(product.name)
     setCategory1Path(getCategoryPath(categories, product.category1).map((category) => category.slug))
@@ -57,7 +77,7 @@ function AdminProductApprovalItem({ product, categories, categoriesLoading, admi
 
   const save = async () => {
     if (status === 'pending') {
-      setSaveError('承認または却下を選択してください。')
+      setSaveError('公開・非公開・却下のいずれかを選択してください。')
       return
     }
 
@@ -123,7 +143,7 @@ function AdminProductApprovalItem({ product, categories, categoriesLoading, admi
   const statusLabel = STATUS_LABELS[product.status] ?? product.status
 
   return (
-    <li className="item">
+    <li className="item" ref={itemRef}>
 			<div className="inner">
 				<p className="elem-name">
 					{product.name}
@@ -251,7 +271,7 @@ function AdminProductApprovalItem({ product, categories, categoriesLoading, admi
 					<button type="button" className="elem-button -typeA" onClick={() => void save()} disabled={isSaving}>
 						{isSaving ? '保存中...' : '保存する'}
 					</button>{' '}
-					<button type="button" className="elem-button -typeA" onClick={() => setIsEditing(false)} disabled={isSaving}>
+					<button type="button" className="elem-button -typeA" onClick={handleCancelEditing} disabled={isSaving}>
 						キャンセル
 					</button>
 				</div>

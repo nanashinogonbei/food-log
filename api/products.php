@@ -112,7 +112,7 @@ function handleListProducts(): void
             "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
              FROM products
              WHERE (category1 IN ($placeholders) OR category2 IN ($placeholders))
-               AND status != 'pending'
+               AND status NOT IN ('pending', 'private')
              ORDER BY created_at DESC"
         );
         $stmt->execute(array_merge($categoryIds, $categoryIds));
@@ -149,14 +149,14 @@ function handleGetProductById(string $id, string $userId): void
             $stmt = $pdo->prepare(
                 "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
                  FROM products
-                 WHERE id = :id AND (status != 'pending' OR requested_by = :requested_by)"
+                 WHERE id = :id AND (status NOT IN ('pending', 'private') OR requested_by = :requested_by)"
             );
             $stmt->execute(['id' => $id, 'requested_by' => $userId]);
         } else {
             $stmt = $pdo->prepare(
                 "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
                  FROM products
-                 WHERE id = :id AND status != 'pending'"
+                 WHERE id = :id AND status NOT IN ('pending', 'private')"
             );
             $stmt->execute(['id' => $id]);
         }
@@ -245,7 +245,8 @@ function handleSearchProductsByName(string $name, bool $publicOnly = false): voi
     try {
         $pdo = getPdoConnection();
 
-        $statusCondition = $publicOnly ? "AND status != 'pending'" : '';
+        // 非公開(private)の商品は常に除外する。公開用($publicOnly)ではさらに承認待ち(pending)も除外する。
+        $statusCondition = $publicOnly ? "AND status NOT IN ('pending', 'private')" : "AND status != 'private'";
 
         $stmt = $pdo->prepare(
             "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at

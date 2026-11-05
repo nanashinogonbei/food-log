@@ -15,7 +15,7 @@ CREATE TABLE `products` (
   `manufacturing` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `requested_by` varchar(255) NOT NULL COMMENT 'Clerkのユーザー ID',
   `ip_address` varchar(45) DEFAULT NULL COMMENT '申請者のIPアドレス（IPv6対応）',
-  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','approved','private','rejected') NOT NULL DEFAULT 'pending',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_products_category1` (`category1`),
