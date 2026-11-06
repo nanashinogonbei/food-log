@@ -24,7 +24,7 @@ function RequestPage() {
   const hasMore = visibleCount < products.length
 
   const handlePostClick = () => {
-    navigate(`/${userId}/request/post`)
+    navigate(`/mypage/${userId}/request/post`)
   }
 
   const handleShowMoreClick = () => {
@@ -35,7 +35,7 @@ function RequestPage() {
 	<div id="l-content">
 		<div id="l-breadcrumb">
 			<Link to="/">HOME</Link> &gt;{' '}
-			<Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
+			<Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
 			商品申請
 		</div>
 

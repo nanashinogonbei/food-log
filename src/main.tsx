@@ -27,6 +27,7 @@ import RequestPage from './mypage/RequestPage.tsx'
 import RequestPostPage from './mypage/RequestPostPage.tsx'
 import ValuationPage from './mypage/ValuationPage.tsx'
 import ValuationPostPage from './mypage/ValuationPostPage.tsx'
+import UserPage from './mypage/UserPage.tsx'
 import NotFoundPage from './NotFoundPage.tsx'
 
 // トップページ (/)
@@ -144,9 +145,9 @@ function App() {
             </RequireAdmin>
           }
         />
-        {/* マイページ（要ログイン） */}
+        {/* マイページ（要ログイン）: /mypage/[userID]/*** */}
         <Route
-          path="/:userId"
+          path="/mypage/:userId"
           element={
             <RequireAuth>
               <MyPage />
@@ -155,7 +156,7 @@ function App() {
         />
         {/* 商品申請一覧（要ログイン） */}
         <Route
-          path="/:userId/request"
+          path="/mypage/:userId/request"
           element={
             <RequireAuth>
               <RequestPage />
@@ -164,7 +165,7 @@ function App() {
         />
         {/* 商品申請 投稿（要ログイン） */}
         <Route
-          path="/:userId/request/post"
+          path="/mypage/:userId/request/post"
           element={
             <RequireAuth>
               <RequestPostPage />
@@ -173,7 +174,7 @@ function App() {
         />
         {/* 商品評価一覧（要ログイン） */}
         <Route
-          path="/:userId/valuation"
+          path="/mypage/:userId/valuation"
           element={
             <RequireAuth>
               <ValuationPage />
@@ -182,10 +183,19 @@ function App() {
         />
         {/* 商品評価 投稿（要ログイン） */}
         <Route
-          path="/:userId/valuation/post"
+          path="/mypage/:userId/valuation/post"
           element={
             <RequireAuth>
               <ValuationPostPage />
+            </RequireAuth>
+          }
+        />
+        {/* ユーザー情報 編集（要ログイン） */}
+        <Route
+          path="/mypage/:userId/user"
+          element={
+            <RequireAuth>
+              <UserPage />
             </RequireAuth>
           }
         />

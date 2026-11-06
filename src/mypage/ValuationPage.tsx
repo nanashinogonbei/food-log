@@ -21,11 +21,11 @@ function ValuationPage() {
   const hasMore = visibleCount < valuations.length
 
   const handlePostClick = () => {
-    navigate(`/${userId}/valuation/post`)
+    navigate(`/mypage/${userId}/valuation/post`)
   }
 
   const handleEditClick = (productId: number) => {
-    navigate(`/${userId}/valuation/post?productId=${productId}`)
+    navigate(`/mypage/${userId}/valuation/post?productId=${productId}`)
   }
 
   const handleShowMoreClick = () => {
@@ -51,7 +51,7 @@ function ValuationPage() {
     <div id="l-content">
       <div id="l-breadcrumb">
         <Link to="/">HOME</Link> &gt;{' '}
-        <Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
+        <Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
         商品評価
       </div>
 

@@ -13,6 +13,7 @@
 -ユーザページ(/user/[userID])
 
 -マイページ (/mypage/[userID])
+--ユーザ情報 編集 (/mypage/[userID]/user)
 --商品申請 一覧 (/mypage/[userID]/request)
 ---商品申請 投稿 (/mypage/[userID]/request/post)
 --商品評価 一覧 (/mypage/[userID]/valuation)
@@ -29,5 +30,5 @@
 * 製品ステータス(status)
 pending : 保留中
 approved : 承認済み
-approved : 非公開
+private : 非公開
 rejected : 却下

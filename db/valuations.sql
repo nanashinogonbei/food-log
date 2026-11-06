@@ -1,4 +1,4 @@
--- 商品評価 (/[userID]/valuation) で登録される評価テーブル
+-- 商品評価 (/mypage/[userID]/valuation) で登録される評価テーブル
 --
 -- product_id は products.id を参照する（DBに登録済みの商品のみ評価可能）。
 -- score は単一選択の評価（イマイチ/好き/大好き）。

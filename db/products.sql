@@ -1,4 +1,4 @@
--- 商品申請 (/[userID]/request) で登録される商品テーブル
+-- 商品申請 (/mypage/[userID]/request) で登録される商品テーブル
 --
 -- category1 / category2 は categories.id を参照する。
 -- category1 は必須（大カテゴリーを想定）、category2 は任意（中カテゴリーを想定）。

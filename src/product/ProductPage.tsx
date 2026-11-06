@@ -55,7 +55,7 @@ function ProductPage() {
     if (!user || !product) {
       return
     }
-    navigate(`/${user.id}/valuation/post?productId=${product.id}`)
+    navigate(`/mypage/${user.id}/valuation/post?productId=${product.id}`)
   }
 
   const handleDeleteClick = async (valuationId: number) => {
@@ -259,7 +259,7 @@ function ProductPage() {
 							<div className="cluster-action">
 								{user && valuation.userId === user.id && (
 									<p className="elem-actions">
-										<Link to={`/${user.id}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
+										<Link to={`/mypage/${user.id}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
 										<button type="button" onClick={() => handleDeleteClick(valuation.id)}>削除</button>
 									</p>
 								)}

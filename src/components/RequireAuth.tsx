@@ -11,7 +11,7 @@ interface RequireAuthProps {
 /**
  * ログインしていない場合は /login.html にリダイレクトする。
  * ログイン済みでも、URL中の userId が自分自身のIDと一致しない場合は
- * 404ページを表示する（/[userID]/ 配下は本人のIDのみ有効なURL）。
+ * 404ページを表示する（/mypage/[userID]/ 配下は本人のIDのみ有効なURL）。
  */
 function RequireAuth({ children }: RequireAuthProps) {
   const { isLoaded, isSignedIn } = useAuth()

@@ -12,7 +12,7 @@ function Header() {
           <a href="/login.html">ログイン</a>
         </SignedOut>
         <SignedIn>
-          {user && <Link to={`/${user.id}`}>マイページ</Link>}
+          {user && <Link to={`/mypage/${user.id}`}>マイページ</Link>}
           <UserButton />
         </SignedIn>
       </nav>

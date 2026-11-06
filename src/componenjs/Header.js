@@ -17,7 +17,7 @@ function Header() {
           <a href="/login.html">ログイン</a>
         </_clerkReact.SignedOut>
         <_clerkReact.SignedIn>
-          {user && <_reactRouterDom.Link to={`/${user.id}`}>マイページ</_reactRouterDom.Link>}
+          {user && <_reactRouterDom.Link to={`/mypage/${user.id}`}>マイページ</_reactRouterDom.Link>}
           <_clerkReact.UserButton />
         </_clerkReact.SignedIn>
       </nav>

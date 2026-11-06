@@ -236,7 +236,7 @@ function handleListProductsByUser(string $userId): void
  *
  * 注意: $publicOnly が false（既定）の場合のみ、status='pending'（承認待ち）の商品も含めて返す。
  * $publicOnly が true の場合は pending を除外する（トップページの商品名検索用）。
- * 商品評価 投稿ページ(/[userID]/valuation/post)のオートコンプリートでは、
+ * 商品評価 投稿ページ(/mypage/[userID]/valuation/post)のオートコンプリートでは、
  * 承認待ちの商品も「（保留中）」を付けて選択できる仕様のため。
  * それ以外の一覧・取得系エンドポイントでは pending の商品は除外している。
  */

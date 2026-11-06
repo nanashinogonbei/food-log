@@ -197,14 +197,14 @@ function ValuationPostPage() {
     <div id="l-content">
 			<div id="l-breadcrumb">
 				<Link to="/">HOME</Link> &gt;{' '}
-				<Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
-				<Link to={`/${userId}/valuation`}>商品評価</Link> &gt;{' '}
+				<Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
+				<Link to={`/mypage/${userId}/valuation`}>商品評価</Link> &gt;{' '}
 				商品評価 投稿
 			</div>
 
 			<h1 className="heading -typeA">商品評価 投稿</h1>
 
-      <p><Link to={`/${userId}/valuation`} className="elem-link -typeB">評価一覧に戻る</Link></p>
+      <p><Link to={`/mypage/${userId}/valuation`} className="elem-link -typeB">評価一覧に戻る</Link></p>
 
 			<section className="product-content">
 				{isLoadingPreselected && <p>選択中の商品を読み込んでいます...</p>}

@@ -177,13 +177,13 @@ function RequestPostPage() {
     <div id="l-content">
       <div id="l-breadcrumb">
         <Link to="/">HOME</Link> &gt;{' '}
-        <Link to={`/${userId}`}>マイページ</Link> &gt;{' '}
-        <Link to={`/${userId}/request`}>商品申請</Link> &gt;{' '}
+        <Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
+        <Link to={`/mypage/${userId}/request`}>商品申請</Link> &gt;{' '}
         商品申請 投稿
       </div>
 
       <h1 className="heading -typeA">商品申請 投稿</h1>
-      <p><Link to={`/${userId}/request`} className="elem-link -typeB">申請一覧に戻る</Link></p>
+      <p><Link to={`/mypage/${userId}/request`} className="elem-link -typeB">申請一覧に戻る</Link></p>
 
 
 			<section className="product-content">
@@ -194,7 +194,7 @@ function RequestPostPage() {
 						<p className="heading -typeD">商品を申請しました。ご協力ありがとうございます。</p>
 						{submittedProductId !== null && (
 							<p>
-								<Link to={`/${userId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeA">
+								<Link to={`/mypage/${userId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeA">
 									この商品の評価を投稿する
 								</Link>
 							</p>
