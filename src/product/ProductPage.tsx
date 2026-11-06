@@ -12,12 +12,19 @@ import { getCategoryPath } from '../category/data.ts'
 import { useBodyId } from '../components/useBodyId.ts'
 type ValuationTab = 'positive' | 'negative'
 
+// 公開以外のステータスの商品（投稿者本人のみ閲覧可）は、商品名の先頭にステータスを付けて表示する
+const PRODUCT_STATUS_PREFIXES: Record<string, string> = {
+  pending: '【申請中】',
+  private: '【非公開】',
+}
+
 function ProductPage() {
   useBodyId('PRODUCT')
   const { productId } = useParams<{ productId: string }>()
   const navigate = useNavigate()
-  const { user } = useUser()
-  const { product, isLoading, error } = useProduct(productId)
+  const { user, isLoaded: isUserLoaded } = useUser()
+  // 投稿したユーザー本人は、申請中・非公開の商品も閲覧できる（ログイン状態が判明してから取得する）
+  const { product, isLoading, error } = useProduct(productId, user?.id, isUserLoaded)
   const { categories } = useCategories()
   const {
     valuations,
@@ -138,7 +145,7 @@ function ProductPage() {
 				)}
 
 				<div className="cluster-txt">
-					<h1 className="heading -typeA">{product.name}</h1>
+					<h1 className="heading -typeA">{PRODUCT_STATUS_PREFIXES[product.status] ?? ''}{product.name}</h1>
 					
 					{categoryPaths.length > 0 && (
 						<div className="stack-catgory" aria-label="カテゴリー">

@@ -87,14 +87,22 @@ function ValuationPage() {
 							<p className="elem-score">{valuation.scoreLabel}</p>
 							<p className="elem-comment">{valuation.comment}</p>
 							{user && valuation.userId === user.id && (
-								<p className="elem-actions">
-									<button type="button" onClick={() => handleEditClick(valuation.productId)}>
+								<div className="elem-actions">
+									<button
+										type="button"
+										className="button-edit"
+										onClick={() => handleEditClick(valuation.productId)}
+									>
 										編集
 									</button>{' '}
-									<button type="button" onClick={() => handleDeleteClick(valuation.id)}>
+									<button
+										type="button"
+										className="button-delete"
+										onClick={() => handleDeleteClick(valuation.id)}
+									>
 										削除
 									</button>
-								</p>
+								</div>
 							)}
 						</li>
 					))}

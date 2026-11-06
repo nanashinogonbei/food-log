@@ -94,14 +94,14 @@ function AdminReportPage() {
       </div>
 
       <h1 className="heading -typeA">通報 管理</h1>
+			<p className="_txt">
+				商品評価への通報の一覧です。<br />
+				有効な通報を{threshold}人以上から受けたアカウントは、商品申請・商品評価を投稿できなくなります。
+			</p>
 
       <section className="product-content">
-        <p>
-          商品評価への通報の一覧です。有効な通報を{threshold}人以上から受けたアカウントは、
-          商品申請・商品評価を投稿できなくなります。
-        </p>
 
-        <p>
+        <p className="stack-reportLeadCheckbox">
           <label>
             <input
               type="checkbox"
@@ -125,63 +125,86 @@ function AdminReportPage() {
         {!isLoading && !error && (
         <>
 
-          <ul className="admin-product-list">
+          <ul className="product-listApplication">
             {visibleReports.map((report) => (
-              <li key={report.id} className="admin-product-list__item">
-                <p className="admin-product-list__name">
-                  <Link to={`/product/${report.productId}`}>{report.productName ?? `商品ID: ${report.productId}`}</Link>
-                  <span
-                    className={
-                      report.status === 'pending'
-                        ? 'product-list__status product-list__status--pending'
-                        : 'product-list__status report-status--dismissed'
-                    }
-                  >
-                    {STATUS_LABELS[report.status]}
-                  </span>
-                  {report.isReportedUserRestricted && (
-                    <span className="product-list__status product-list__status--rejected">投稿制限中</span>
-                  )}
-                </p>
+              <li key={report.id} className="item">
+								<div className="inner">
+								
+									<p className="elem-name">
+										<Link to={`/product/${report.productId}`}>{report.productName ?? `商品ID: ${report.productId}`}</Link>
+										<span
+											className={
+												report.status === 'pending'
+													? 'elem-status -pending'
+													: 'elem-status -dismissed'
+											}
+										>
+											（{STATUS_LABELS[report.status]}）
+										</span>
+										{report.isReportedUserRestricted && (
+											<span className="product-list__status product-list__status--rejected">投稿制限中</span>
+										)}
+									</p>
 
-                <p className="admin-product-list__meta">
-                  通報日: {formatJapaneseDate(report.createdAt)}
-                  {report.handledAt && <> / 処理日: {formatJapaneseDate(report.handledAt)}</>}
-                </p>
-                <p className="admin-product-list__meta">
-                  投稿者: {report.reportedUserEmail ?? '（メールアドレス不明）'}（{report.reportedUserId}）
-                  <br />
-                  この投稿者への有効な通報者数: {report.reportedUserReporterCount} / {threshold}人
-                </p>
-                <p className="admin-product-list__meta">通報者: {report.reporterUserId}</p>
+									<table className="table -typeA">
+										<tbody>
+											<tr>
+												<th>通報日</th>
+												<td>{formatJapaneseDate(report.createdAt)}</td>
+											</tr>
+											{report.handledAt && (
+											<tr>
+												<th>処理日</th>
+												<td>{formatJapaneseDate(report.handledAt)}</td>
+											</tr>
+											)}
+											<tr>
+												<th>投稿者</th>
+												<td>{report.reportedUserEmail ?? '（メールアドレス不明）'}（{report.reportedUserId}）</td>
+											</tr>
+											<tr>
+												<th>この投稿者への有効な通報者数</th>
+												<td>{report.reportedUserReporterCount} / {threshold}人</td>
+											</tr>
+											<tr>
+												<th>通報者</th>
+												<td>{report.reporterUserId}</td>
+											</tr>
+											<tr>
+												<th>通報理由</th>
+												<td>{report.reason}</td>
+											</tr>
+											<tr>
+												<th>通報された評価（{report.scoreLabel}）</th>
+												<td>{report.valuationId === null && <>【評価は削除済み】</>}{report.comment}</td>
+											</tr>
+										</tbody>
+									</table>
 
-                <p className="admin-product-list__meta">通報理由: {report.reason}</p>
-
-                <p className="admin-product-list__meta">
-                  通報された評価（{report.scoreLabel}）
-                  {report.valuationId === null && <>【評価は削除済み】</>}
-                </p>
-                <p className="report-list__comment">{report.comment}</p>
-
-                <p>
-                  {report.status === 'pending' ? (
-                    <button
-                      type="button"
-                      onClick={() => void handleChangeStatus(report, 'dismissed')}
-                      disabled={updatingReportId === report.id}
-                    >
-                      棄却する（誤通報）
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => void handleChangeStatus(report, 'pending')}
-                      disabled={updatingReportId === report.id}
-                    >
-                      有効に戻す
-                    </button>
-                  )}
-                </p>
+								</div>
+								
+								<div className="stack-button">
+									{report.status === 'pending' ? (
+										<button
+											type="button"
+											className="elem-button -typeA"
+											onClick={() => void handleChangeStatus(report, 'dismissed')}
+											disabled={updatingReportId === report.id}
+										>
+											棄却する（誤通報）
+										</button>
+									) : (
+										<button
+											type="button"
+											className="elem-button -typeA"
+											onClick={() => void handleChangeStatus(report, 'pending')}
+											disabled={updatingReportId === report.id}
+										>
+											有効に戻す
+										</button>
+									)}
+								</div>
+								
               </li>
             ))}
           </ul>

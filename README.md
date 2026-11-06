@@ -27,4 +27,5 @@
 * 製品ステータス(status)
 pending : 保留中
 approved : 承認済み
+approved : 非公開
 rejected : 却下

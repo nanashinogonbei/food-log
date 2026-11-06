@@ -76,7 +76,8 @@ function AdminProductManagePage() {
       <h1 className="heading -typeA">商品 管理</h1>
 
       <section className="product-content">
-        <div className="stack-formRow admin-product-search">
+			
+        <div className="stack-leadSearch">
           <p className="elem-label"><label htmlFor="admin-product-search-input">商品名で検索</label></p>
           <div className="elem-parts">
             <input

@@ -179,8 +179,12 @@ interface UseProductResult {
 
 /**
  * 指定したIDの商品を1件取得する（製品ページ、商品評価ページの事前選択用）。
+ *
+ * userId を渡すと、そのユーザーが申請した商品は「申請中(pending)」「非公開(private)」でも取得できる。
+ * isReady が false の間は取得を保留する（ログイン状態の判定待ちに使う。待たずに取得すると、
+ * 本人の商品でも一度「見つかりません」になってしまうため）。
  */
-export function useProduct(productId: string | undefined): UseProductResult {
+export function useProduct(productId: string | undefined, userId?: string, isReady = true): UseProductResult {
   const [product, setProduct] = useState<ProductSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -193,11 +197,15 @@ export function useProduct(productId: string | undefined): UseProductResult {
       return
     }
 
+    if (!isReady) {
+      return
+    }
+
     let isMounted = true
     setIsLoading(true)
     setError(null)
 
-    fetchProductById(productId)
+    fetchProductById(productId, userId)
       .then((data) => {
         if (isMounted) {
           setProduct(data)
@@ -217,7 +225,7 @@ export function useProduct(productId: string | undefined): UseProductResult {
     return () => {
       isMounted = false
     }
-  }, [productId])
+  }, [productId, userId, isReady])
 
   return { product, isLoading, error }
 }
