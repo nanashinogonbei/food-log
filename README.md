@@ -10,11 +10,13 @@
 -製品ページ (/product/[id])
 -ログインページ (/login)
 
--マイページ (/[userID])
---商品申請 一覧 (/[userID]/request)
----商品申請 投稿 (/[userID]/request/post)
---商品評価 一覧 (/[userID]/valuation)
----商品評価 投稿 (/[userID]/valuation/post)
+-ユーザページ(/user/[userID])
+
+-マイページ (/mypage/[userID])
+--商品申請 一覧 (/mypage/[userID]/request)
+---商品申請 投稿 (/mypage/[userID]/request/post)
+--商品評価 一覧 (/mypage/[userID]/valuation)
+---商品評価 投稿 (/mypage/[userID]/valuation/post)
 
 -管理者ページ (/admin)
 --商品申請 管理 (/admin/product-approval/)
