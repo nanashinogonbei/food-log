@@ -10,6 +10,7 @@ import { formatJapaneseDate } from '../valuation/format.ts'
 import { useCategories } from '../category/useCategories.ts'
 import { getCategoryPath } from '../category/data.ts'
 import { useBodyId } from '../components/useBodyId.ts'
+import { useCurrentUserProfile } from '../user/useUserProfile.ts'
 type ValuationTab = 'positive' | 'negative'
 
 // 公開以外のステータスの商品（投稿者本人のみ閲覧可）は、商品名の先頭にステータスを付けて表示する
@@ -26,6 +27,8 @@ function ProductPage() {
   // 投稿したユーザー本人は、申請中・非公開の商品も閲覧できる（ログイン状態が判明してから取得する）
   const { product, isLoading, error } = useProduct(productId, user?.id, isUserLoaded)
   const { categories } = useCategories()
+  // マイページのURLにはClerkのIDではなく公開用IDを使う
+  const { profile } = useCurrentUserProfile()
   const {
     valuations,
     isLoading: isValuationsLoading,
@@ -52,10 +55,10 @@ function ProductPage() {
   const visibleValuations = valuationTab === 'positive' ? positiveValuations : negativeValuations
 
   const handleEvaluateClick = () => {
-    if (!user || !product) {
+    if (!user || !product || !profile) {
       return
     }
-    navigate(`/mypage/${user.id}/valuation/post?productId=${product.id}`)
+    navigate(`/mypage/${profile.publicId}/valuation/post?productId=${product.id}`)
   }
 
   const handleDeleteClick = async (valuationId: number) => {
@@ -257,9 +260,9 @@ function ProductPage() {
 								<p className="elem-comment">{valuation.comment}</p>
 							</div>
 							<div className="cluster-action">
-								{user && valuation.userId === user.id && (
+								{user && profile && valuation.userId === user.id && (
 									<p className="elem-actions">
-										<Link to={`/mypage/${user.id}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
+										<Link to={`/mypage/${profile.publicId}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
 										<button type="button" onClick={() => handleDeleteClick(valuation.id)}>削除</button>
 									</p>
 								)}

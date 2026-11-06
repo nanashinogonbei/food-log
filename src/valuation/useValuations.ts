@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchProductRanking, fetchRecentValuations, fetchValuationsByProduct, fetchValuationsByUser } from './data.ts'
+import { fetchProductRanking, fetchRecentValuations, fetchValuationsByProduct, fetchValuationsByPublicId, fetchValuationsByUser } from './data.ts'
 import type { ProductRanking, RankingPeriod, ValuationSummary } from './data.ts'
 
 interface UseProductRankingResult {
@@ -108,6 +108,11 @@ interface UseValuationsResult {
 /** 指定したユーザーが投稿した評価一覧を取得する（マイページの商品評価タブ用） */
 export function useUserValuations(userId: string | undefined): UseValuationsResult {
   return useValuationsBy(userId, fetchValuationsByUser)
+}
+
+/** 公開用IDのユーザーが投稿した評価一覧を取得する（誰でも見られるユーザーページ用） */
+export function usePublicUserValuations(publicId: string | undefined): UseValuationsResult {
+  return useValuationsBy(publicId, fetchValuationsByPublicId)
 }
 
 /** 指定した商品に投稿された評価一覧を取得する（製品ページ用） */

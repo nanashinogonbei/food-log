@@ -7,6 +7,9 @@ require __DIR__ . '/db.php';
 /**
  * ユーザー情報 (/mypage/[userID]/user) 用のAPI。
  *
+ * GET  /api/users.php?publicId=<公開用ID>
+ *   公開用IDのユーザーの公開情報（公開用ID・表示名）を返す（誰でも見られるユーザーページ用）。
+ *   存在しない場合は404。登録はしない。
  * GET  /api/users.php?userId=<ClerkのユーザーID>
  *   サイト用のユーザー情報（公開用ID・表示名）を返す。
  *   まだ登録されていないユーザーの場合は、ランダムな公開用IDを発行して新規登録してから返す。
@@ -125,6 +128,26 @@ function formatUser(array $user): array
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $publicId = trim((string) ($_GET['publicId'] ?? ''));
+
+    if ($publicId !== '') {
+        try {
+            $pdo = getPdoConnection();
+            $stmt = $pdo->prepare('SELECT public_id, display_name FROM users WHERE public_id = :public_id');
+            $stmt->execute(['public_id' => $publicId]);
+            $found = $stmt->fetch();
+        } catch (Throwable $e) {
+            respondError(500, 'ユーザー情報の取得に失敗しました。');
+        }
+
+        if ($found === false) {
+            respondError(404, 'ユーザーが見つかりません。');
+        }
+
+        echo json_encode(formatUser($found), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     $userId = trim((string) ($_GET['userId'] ?? ''));
 
     if ($userId === '') {

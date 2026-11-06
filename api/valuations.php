@@ -61,6 +61,9 @@ function respondError(int $status, string $message): never
  *   期間内（週間=直近7日/月間=直近1ヶ月/四半期=直近3ヶ月）に投稿された評価数の多い順に
  *   商品を最大5件返す（トップページ／中カテゴリーページの「注目の商品」ランキング用）。
  *   categoryIds を付けると、そのカテゴリーに属する商品だけを対象にする。
+ * GET /api/valuations.php?publicId=xxx
+ *   指定した公開用ID(users.public_id)のユーザーが投稿した評価一覧を返す（誰でも見られるユーザーページ用）。
+ *   公開されていない商品（申請中・非公開）の評価は含めない。返り値の userId にはClerkのIDではなく公開用IDを入れる。
  * GET /api/valuations.php?userId=xxx
  *   指定ユーザーが投稿した評価一覧を返す（マイページの商品評価タブ用）。
  * GET /api/valuations.php?productId=1
@@ -80,6 +83,13 @@ function handleListValuations(): void
 
     if (($_GET['recent'] ?? '') === '1') {
         handleRecentValuations(parseCategoryIdsParam(trim((string) ($_GET['categoryIds'] ?? ''))));
+        return;
+    }
+
+    $publicId = trim((string) ($_GET['publicId'] ?? ''));
+
+    if ($publicId !== '') {
+        handleListValuationsByPublicId($publicId);
         return;
     }
 
@@ -128,6 +138,34 @@ function handleListValuations(): void
         $result = formatValuationRows($pdo, $rows);
 
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '評価一覧の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+/**
+ * 公開用IDのユーザーが投稿した評価一覧を返す（誰でも見られるユーザーページ用）。
+ * ClerkのユーザーIDは返さず、userId には公開用IDを入れる。
+ */
+function handleListValuationsByPublicId(string $publicId): void
+{
+    try {
+        $pdo = getPdoConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, v.score, v.comment,
+                    v.purchase_price, v.purchase_store, v.created_at, v.updated_at
+             FROM product_valuations v
+             INNER JOIN users u ON u.clerk_user_id = v.user_id
+             INNER JOIN products p ON p.id = v.product_id
+             WHERE u.public_id = :public_id
+               AND p.status NOT IN ('pending', 'private')
+             ORDER BY v.created_at DESC"
+        );
+        $stmt->execute(['public_id' => $publicId]);
+
+        echo json_encode(formatValuationRows($pdo, $stmt->fetchAll()), JSON_UNESCAPED_UNICODE);
     } catch (Throwable $e) {
         http_response_code(500);
         echo json_encode(['error' => '評価一覧の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);

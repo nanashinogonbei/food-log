@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/clerk-react'
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent, KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -17,7 +18,10 @@ const createPhotoId = (file: File) => `${file.name}-${file.size}-${file.lastModi
 
 function RequestPostPage() {
   useBodyId('MYPAGE')
-  const { userId } = useParams<{ userId: string }>()
+  const { userId: publicId } = useParams<{ userId: string }>()
+  const { user } = useUser()
+  // APIには（URLの公開用IDではなく）ClerkのユーザーIDを渡す
+  const userId = user?.id
   const { categories, isLoading: isCategoriesLoading, error: categoriesError } = useCategories()
 
   const [name, setName] = useState('')
@@ -177,13 +181,13 @@ function RequestPostPage() {
     <div id="l-content">
       <div id="l-breadcrumb">
         <Link to="/">HOME</Link> &gt;{' '}
-        <Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
-        <Link to={`/mypage/${userId}/request`}>商品申請</Link> &gt;{' '}
+        <Link to={`/mypage/${publicId}`}>マイページ</Link> &gt;{' '}
+        <Link to={`/mypage/${publicId}/request`}>商品申請</Link> &gt;{' '}
         商品申請 投稿
       </div>
 
       <h1 className="heading -typeA">商品申請 投稿</h1>
-      <p><Link to={`/mypage/${userId}/request`} className="elem-link -typeB">申請一覧に戻る</Link></p>
+      <p><Link to={`/mypage/${publicId}/request`} className="elem-link -typeB">申請一覧に戻る</Link></p>
 
 
 			<section className="product-content">
@@ -194,7 +198,7 @@ function RequestPostPage() {
 						<p className="heading -typeD">商品を申請しました。ご協力ありがとうございます。</p>
 						{submittedProductId !== null && (
 							<p>
-								<Link to={`/mypage/${userId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeA">
+								<Link to={`/mypage/${publicId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeA">
 									この商品の評価を投稿する
 								</Link>
 							</p>

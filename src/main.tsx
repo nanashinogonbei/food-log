@@ -28,6 +28,7 @@ import RequestPostPage from './mypage/RequestPostPage.tsx'
 import ValuationPage from './mypage/ValuationPage.tsx'
 import ValuationPostPage from './mypage/ValuationPostPage.tsx'
 import UserPage from './mypage/UserPage.tsx'
+import UserValuationPage from './user/UserValuationPage.tsx'
 import NotFoundPage from './NotFoundPage.tsx'
 
 // トップページ (/)
@@ -145,6 +146,8 @@ function App() {
             </RequireAdmin>
           }
         />
+        {/* ユーザーページ（誰でも閲覧可）: そのユーザーの評価一覧 */}
+        <Route path="/user/:userId" element={<UserValuationPage />} />
         {/* マイページ（要ログイン）: /mypage/[userID]/*** */}
         <Route
           path="/mypage/:userId"

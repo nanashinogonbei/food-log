@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -7,7 +8,10 @@ import { DISPLAY_NAME_MAX_LENGTH, fetchUserProfile, updateUserDisplayName } from
 /** マイページのユーザー情報 編集: 表示名の編集と、公開用IDの確認ができる */
 function UserPage() {
   useBodyId('MYPAGE')
-  const { userId } = useParams<{ userId: string }>()
+  const { userId: routePublicId } = useParams<{ userId: string }>()
+  const { user } = useUser()
+  // APIには（URLの公開用IDではなく）ClerkのユーザーIDを渡す
+  const userId = user?.id
 
   const [publicId, setPublicId] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -73,13 +77,16 @@ function UserPage() {
     <div id="l-content">
       <div id="l-breadcrumb">
         <Link to="/">HOME</Link> &gt;{' '}
-        <Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
+        <Link to={`/mypage/${routePublicId}`}>マイページ</Link> &gt;{' '}
         ユーザー情報 編集
       </div>
 
       <h1 className="heading -typeA">ユーザー情報 編集</h1>
 
       {isLoading && <p>読み込み中...</p>}
+      {!isLoading && !loadError && publicId && (
+        <p><Link to={`/user/${publicId}`} className="elem-link -typeA">あなたの評価一覧（公開ページ）を見る</Link></p>
+      )}
       {loadError && <p className="stack-error">{loadError}</p>}
 
       {!isLoading && !loadError && (

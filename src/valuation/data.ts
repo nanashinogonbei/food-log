@@ -130,6 +130,13 @@ export function fetchValuationsByUser(userId: string): Promise<ValuationSummary[
 }
 
 /**
+ * 公開用IDのユーザーが投稿した評価一覧を取得する（誰でも見られるユーザーページ用）。
+ */
+export function fetchValuationsByPublicId(publicId: string): Promise<ValuationSummary[]> {
+  return fetchValuations({ publicId })
+}
+
+/**
  * 指定した商品に投稿された評価一覧を取得する（製品ページ用）。
  */
 export function fetchValuationsByProduct(productId: string): Promise<ValuationSummary[]> {
@@ -138,6 +145,7 @@ export function fetchValuationsByProduct(productId: string): Promise<ValuationSu
 
 async function fetchValuations(query: {
   userId?: string
+  publicId?: string
   productId?: string
   recent?: boolean
   categoryIds?: string[]
@@ -151,6 +159,9 @@ async function fetchValuations(query: {
   }
   if (query.userId) {
     params.set('userId', query.userId)
+  }
+  if (query.publicId) {
+    params.set('publicId', query.publicId)
   }
   if (query.productId) {
     params.set('productId', query.productId)

@@ -11,9 +11,11 @@ const PAGE_SIZE = 10
 /** マイページの商品評価タブ: ログインユーザー自身が投稿した評価の一覧を表示する */
 function ValuationPage() {
   useBodyId('MYPAGE')
-  const { userId } = useParams<{ userId: string }>()
+  const { userId: publicId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const { user } = useUser()
+  // APIには（URLの公開用IDではなく）ClerkのユーザーIDを渡す
+  const userId = user?.id
   const { valuations, isLoading, error, reload: reloadValuations } = useUserValuations(userId)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
@@ -21,11 +23,11 @@ function ValuationPage() {
   const hasMore = visibleCount < valuations.length
 
   const handlePostClick = () => {
-    navigate(`/mypage/${userId}/valuation/post`)
+    navigate(`/mypage/${publicId}/valuation/post`)
   }
 
   const handleEditClick = (productId: number) => {
-    navigate(`/mypage/${userId}/valuation/post?productId=${productId}`)
+    navigate(`/mypage/${publicId}/valuation/post?productId=${productId}`)
   }
 
   const handleShowMoreClick = () => {
@@ -51,7 +53,7 @@ function ValuationPage() {
     <div id="l-content">
       <div id="l-breadcrumb">
         <Link to="/">HOME</Link> &gt;{' '}
-        <Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
+        <Link to={`/mypage/${publicId}`}>マイページ</Link> &gt;{' '}
         商品評価
       </div>
 

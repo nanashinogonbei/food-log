@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUserProducts } from '../product/useProducts.ts'
@@ -15,7 +16,10 @@ const PAGE_SIZE = 10
 /** マイページの商品申請タブ: ログインユーザー自身が申請した商品の一覧を表示する */
 function RequestPage() {
   useBodyId('MYPAGE')
-  const { userId } = useParams<{ userId: string }>()
+  const { userId: publicId } = useParams<{ userId: string }>()
+  const { user } = useUser()
+  // APIには（URLの公開用IDではなく）ClerkのユーザーIDを渡す
+  const userId = user?.id
   const navigate = useNavigate()
   const { products, isLoading, error } = useUserProducts(userId)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -24,7 +28,7 @@ function RequestPage() {
   const hasMore = visibleCount < products.length
 
   const handlePostClick = () => {
-    navigate(`/mypage/${userId}/request/post`)
+    navigate(`/mypage/${publicId}/request/post`)
   }
 
   const handleShowMoreClick = () => {
@@ -35,7 +39,7 @@ function RequestPage() {
 	<div id="l-content">
 		<div id="l-breadcrumb">
 			<Link to="/">HOME</Link> &gt;{' '}
-			<Link to={`/mypage/${userId}`}>マイページ</Link> &gt;{' '}
+			<Link to={`/mypage/${publicId}`}>マイページ</Link> &gt;{' '}
 			商品申請
 		</div>
 

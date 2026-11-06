@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
-import { useAuth, useUser } from '@clerk/clerk-react'
+import { useAuth } from '@clerk/clerk-react'
 import NotFoundPage from '../NotFoundPage.tsx'
+import { useCurrentUserProfile } from '../user/useUserProfile.ts'
 
 interface RequireAuthProps {
   children: ReactNode
@@ -10,12 +11,12 @@ interface RequireAuthProps {
 
 /**
  * ログインしていない場合は /login.html にリダイレクトする。
- * ログイン済みでも、URL中の userId が自分自身のIDと一致しない場合は
- * 404ページを表示する（/mypage/[userID]/ 配下は本人のIDのみ有効なURL）。
+ * ログイン済みでも、URL中の userId（公開用ID）が自分自身の公開用IDと一致しない場合は
+ * 404ページを表示する（/mypage/[userID]/ 配下は本人の公開用IDのみ有効なURL）。
  */
 function RequireAuth({ children }: RequireAuthProps) {
   const { isLoaded, isSignedIn } = useAuth()
-  const { user } = useUser()
+  const { profile, isLoading: isProfileLoading, error: profileError } = useCurrentUserProfile()
   const { userId } = useParams<{ userId: string }>()
 
   useEffect(() => {
@@ -28,7 +29,16 @@ function RequireAuth({ children }: RequireAuthProps) {
     return null
   }
 
-  if (userId !== user?.id) {
+  if (isProfileLoading) {
+    return null
+  }
+
+  if (profileError) {
+    return <p>{profileError}</p>
+  }
+
+  // URL中の userId は公開用ID。本人の公開用IDと一致しない場合は404にする
+  if (userId !== profile?.publicId) {
     return <NotFoundPage />
   }
 

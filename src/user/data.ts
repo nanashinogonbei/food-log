@@ -66,3 +66,27 @@ export async function updateUserDisplayName(userId: string, displayName: string)
 
   return (await response.json()) as UserProfile
 }
+
+/**
+ * 公開用IDからユーザーの公開情報を取得する（誰でも見られるユーザーページ用）。
+ * 存在しない場合は null を返す。
+ */
+export async function fetchPublicUserProfile(publicId: string): Promise<UserProfile | null> {
+  const params = new URLSearchParams({ publicId })
+
+  const response = await fetch(`${API_BASE_URL}/users.php?${params.toString()}`, {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'include',
+  })
+
+  if (response.status === 404) {
+    return null
+  }
+
+  if (!response.ok) {
+    throw new Error(await extractErrorMessage(response, 'ユーザー情報の取得に失敗しました'))
+  }
+
+  return (await response.json()) as UserProfile
+}
