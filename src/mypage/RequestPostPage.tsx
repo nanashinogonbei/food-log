@@ -189,23 +189,20 @@ function RequestPostPage() {
       <h1 className="heading -typeA">商品申請 投稿</h1>
       <p><Link to={`/mypage/${publicId}/request`} className="elem-link -typeB">申請一覧に戻る</Link></p>
 
-
 			<section className="product-content">
-			
-				{categoriesError && <p>{categoriesError}</p>}
+
 				{submitSuccess && (
 					<>
 						<p className="heading -typeD">商品を申請しました。ご協力ありがとうございます。</p>
 						{submittedProductId !== null && (
 							<p>
-								<Link to={`/mypage/${publicId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeA">
+								<Link to={`/mypage/${publicId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeB">
 									この商品の評価を投稿する
 								</Link>
 							</p>
 						)}
 					</>
 				)}
-				{submitError && <p>{submitError}</p>}
 
 				{!submitSuccess && (
 				<form className="product-form" onSubmit={handleSubmit}>
@@ -323,6 +320,9 @@ function RequestPostPage() {
 						</div>
 
 					</div>
+
+					{categoriesError && <p className="stack-error">{categoriesError}</p>}
+					{submitError && <p className="stack-error">{submitError}</p>}
 
 					<div className="stack-button">
 						<button type="submit" className="elem-button -typeA" disabled={isSubmitting}>

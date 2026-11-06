@@ -29,6 +29,7 @@ import ValuationPage from './mypage/ValuationPage.tsx'
 import ValuationPostPage from './mypage/ValuationPostPage.tsx'
 import UserPage from './mypage/UserPage.tsx'
 import UserValuationPage from './user/UserValuationPage.tsx'
+import SignUpCompletePage from './user/SignUpCompletePage.tsx'
 import NotFoundPage from './NotFoundPage.tsx'
 
 // トップページ (/)
@@ -146,6 +147,8 @@ function App() {
             </RequireAdmin>
           }
         />
+        {/* アカウント作成直後の遷移先: users に登録して、ユーザー情報 編集ページへ移動する */}
+        <Route path="/signup-complete" element={<SignUpCompletePage />} />
         {/* ユーザーページ（誰でも閲覧可）: そのユーザーの評価一覧 */}
         <Route path="/user/:userId" element={<UserValuationPage />} />
         {/* マイページ（要ログイン）: /mypage/[userID]/*** */}

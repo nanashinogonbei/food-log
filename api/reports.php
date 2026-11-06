@@ -67,11 +67,20 @@ function handleListReportedValuationIds(): void
 
     try {
         $pdo = getPdoConnection();
+
+        // DBにはサイト用のユーザーID(users.id)で保存しているため、ClerkのユーザーIDから変換する
+        $siteReporterId = findUserIdByClerkId($pdo, $reporterUserId);
+
+        if ($siteReporterId === null) {
+            echo json_encode([], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         $stmt = $pdo->prepare(
             'SELECT valuation_id FROM valuation_reports
              WHERE reporter_user_id = :reporter_user_id AND valuation_id IS NOT NULL'
         );
-        $stmt->execute(['reporter_user_id' => $reporterUserId]);
+        $stmt->execute(['reporter_user_id' => $siteReporterId]);
 
         echo json_encode(
             array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN)),
@@ -154,7 +163,10 @@ try {
         respondError(404, '通報する評価が見つかりません。（既に削除された可能性があります）');
     }
 
-    if ($valuation['user_id'] === $reporterUserId) {
+    // ClerkのユーザーIDをサイト用のユーザーID(users.id)に変換する（未登録なら登録する）
+    $siteReporterId = resolveUserId($pdo, $reporterUserId);
+
+    if ((int) $valuation['user_id'] === $siteReporterId) {
         respondError(400, '自分の投稿は通報できません。');
     }
 
@@ -172,7 +184,7 @@ try {
             'valuation_id' => $valuation['id'],
             'product_id' => $valuation['product_id'],
             'reported_user_id' => $valuation['user_id'],
-            'reporter_user_id' => $reporterUserId,
+            'reporter_user_id' => $siteReporterId,
             'valuation_score' => $valuation['score'],
             'valuation_comment' => $valuation['comment'],
             'reason' => $reason,

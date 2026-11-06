@@ -6,6 +6,9 @@
 -- ip_address は申請者のIPアドレス（IPv6対応で最大45文字）。api/products.php が申請時に記録する。
 --   既存データ（この項目の追加前に申請されたもの）は NULL。
 
+-- 【前提】ユーザーIDは ClerkのユーザーID ではなく users.id（サイト用のID）を保存する。
+--   db/users.sql を先に適用しておくこと（外部キーのため）。
+
 CREATE TABLE `products` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -13,7 +16,7 @@ CREATE TABLE `products` (
   `category2` int UNSIGNED DEFAULT NULL,
   `distributor` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `manufacturing` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `requested_by` varchar(255) NOT NULL COMMENT 'Clerkのユーザー ID',
+  `requested_by` int UNSIGNED NOT NULL COMMENT '申請者のサイト用ユーザーID（users.id）',
   `ip_address` varchar(45) DEFAULT NULL COMMENT '申請者のIPアドレス（IPv6対応）',
   `status` enum('pending','approved','private','rejected') NOT NULL DEFAULT 'pending',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -21,6 +24,7 @@ CREATE TABLE `products` (
   KEY `idx_products_category1` (`category1`),
   KEY `idx_products_category2` (`category2`),
   KEY `idx_products_requested_by` (`requested_by`),
+  CONSTRAINT `fk_products_requested_by` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_products_category1` FOREIGN KEY (`category1`) REFERENCES `categories` (`id`),
   CONSTRAINT `fk_products_category2` FOREIGN KEY (`category2`) REFERENCES `categories` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

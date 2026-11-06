@@ -113,8 +113,16 @@ function handleListValuations(): void
         $params = [];
 
         if ($userId !== '') {
+            // DBにはサイト用のユーザーID(users.id)で保存しているため、ClerkのユーザーIDから変換する
+            $siteUserId = findUserIdByClerkId($pdo, $userId);
+
+            if ($siteUserId === null) {
+                echo json_encode([], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
             $conditions[] = 'v.user_id = :user_id';
-            $params['user_id'] = $userId;
+            $params['user_id'] = $siteUserId;
         }
 
         if ($productId !== '') {
@@ -125,9 +133,10 @@ function handleListValuations(): void
         $where = implode(' AND ', $conditions);
 
         $stmt = $pdo->prepare(
-            "SELECT v.id, v.product_id, p.name AS product_name, v.user_id, v.score, v.comment,
+            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, v.score, v.comment,
                     v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
+             INNER JOIN users u ON u.id = v.user_id
              INNER JOIN products p ON p.id = v.product_id
              WHERE $where
              ORDER BY v.created_at DESC"
@@ -157,7 +166,7 @@ function handleListValuationsByPublicId(string $publicId): void
             "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, v.score, v.comment,
                     v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
-             INNER JOIN users u ON u.clerk_user_id = v.user_id
+             INNER JOIN users u ON u.id = v.user_id
              INNER JOIN products p ON p.id = v.product_id
              WHERE u.public_id = :public_id
                AND p.status NOT IN ('pending', 'private')
@@ -176,7 +185,7 @@ function handleListValuationsByPublicId(string $publicId): void
  * product_valuations と products を結合した行の配列を、フロントに返すJSON形式に整形する
  * （商品の1枚目の写真URLを付与する）。
  *
- * @param list<array<string,mixed>> $rows v.id, v.product_id, product_name, v.user_id, v.score, v.comment,
+ * @param list<array<string,mixed>> $rows v.id, v.product_id, product_name, user_id（投稿者の公開用ID）, v.score, v.comment,
  *                                        v.purchase_price, v.purchase_store, v.created_at, v.updated_at を含む行
  * @return list<array<string,mixed>>
  */
@@ -212,6 +221,7 @@ function formatValuationRows(PDO $pdo, array $rows): array
             'productId' => $pid,
             'productName' => $row['product_name'],
             'productPhoto' => $photoByProductId[$pid] ?? null,
+            // 投稿者の公開用ID（ClerkのユーザーIDは返さない）
             'userId' => $row['user_id'],
             'score' => $row['score'],
             'scoreLabel' => SCORE_LABELS[$row['score']] ?? $row['score'],
@@ -241,9 +251,10 @@ function handleRecentValuations(array $categoryIds = []): void
         $categoryCondition = count($categoryIds) > 0 ? 'AND ' . buildCategoryFilterSql('p', $categoryIds) : '';
 
         $stmt = $pdo->prepare(
-            "SELECT v.id, v.product_id, p.name AS product_name, v.user_id, v.score, v.comment,
+            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, v.score, v.comment,
                     v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
+             INNER JOIN users u ON u.id = v.user_id
              INNER JOIN products p ON p.id = v.product_id
              WHERE p.status = 'approved' $categoryCondition
              ORDER BY v.created_at DESC, v.id DESC
@@ -388,7 +399,10 @@ function handleDeleteValuation(): void
             respondError(404, '指定された評価が見つかりません。');
         }
 
-        if ($row['user_id'] !== $userId) {
+        // DBにはサイト用のユーザーID(users.id)で保存しているため、ClerkのユーザーIDから変換して照合する
+        $siteUserId = findUserIdByClerkId($pdo, $userId);
+
+        if ($siteUserId === null || (int) $row['user_id'] !== $siteUserId) {
             respondError(403, 'この評価を削除する権限がありません。');
         }
 
@@ -453,8 +467,11 @@ if (mb_strlen($purchaseStore) > PURCHASE_STORE_MAX_LENGTH) {
 try {
     $pdo = getPdoConnection();
 
+    // ClerkのユーザーIDをサイト用のユーザーID(users.id)に変換する（未登録なら登録する）
+    $siteUserId = resolveUserId($pdo, $userId);
+
     // 通報を受けて投稿が制限されているアカウントは評価を投稿・修正できない
-    if (isUserRestricted($pdo, $userId)) {
+    if (isUserRestricted($pdo, $siteUserId)) {
         respondError(403, REPORT_RESTRICTED_MESSAGE);
     }
 
@@ -473,7 +490,7 @@ try {
     );
     $existingStmt->execute([
         'product_id' => $productId,
-        'user_id' => $userId,
+        'user_id' => $siteUserId,
     ]);
     $existingRow = $existingStmt->fetch();
 
@@ -511,7 +528,7 @@ try {
         try {
             $insertStmt->execute([
                 'product_id' => $productId,
-                'user_id' => $userId,
+                'user_id' => $siteUserId,
                 'score' => $score,
                 'comment' => $comment,
                 'purchase_price' => $purchasePriceValue,
@@ -530,7 +547,7 @@ try {
             $raceStmt = $pdo->prepare(
                 'SELECT id FROM product_valuations WHERE product_id = :product_id AND user_id = :user_id'
             );
-            $raceStmt->execute(['product_id' => $productId, 'user_id' => $userId]);
+            $raceStmt->execute(['product_id' => $productId, 'user_id' => $siteUserId]);
             $raceRow = $raceStmt->fetch();
             $valuationId = (int) $raceRow['id'];
 

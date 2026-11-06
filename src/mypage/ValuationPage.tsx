@@ -88,7 +88,8 @@ function ValuationPage() {
 							{valuation.purchaseStore && <p className="elem-store">購入店舗: {valuation.purchaseStore}</p>}
 							<p className="elem-score">{valuation.scoreLabel}</p>
 							<p className="elem-comment">{valuation.comment}</p>
-							{user && valuation.userId === user.id && (
+							{/* 評価の userId は投稿者の公開用ID。このページは本人の一覧なので、自分の公開用IDと比較する */}
+							{user && valuation.userId === publicId && (
 								<div className="elem-actions">
 									<button
 										type="button"

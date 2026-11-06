@@ -145,13 +145,16 @@ function handleGetProductById(string $id, string $userId): void
     try {
         $pdo = getPdoConnection();
 
-        if ($userId !== '') {
+        // DBにはサイト用のユーザーID(users.id)で保存しているため、ClerkのユーザーIDから変換する
+        $siteUserId = $userId !== '' ? findUserIdByClerkId($pdo, $userId) : null;
+
+        if ($siteUserId !== null) {
             $stmt = $pdo->prepare(
                 "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
                  FROM products
                  WHERE id = :id AND (status NOT IN ('pending', 'private') OR requested_by = :requested_by)"
             );
-            $stmt->execute(['id' => $id, 'requested_by' => $userId]);
+            $stmt->execute(['id' => $id, 'requested_by' => $siteUserId]);
         } else {
             $stmt = $pdo->prepare(
                 "SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
@@ -214,13 +217,21 @@ function handleListProductsByUser(string $userId): void
     try {
         $pdo = getPdoConnection();
 
+        // DBにはサイト用のユーザーID(users.id)で保存しているため、ClerkのユーザーIDから変換する
+        $siteUserId = findUserIdByClerkId($pdo, $userId);
+
+        if ($siteUserId === null) {
+            echo json_encode([], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         $stmt = $pdo->prepare(
             'SELECT id, name, category1, category2, distributor, manufacturing, status, created_at
              FROM products
              WHERE requested_by = :requested_by
              ORDER BY created_at DESC'
         );
-        $stmt->execute(['requested_by' => $userId]);
+        $stmt->execute(['requested_by' => $siteUserId]);
         $products = $stmt->fetchAll();
 
         echo json_encode(attachPhotosAndFormat($pdo, $products), JSON_UNESCAPED_UNICODE);
@@ -407,8 +418,11 @@ $pdo = null;
 try {
     $pdo = getPdoConnection();
 
+    // ClerkのユーザーIDをサイト用のユーザーID(users.id)に変換する（未登録なら登録する）
+    $siteUserId = resolveUserId($pdo, $userId);
+
     // 通報を受けて投稿が制限されているアカウントは商品申請できない
-    if (isUserRestricted($pdo, $userId)) {
+    if (isUserRestricted($pdo, $siteUserId)) {
         respondError(403, REPORT_RESTRICTED_MESSAGE);
     }
 
@@ -440,7 +454,7 @@ try {
         'category2' => $category2 !== '' ? $category2 : null,
         'distributor' => $distributor,
         'manufacturing' => $manufacturing !== '' ? $manufacturing : null,
-        'requested_by' => $userId,
+        'requested_by' => $siteUserId,
         'ip_address' => $ipAddress,
         'status' => 'pending',
     ]);

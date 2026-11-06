@@ -284,10 +284,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $pdo = getPdoConnection();
         $stmt = $pdo->query(
-            "SELECT id, name, category1, category2, distributor, manufacturing, status, requested_by, created_at
-             FROM products
-             WHERE status = 'pending'
-             ORDER BY created_at DESC"
+            "SELECT p.id, p.name, p.category1, p.category2, p.distributor, p.manufacturing, p.status,
+                    u.public_id AS requested_by, p.created_at
+             FROM products p
+             INNER JOIN users u ON u.id = p.requested_by
+             WHERE p.status = 'pending'
+             ORDER BY p.created_at DESC"
         );
         $products = $stmt->fetchAll();
 
@@ -344,7 +346,13 @@ if (!in_array($status, VALID_STATUSES, true)) {
 try {
     $pdo = getPdoConnection();
 
-    $existingStmt = $pdo->prepare('SELECT status, requested_by FROM products WHERE id = :id');
+    // 申請者へのメール送信にClerkのIDが必要なため、users から取得する（products にはサイト用のIDが入っている）
+    $existingStmt = $pdo->prepare(
+        'SELECT p.status, u.clerk_user_id AS requested_by
+         FROM products p
+         INNER JOIN users u ON u.id = p.requested_by
+         WHERE p.id = :id'
+    );
     $existingStmt->execute(['id' => $productId]);
     $existing = $existingStmt->fetch();
 
@@ -393,8 +401,11 @@ try {
     }
 
     $resultStmt = $pdo->prepare(
-        'SELECT id, name, category1, category2, distributor, manufacturing, status, requested_by, created_at
-         FROM products WHERE id = :id'
+        'SELECT p.id, p.name, p.category1, p.category2, p.distributor, p.manufacturing, p.status,
+                u.public_id AS requested_by, p.created_at
+         FROM products p
+         INNER JOIN users u ON u.id = p.requested_by
+         WHERE p.id = :id'
     );
     $resultStmt->execute(['id' => $productId]);
     $updated = $resultStmt->fetch();

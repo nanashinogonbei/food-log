@@ -18,15 +18,14 @@ require __DIR__ . '/db.php';
  *
  * レスポンスにClerkのユーザーIDは含めない（公開用IDのみ返す）。
  *
+ * 公開用ID・ユーザー行の作成処理は api/db.php (findOrCreateUser) にある。
+ *
  * 注意: 他のAPIと同様、リクエストの userId をそのまま信用する簡易実装。
  * 本来は Authorization ヘッダーのClerkセッションをサーバー側で検証し、
  * そこから得た本人のIDを使うべき。
  */
 
-const PUBLIC_ID_LENGTH = 12;
-const PUBLIC_ID_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
 const DISPLAY_NAME_MAX_LENGTH = 50;
-const PUBLIC_ID_MAX_ATTEMPTS = 5;
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');
@@ -47,70 +46,6 @@ function respondError(int $status, string $message): never
     http_response_code($status);
     echo json_encode(['error' => $message], JSON_UNESCAPED_UNICODE);
     exit;
-}
-
-/**
- * 推測されにくいランダムな公開用IDを生成する（暗号論的乱数を使用）。
- */
-function generatePublicId(): string
-{
-    $maxIndex = strlen(PUBLIC_ID_CHARS) - 1;
-    $publicId = '';
-
-    for ($i = 0; $i < PUBLIC_ID_LENGTH; $i++) {
-        $publicId .= PUBLIC_ID_CHARS[random_int(0, $maxIndex)];
-    }
-
-    return $publicId;
-}
-
-/**
- * ClerkのユーザーIDに対応するユーザー行を取得する。なければ公開用IDを発行して作成する。
- *
- * @return array{public_id:string,display_name:?string}
- */
-function findOrCreateUser(PDO $pdo, string $clerkUserId): array
-{
-    $selectStmt = $pdo->prepare('SELECT public_id, display_name FROM users WHERE clerk_user_id = :clerk_user_id');
-    $selectStmt->execute(['clerk_user_id' => $clerkUserId]);
-    $user = $selectStmt->fetch();
-
-    if ($user !== false) {
-        return $user;
-    }
-
-    $insertStmt = $pdo->prepare(
-        'INSERT INTO users (clerk_user_id, public_id) VALUES (:clerk_user_id, :public_id)'
-    );
-
-    for ($attempt = 0; $attempt < PUBLIC_ID_MAX_ATTEMPTS; $attempt++) {
-        try {
-            $insertStmt->execute(['clerk_user_id' => $clerkUserId, 'public_id' => generatePublicId()]);
-            break;
-        } catch (PDOException $e) {
-            // 重複エラー(1062)のときだけ再試行する。同時アクセスで先に作成された場合や
-            // 公開用IDが衝突した場合が該当するため、いったん取得し直して確認する。
-            if (($e->errorInfo[1] ?? null) !== 1062) {
-                throw $e;
-            }
-
-            $selectStmt->execute(['clerk_user_id' => $clerkUserId]);
-            $existing = $selectStmt->fetch();
-
-            if ($existing !== false) {
-                return $existing;
-            }
-        }
-    }
-
-    $selectStmt->execute(['clerk_user_id' => $clerkUserId]);
-    $created = $selectStmt->fetch();
-
-    if ($created === false) {
-        throw new RuntimeException('公開用IDの発行に失敗しました。');
-    }
-
-    return $created;
 }
 
 /**

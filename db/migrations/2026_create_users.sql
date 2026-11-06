@@ -4,6 +4,8 @@
 -- サイト用のユーザー情報テーブル
 --
 -- Clerkのユーザー ID(clerk_user_id)は内部用とし、URLや公開APIには出さない。
+-- 他のテーブル（products / product_valuations / valuation_reports）には、
+-- ClerkのIDではなくこのテーブルの id（サイト用のユーザーID）を保存する。
 -- 公開する場合は、推測されにくいランダム文字列の public_id（公開用ID）を使う。
 -- 行は初回アクセス時に api/users.php が自動で作成する（public_id もそのときに発行）。
 -- display_name は未設定の間は NULL。

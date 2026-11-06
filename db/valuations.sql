@@ -9,10 +9,13 @@
 -- 1ユーザーにつき同一商品への評価は1件のみとし、2件目以降の投稿は既存行の更新として扱う
 -- (UNIQUE KEY uq_product_valuations_product_user / api/valuations.php 側の upsert 処理と対応)。
 
+-- 【前提】ユーザーIDは ClerkのユーザーID ではなく users.id（サイト用のID）を保存する。
+--   db/users.sql を先に適用しておくこと（外部キーのため）。
+
 CREATE TABLE `product_valuations` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `product_id` int UNSIGNED NOT NULL,
-  `user_id` varchar(255) NOT NULL COMMENT 'Clerkのユーザー ID',
+  `user_id` int UNSIGNED NOT NULL COMMENT '投稿者のサイト用ユーザーID（users.id）',
   `score` enum('poor','like','love') NOT NULL COMMENT 'poor=イマイチ / like=好き / love=大好き',
   `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `purchase_price` varchar(10) DEFAULT NULL COMMENT '半角数字のみ、10桁以内',
@@ -23,6 +26,7 @@ CREATE TABLE `product_valuations` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_valuations_product_user` (`product_id`, `user_id`) COMMENT '1ユーザー1商品につき評価は1件のみ',
   KEY `idx_product_valuations_user_id` (`user_id`),
+  CONSTRAINT `fk_product_valuations_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_product_valuations_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

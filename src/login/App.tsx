@@ -40,7 +40,8 @@ function App() {
             </button>
           </div>
           {activeTab === 'signIn' && <SignIn />}
-          {activeTab === 'signUp' && <SignUp />}
+          {/* アカウント作成後は /signup-complete で users に登録し、ユーザー情報 編集ページへ移動する */}
+          {activeTab === 'signUp' && <SignUp forceRedirectUrl="/signup-complete" />}
         </SignedOut>
         {/* Show the user button when the user is signed in */}
         <SignedIn>

@@ -213,8 +213,18 @@ function ValuationPostPage() {
 			<section className="product-content">
 				{isLoadingPreselected && <p>選択中の商品を読み込んでいます...</p>}
 				{preselectedError && <p>{preselectedError}</p>}
-				{submitSuccessAction === 'created' && <p>評価を投稿しました。ご協力ありがとうございます。</p>}
-				{submitSuccessAction === 'updated' && <p>評価を修正しました。ご協力ありがとうございます。</p>}
+				{submitSuccessAction === 'created' && (
+					<>
+						<p className="_mb10">評価を投稿しました。ご協力ありがとうございます。</p>
+						<p><Link to={`/mypage/${publicId}`} className="elem-link -typeB">マイページに戻る</Link></p>
+					</>
+				)}
+				{submitSuccessAction === 'updated' && (
+					<>
+						<p className="_mb10">評価を修正しました。ご協力ありがとうございます。</p>
+						<p><Link to={`/mypage/${publicId}`} className="elem-link -typeB">マイページに戻る</Link></p>
+					</>
+				)}
 				{submitError && <p>{submitError}</p>}
 
 				{!submitSuccessAction && (
@@ -323,7 +333,7 @@ function ValuationPostPage() {
 					</div>
 
 					<div className="stack-formRow">
-						<p className="elem-label"><label htmlFor="comment">コメント【必須】</label></p>
+						<p className="elem-label"><label htmlFor="comment"><img className="icon-required" src="/assets/img/icon-required.png" />コメント</label></p>
 						<div className="elem-parts">
 							<textarea
 								id="comment"

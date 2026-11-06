@@ -87,16 +87,111 @@ function getClientIpAddress(): ?string
     return $remoteAddr;
 }
 
+/**
+ * サイト用ユーザー(usersテーブル)の公開用IDの仕様。
+ * DBの各テーブルにはClerkのユーザーIDではなく、users.id（サイト用のID）を保存する。
+ * フロントから受け取ったClerkのユーザーIDは、下の関数でusers.idに変換して使う。
+ */
+const PUBLIC_ID_LENGTH = 12;
+const PUBLIC_ID_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const PUBLIC_ID_MAX_ATTEMPTS = 5;
+
+/**
+ * 推測されにくいランダムな公開用IDを生成する（暗号論的乱数を使用）。
+ */
+function generatePublicId(): string
+{
+    $maxIndex = strlen(PUBLIC_ID_CHARS) - 1;
+    $publicId = '';
+
+    for ($i = 0; $i < PUBLIC_ID_LENGTH; $i++) {
+        $publicId .= PUBLIC_ID_CHARS[random_int(0, $maxIndex)];
+    }
+
+    return $publicId;
+}
+
+/**
+ * ClerkのユーザーIDに対応するサイト用のユーザーID(users.id)を返す。未登録の場合は null。
+ * 閲覧系（一覧取得など）で、登録のないユーザーを新規作成せずに照会したいときに使う。
+ */
+function findUserIdByClerkId(PDO $pdo, string $clerkUserId): ?int
+{
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE clerk_user_id = :clerk_user_id');
+    $stmt->execute(['clerk_user_id' => $clerkUserId]);
+    $id = $stmt->fetchColumn();
+
+    return $id === false ? null : (int) $id;
+}
+
+/**
+ * ClerkのユーザーIDに対応するユーザー行を取得する。なければ公開用IDを発行して作成する。
+ *
+ * @return array{id:int|string,public_id:string,display_name:?string}
+ */
+function findOrCreateUser(PDO $pdo, string $clerkUserId): array
+{
+    $selectStmt = $pdo->prepare('SELECT id, public_id, display_name FROM users WHERE clerk_user_id = :clerk_user_id');
+    $selectStmt->execute(['clerk_user_id' => $clerkUserId]);
+    $user = $selectStmt->fetch();
+
+    if ($user !== false) {
+        return $user;
+    }
+
+    $insertStmt = $pdo->prepare(
+        'INSERT INTO users (clerk_user_id, public_id) VALUES (:clerk_user_id, :public_id)'
+    );
+
+    for ($attempt = 0; $attempt < PUBLIC_ID_MAX_ATTEMPTS; $attempt++) {
+        try {
+            $insertStmt->execute(['clerk_user_id' => $clerkUserId, 'public_id' => generatePublicId()]);
+            break;
+        } catch (PDOException $e) {
+            // 重複エラー(1062)のときだけ再試行する。同時アクセスで先に作成された場合や
+            // 公開用IDが衝突した場合が該当するため、いったん取得し直して確認する。
+            if (($e->errorInfo[1] ?? null) !== 1062) {
+                throw $e;
+            }
+
+            $selectStmt->execute(['clerk_user_id' => $clerkUserId]);
+            $existing = $selectStmt->fetch();
+
+            if ($existing !== false) {
+                return $existing;
+            }
+        }
+    }
+
+    $selectStmt->execute(['clerk_user_id' => $clerkUserId]);
+    $created = $selectStmt->fetch();
+
+    if ($created === false) {
+        throw new RuntimeException('公開用IDの発行に失敗しました。');
+    }
+
+    return $created;
+}
+
+/**
+ * ClerkのユーザーIDに対応するサイト用のユーザーID(users.id)を返す。未登録なら登録してから返す。
+ * 投稿・通報など、DBへ書き込む処理で使う。
+ */
+function resolveUserId(PDO $pdo, string $clerkUserId): int
+{
+    return (int) findOrCreateUser($pdo, $clerkUserId)['id'];
+}
+
 /** 有効な通報を、この人数以上の「別々のユーザー」から受けたアカウントは投稿できなくなる */
 const REPORT_RESTRICTION_THRESHOLD = 3;
 
 const REPORT_RESTRICTED_MESSAGE = 'このアカウントは通報を受けたため、投稿が制限されています。';
 
 /**
- * 指定ユーザーの評価に対する、有効な通報(status='pending')の通報者数（重複除外）を返す。
+ * 指定ユーザー(users.id)の評価に対する、有効な通報(status='pending')の通報者数（重複除外）を返す。
  * 同じ人が複数の評価を通報しても1人として数える。
  */
-function countActiveReporters(PDO $pdo, string $userId): int
+function countActiveReporters(PDO $pdo, int $userId): int
 {
     $stmt = $pdo->prepare(
         "SELECT COUNT(DISTINCT reporter_user_id) FROM valuation_reports
@@ -111,7 +206,7 @@ function countActiveReporters(PDO $pdo, string $userId): int
  * 通報により投稿が制限されているアカウントかどうか。
  * 商品申請(api/products.php)・商品評価(api/valuations.php)の投稿前に確認する。
  */
-function isUserRestricted(PDO $pdo, string $userId): bool
+function isUserRestricted(PDO $pdo, int $userId): bool
 {
     return countActiveReporters($pdo, $userId) >= REPORT_RESTRICTION_THRESHOLD;
 }

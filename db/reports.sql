@@ -12,12 +12,15 @@
 -- 通報時点の内容は valuation_score / valuation_comment に控えとして保持する。
 -- product_id には外部キーを張らない（商品が削除されても通報の記録を残すため）。
 
+-- 【前提】ユーザーIDは ClerkのユーザーID ではなく users.id（サイト用のID）を保存する。
+--   db/users.sql を先に適用しておくこと（外部キーのため）。
+
 CREATE TABLE `valuation_reports` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `valuation_id` int UNSIGNED DEFAULT NULL COMMENT '通報された評価のID（評価が削除された場合はNULL）',
   `product_id` int UNSIGNED NOT NULL,
-  `reported_user_id` varchar(255) NOT NULL COMMENT '通報された評価の投稿者（Clerkのユーザー ID）',
-  `reporter_user_id` varchar(255) NOT NULL COMMENT '通報したユーザー（Clerkのユーザー ID）',
+  `reported_user_id` int UNSIGNED NOT NULL COMMENT '通報された評価の投稿者のサイト用ユーザーID（users.id）',
+  `reporter_user_id` int UNSIGNED NOT NULL COMMENT '通報したユーザーのサイト用ユーザーID（users.id）',
   `valuation_score` enum('poor','like','love') NOT NULL COMMENT '通報時点の評価',
   `valuation_comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '通報時点の評価コメント（控え）',
   `reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '通報理由（必須）',
@@ -30,5 +33,7 @@ CREATE TABLE `valuation_reports` (
   KEY `idx_valuation_reports_reported_user` (`reported_user_id`, `status`),
   KEY `idx_valuation_reports_reporter_user` (`reporter_user_id`),
   KEY `idx_valuation_reports_product_id` (`product_id`),
+  CONSTRAINT `fk_valuation_reports_reported_user` FOREIGN KEY (`reported_user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_valuation_reports_reporter_user` FOREIGN KEY (`reporter_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_valuation_reports_valuation` FOREIGN KEY (`valuation_id`) REFERENCES `product_valuations` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

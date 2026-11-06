@@ -155,10 +155,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         $stmt = $pdo->query(
             "SELECT r.id, r.valuation_id, r.product_id, p.name AS product_name,
-                    r.reported_user_id, r.reporter_user_id, r.valuation_score, r.valuation_comment,
+                    r.reported_user_id, ru.clerk_user_id AS reported_clerk_user_id, ru.public_id AS reported_public_id,
+                    rt.public_id AS reporter_public_id, r.valuation_score, r.valuation_comment,
                     r.reason, r.status, r.created_at, r.handled_at
              FROM valuation_reports r
              LEFT JOIN products p ON p.id = r.product_id
+             LEFT JOIN users ru ON ru.id = r.reported_user_id
+             LEFT JOIN users rt ON rt.id = r.reporter_user_id
              ORDER BY (r.status = 'pending') DESC, r.created_at DESC, r.id DESC"
         );
         $rows = $stmt->fetchAll();
@@ -179,9 +182,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $clerkSecretKey = (string) ($config['clerk_secret_key'] ?? '');
         $emails = [];
         $lookupCount = 0;
-        $reportedUserIds = array_values(array_unique(
-            array_map(static fn (array $row): string => (string) $row['reported_user_id'], $rows)
-        ));
+        // DBにはサイト用のユーザーID(users.id)で保存しているため、メールの取得にはClerkのIDを使う
+        $clerkIdsBySiteId = [];
+        foreach ($rows as $row) {
+            if ($row['reported_clerk_user_id'] !== null) {
+                $clerkIdsBySiteId[(string) $row['reported_user_id']] = (string) $row['reported_clerk_user_id'];
+            }
+        }
+        $reportedUserIds = array_keys($clerkIdsBySiteId);
         usort(
             $reportedUserIds,
             static fn (string $a, string $b): int => ($reporterCounts[$b] ?? 0) <=> ($reporterCounts[$a] ?? 0)
@@ -190,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             if ($lookupCount >= CLERK_LOOKUP_LIMIT) {
                 break;
             }
-            $emails[$reportedUserId] = fetchUserEmail($reportedUserId, $clerkSecretKey);
+            $emails[(string) $reportedUserId] = fetchUserEmail($clerkIdsBySiteId[(string) $reportedUserId], $clerkSecretKey);
             $lookupCount++;
         }
 
@@ -203,9 +211,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'valuationId' => $row['valuation_id'] !== null ? (int) $row['valuation_id'] : null,
                 'productId' => (int) $row['product_id'],
                 'productName' => $row['product_name'],
-                'reportedUserId' => $reportedUserId,
+                // 管理画面にはClerkのIDではなく公開用IDを表示する
+                'reportedUserId' => $row['reported_public_id'],
                 'reportedUserEmail' => $emails[$reportedUserId] ?? null,
-                'reporterUserId' => $row['reporter_user_id'],
+                'reporterUserId' => $row['reporter_public_id'],
                 'score' => $row['valuation_score'],
                 'scoreLabel' => SCORE_LABELS[$row['valuation_score']] ?? $row['valuation_score'],
                 'comment' => $row['valuation_comment'],

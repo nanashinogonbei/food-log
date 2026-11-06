@@ -46,7 +46,8 @@ function ProductPage() {
   }, [product?.id])
 
   // ログインユーザーが既にこの商品を評価済みかどうか（評価済みなら投稿ボタンを隠す）
-  const hasEvaluated = user ? valuations.some((valuation) => valuation.userId === user.id) : false
+  // 評価の userId は投稿者の公開用ID（ClerkのIDではない）なので、自分の公開用IDと比較する
+  const hasEvaluated = profile ? valuations.some((valuation) => valuation.userId === profile.publicId) : false
 
   // 「好き・大好き」＝ポジティブ、「イマイチ」＝ネガティブでタブ表示を分ける（デフォルトはポジティブ）
   const [valuationTab, setValuationTab] = useState<ValuationTab>('positive')
@@ -260,13 +261,13 @@ function ProductPage() {
 								<p className="elem-comment">{valuation.comment}</p>
 							</div>
 							<div className="cluster-action">
-								{user && profile && valuation.userId === user.id && (
+								{user && profile && valuation.userId === profile.publicId && (
 									<p className="elem-actions">
 										<Link to={`/mypage/${profile.publicId}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
 										<button type="button" onClick={() => handleDeleteClick(valuation.id)}>削除</button>
 									</p>
 								)}
-								{user && valuation.userId !== user.id && (
+								{user && profile && valuation.userId !== profile.publicId && (
 									<p className="elem-actions">
 										<ValuationReportButton
 											valuationId={valuation.id}
