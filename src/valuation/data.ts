@@ -31,7 +31,10 @@ export interface ValuationSummary {
   productId: number
   productName: string
   productPhoto: string | null
+  /** 投稿者の公開用ID（ユーザーページ /user/[userID] のURLに使う） */
   userId: string
+  /** 投稿者の表示名（未設定の場合は null） */
+  userDisplayName: string | null
   score: ValuationScore
   scoreLabel: string
   comment: string

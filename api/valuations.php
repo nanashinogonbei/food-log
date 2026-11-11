@@ -133,7 +133,7 @@ function handleListValuations(): void
         $where = implode(' AND ', $conditions);
 
         $stmt = $pdo->prepare(
-            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, v.score, v.comment,
+            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
                     v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
@@ -163,7 +163,7 @@ function handleListValuationsByPublicId(string $publicId): void
         $pdo = getPdoConnection();
 
         $stmt = $pdo->prepare(
-            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, v.score, v.comment,
+            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
                     v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
@@ -223,6 +223,8 @@ function formatValuationRows(PDO $pdo, array $rows): array
             'productPhoto' => $photoByProductId[$pid] ?? null,
             // 投稿者の公開用ID（ClerkのユーザーIDは返さない）
             'userId' => $row['user_id'],
+            // 投稿者の表示名（未設定の場合は null）
+            'userDisplayName' => $row['user_display_name'] ?? null,
             'score' => $row['score'],
             'scoreLabel' => SCORE_LABELS[$row['score']] ?? $row['score'],
             'comment' => $row['comment'],
@@ -251,7 +253,7 @@ function handleRecentValuations(array $categoryIds = []): void
         $categoryCondition = count($categoryIds) > 0 ? 'AND ' . buildCategoryFilterSql('p', $categoryIds) : '';
 
         $stmt = $pdo->prepare(
-            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, v.score, v.comment,
+            "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
                     v.purchase_price, v.purchase_store, v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id

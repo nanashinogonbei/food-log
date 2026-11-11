@@ -1,6 +1,5 @@
 import { Link, NavLink, useParams } from 'react-router-dom'
 import { useClerk } from '@clerk/clerk-react'
-import type { MouseEvent } from 'react'
 import { useBodyId } from '../components/useBodyId.ts'
 
 function MyPage() {
@@ -9,8 +8,7 @@ function MyPage() {
   const { signOut } = useClerk()
 
   // ログアウトしてトップページに戻る
-  const handleSignOut = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault()
+  const handleSignOut = () => {
     void signOut({ redirectUrl: '/' })
   }
 
@@ -27,7 +25,7 @@ function MyPage() {
         <li className="item"><NavLink to={`/mypage/${publicId}/request`} className={({ isActive }) => (isActive ? '-active' : '')}>商品申請</NavLink></li>
         <li className="item"><NavLink to={`/mypage/${publicId}/valuation`} className={({ isActive }) => (isActive ? '-active' : '')}>商品評価</NavLink></li>
       </ul>
-			<div className="stack-button"><a href="/" onClick={handleSignOut}>ログアウト</a></div>
+			<div className="stack-button -logout"><button type="button" className="elem-button -typeA" onClick={handleSignOut}>ログアウト</button></div>
     </div>
   )
 }

@@ -254,18 +254,21 @@ function ProductPage() {
 					{visibleValuations.map((valuation) => (
 						<li key={valuation.id} className="item">
 							<div className="cluster-content">
-								<p className="elem-date">
-									投稿日: {formatJapaneseDate(valuation.createdAt)}
-									{valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
+								<p className="elem-user">
+									<Link to={`/user/${valuation.userId}`} className="elem-link">{valuation.userDisplayName || 'ユーザー'}</Link>さん
 								</p>
+								<p className="elem-score">{valuation.scoreLabel}</p>
+								<p className="elem-comment">{valuation.comment}</p>
 								{(valuation.purchasePrice || valuation.purchaseStore) && (
 									<p className="elem-purchase">
 										{valuation.purchasePrice && <>購入金額: {valuation.purchasePrice}円　</>}
 										{valuation.purchaseStore && <>購入店舗: {valuation.purchaseStore}</>}
 									</p>
 								)}
-								<p className="elem-score">{valuation.scoreLabel}</p>
-								<p className="elem-comment">{valuation.comment}</p>
+								<p className="elem-date">
+									投稿日: {formatJapaneseDate(valuation.createdAt)}
+									{valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
+								</p>
 							</div>
 							<div className="cluster-action">
 								{user && profile && valuation.userId === profile.publicId && (
