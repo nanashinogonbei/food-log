@@ -62,6 +62,13 @@ function ProductPage() {
     navigate(`/mypage/${profile.publicId}/valuation/post?productId=${product.id}`)
   }
 
+  const handleEditClick = (productId: number) => {
+    if (!profile) {
+      return
+    }
+    navigate(`/mypage/${profile.publicId}/valuation/post?productId=${productId}`)
+  }
+
   const handleDeleteClick = async (valuationId: number) => {
     if (!user) {
       return
@@ -263,8 +270,21 @@ function ProductPage() {
 							<div className="cluster-action">
 								{user && profile && valuation.userId === profile.publicId && (
 									<p className="elem-actions">
-										<Link to={`/mypage/${profile.publicId}/valuation/post?productId=${valuation.productId}`}>編集</Link>{' '}
-										<button type="button" onClick={() => handleDeleteClick(valuation.id)}>削除</button>
+										<button
+											type="button"
+											className="button-edit"
+											onClick={() => handleEditClick(valuation.productId)}
+										>
+										編集
+										</button>
+										{' '}
+										<button
+											type="button"
+											className="button-delete"
+											onClick={() => handleDeleteClick(valuation.id)}
+										>
+										削除
+										</button>
 									</p>
 								)}
 								{user && profile && valuation.userId !== profile.publicId && (

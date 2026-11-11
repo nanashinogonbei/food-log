@@ -84,9 +84,6 @@ function UserPage() {
       <h1 className="heading -typeA">ユーザー情報 編集</h1>
 
       {isLoading && <p>読み込み中...</p>}
-      {!isLoading && !loadError && publicId && (
-        <p><Link to={`/user/${publicId}`} className="elem-link -typeA">あなたの評価一覧（公開ページ）を見る</Link></p>
-      )}
       {loadError && <p className="stack-error">{loadError}</p>}
 
       {!isLoading && !loadError && (
@@ -120,7 +117,7 @@ function UserPage() {
           </div>
 
           {submitError && <p className="stack-error">{submitError}</p>}
-          {submitSuccess && <p>ユーザー情報を更新しました。</p>}
+          {submitSuccess && <p className="stack-update">ユーザー情報を更新しました。</p>}
 
           <div className="stack-button">
             <button type="submit" className="elem-button -typeA" disabled={isSubmitting}>

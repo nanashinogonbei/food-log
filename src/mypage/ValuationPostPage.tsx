@@ -211,8 +211,8 @@ function ValuationPostPage() {
       <p><Link to={`/mypage/${publicId}/valuation`} className="elem-link -typeB">評価一覧に戻る</Link></p>
 
 			<section className="product-content">
-				{isLoadingPreselected && <p>選択中の商品を読み込んでいます...</p>}
-				{preselectedError && <p>{preselectedError}</p>}
+				{isLoadingPreselected && <p className="stack-load">選択中の商品を読み込んでいます...</p>}
+				{preselectedError && <p className="stack-error">{preselectedError}</p>}
 				{submitSuccessAction === 'created' && (
 					<>
 						<p className="_mb10">評価を投稿しました。ご協力ありがとうございます。</p>
@@ -225,7 +225,7 @@ function ValuationPostPage() {
 						<p><Link to={`/mypage/${publicId}`} className="elem-link -typeB">マイページに戻る</Link></p>
 					</>
 				)}
-				{submitError && <p>{submitError}</p>}
+				{submitError && <p className="stack-error">{submitError}</p>}
 
 				{!submitSuccessAction && (
 				<form className="product-form" onSubmit={handleSubmit}>
@@ -244,7 +244,7 @@ function ValuationPostPage() {
 							<p className="elem-notes -typeA">3文字以上入力すると候補が表示されます。</p>
 							{selectedProduct && isProductConfirmed && (
 								<div className="stack-selectedProduct">
-									{selectedProduct.photos[0] && <img src={`http://production-null.work/food-log${selectedProduct.photos[0]}`} alt={selectedProduct.name} />}
+									{selectedProduct.photos[0] && <figure className="elem-img"><img src={`http://production-null.work/food-log${selectedProduct.photos[0]}`} alt={selectedProduct.name} /></figure>}
 									<span>
 										「{selectedProduct.name}
 										{selectedProduct.status === 'pending' && <>（保留中）</>}」を選択中

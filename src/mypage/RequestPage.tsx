@@ -52,8 +52,8 @@ function RequestPage() {
 				{!isLoading && !error && <span className="count">（全{products.length}件）</span>}
 			</h2>
 			{isLoading && <p>読み込み中...</p>}
-			{error && <p>{error}</p>}
-			{!isLoading && !error && products.length === 0 && <p>まだ商品を申請していません。</p>}
+			{error && <p className="stack-error">{error}</p>}
+			{!isLoading && !error && products.length === 0 && <p className="stack-error">まだ商品を申請していません。</p>}
 
 			<ul className="list-request">
 			{visibleProducts.map((product) => {

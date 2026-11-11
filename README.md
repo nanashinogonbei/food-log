@@ -26,6 +26,9 @@
 --通報 管理 (/admin/report/)
 
 
+* 管理者ページ
+.env と api/config.php に記述
+
 
 * 製品ステータス(status)
 pending		: 保留中

@@ -67,9 +67,9 @@ function ValuationPage() {
 					投稿した評価
 					{!isLoading && !error && <span className="count">（全{valuations.length}件）</span>}
 				</h2>
-				{isLoading && <p>読み込み中...</p>}
-				{error && <p>{error}</p>}
-				{!isLoading && !error && valuations.length === 0 && <p>まだ評価を投稿していません。</p>}
+				{isLoading && <p className="stack-load">読み込み中...</p>}
+				{error && <p className="stack-error">{error}</p>}
+				{!isLoading && !error && valuations.length === 0 && <p className="stack-error">まだ評価を投稿していません。</p>}
 
 				<ul className="product-listValuation">
 					{visibleValuations.map((valuation) => (

@@ -109,6 +109,18 @@
 	label:has(input[type="radio"]:checked)
 		background-color: #E6F0FA
 
+.stack-update
+	margin-bottom: 30px
+	padding: 13px 20px 15px 42px
+	color: #00B200
+	font-weight: bold
+	background: #EBFAEB url(/assets/img/icon-check.svg) no-repeat 20px 15px / 18px auto
+
+.stack-load
+	margin-bottom: 30px
+	padding: 13px 20px 15px 42px
+	font-weight: bold
+	background: #f5f5f5 url(/assets/img/icon-load.svg) no-repeat 20px 15px / 18px auto
 
 .stack-error
 	margin-bottom: 30px
@@ -116,6 +128,7 @@
 	color: #CC0000
 	font-weight: bold
 	background: #FAEBED url(/assets/img/icon-attention.svg) no-repeat 20px 15px / 18px auto
+
 
 .stack-tabs
 	display: flex
@@ -153,7 +166,7 @@
 				flex-shrink: 0
 				width: 80px
 				height: 80px
-				object-fit: cover
+				object-fit: contain
 			.cluster-txt
 				min-width: 0
 				span

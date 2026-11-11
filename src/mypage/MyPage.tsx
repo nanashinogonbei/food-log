@@ -26,8 +26,8 @@ function MyPage() {
 				<li className="item"><NavLink to={`/mypage/${publicId}/user`} className={({ isActive }) => (isActive ? '-active' : '')}>ユーザー情報 編集</NavLink></li>
         <li className="item"><NavLink to={`/mypage/${publicId}/request`} className={({ isActive }) => (isActive ? '-active' : '')}>商品申請</NavLink></li>
         <li className="item"><NavLink to={`/mypage/${publicId}/valuation`} className={({ isActive }) => (isActive ? '-active' : '')}>商品評価</NavLink></li>
-        <li className="item"><a href="/" onClick={handleSignOut}>ログアウト</a></li>
       </ul>
+			<div className="stack-button"><a href="/" onClick={handleSignOut}>ログアウト</a></div>
     </div>
   )
 }
