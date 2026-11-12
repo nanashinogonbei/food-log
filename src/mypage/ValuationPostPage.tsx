@@ -261,7 +261,6 @@ function ValuationPostPage() {
 
 			<section className="product-content">
 				{isLoadingPreselected && <p className="stack-load">選択中の商品を読み込んでいます...</p>}
-				{preselectedError && <p className="stack-error">{preselectedError}</p>}
 				{submitSuccessAction === 'created' && (
 					<>
 						<p className="_mb10">評価を投稿しました。ご協力ありがとうございます。</p>
@@ -274,7 +273,6 @@ function ValuationPostPage() {
 						<p><Link to={`/mypage/${publicId}`} className="elem-link -typeB">マイページに戻る</Link></p>
 					</>
 				)}
-				{submitError && <p className="stack-error">{submitError}</p>}
 
 				{!submitSuccessAction && (
 				<form className="product-form" onSubmit={handleSubmit}>
@@ -307,7 +305,7 @@ function ValuationPostPage() {
 								<>
 									{isSearching && <p className="field-hint">検索中...</p>}
 									{!isSearching && candidates.length === 0 && (
-										<p className="field-hint">一致する商品が見つかりません。</p>
+										<p className="stack-error">一致する商品が見つかりません。先に「<a class="elem-link" href="../request">商品申請</a>」を行ってください。</p>
 									)}
 									{candidates.length > 0 && (
 										<ul className="list-autocomplete">
@@ -465,6 +463,9 @@ function ValuationPostPage() {
 							<p className="elem-notes -typeA">{commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）</p>
 						</div>
 					</div>
+
+					{preselectedError && <p className="stack-error">{preselectedError}</p>}
+					{submitError && <p className="stack-error">{submitError}</p>}
 
 					<div className="stack-button">
 						<button type="submit" className="elem-button -typeA" disabled={isSubmitting}>
