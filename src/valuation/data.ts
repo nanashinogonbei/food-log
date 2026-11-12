@@ -9,13 +9,45 @@ export const VALUATION_SCORE_OPTIONS: { value: ValuationScore; label: string }[]
   { value: 'love', label: '大好き' },
 ]
 
+/** 購入場所の種別 */
+export type PurchaseType = 'store' | 'vending' | 'online' | 'other'
+
+export const PURCHASE_TYPE_OPTIONS: { value: PurchaseType; label: string }[] = [
+  { value: 'store', label: '店舗' },
+  { value: 'vending', label: '自販機' },
+  { value: 'online', label: 'ネット・通販' },
+  { value: 'other', label: 'その他' },
+]
+
+export const PURCHASE_TYPE_LABELS: Record<PurchaseType, string> = {
+  store: '店舗',
+  vending: '自販機',
+  online: 'ネット・通販',
+  other: 'その他',
+}
+
+// 購入場所の各入力欄の最大文字数（api/valuations.php の定数と合わせる）
+export const PURCHASE_STORE_MAX_LENGTH = 50
+export const PURCHASE_BRANCH_MAX_LENGTH = 50
+export const PURCHASE_URL_MAX_LENGTH = 500
+export const PURCHASE_DETAIL_MAX_LENGTH = 100
+
 export interface ValuationPayload {
   userId: string
   productId: number
   score: ValuationScore
   comment: string
   purchasePrice?: string
+  /** 購入場所の種別。未指定なら購入場所なし */
+  purchaseType?: PurchaseType
+  /** 店名（店舗・ネット・通販） */
   purchaseStore?: string
+  /** 支店名（店舗） */
+  purchaseBranch?: string
+  /** URL（ネット・通販） */
+  purchaseUrl?: string
+  /** 自販機の場所 / その他の内容 */
+  purchaseDetail?: string
 }
 
 export interface ValuationSubmitResult {
@@ -39,10 +71,19 @@ export interface ValuationSummary {
   scoreLabel: string
   comment: string
   purchasePrice: string | null
+  purchaseType: PurchaseType | null
   purchaseStore: string | null
+  purchaseBranch: string | null
+  purchaseUrl: string | null
+  purchaseDetail: string | null
   createdAt: string
   /** 評価を修正した日時。未修正の場合は null */
   updatedAt: string | null
+}
+
+/** 評価に購入場所があるか（種別が未設定の評価は購入場所なしとして扱う） */
+export function hasPurchasePlace(valuation: Pick<ValuationSummary, 'purchaseType'>): boolean {
+  return valuation.purchaseType !== null
 }
 
 export type RankingPeriod = 'weekly' | 'monthly' | 'quarterly'
@@ -69,8 +110,20 @@ export async function submitValuation(payload: ValuationPayload): Promise<Valuat
   if (payload.purchasePrice) {
     formData.append('purchasePrice', payload.purchasePrice)
   }
+  if (payload.purchaseType) {
+    formData.append('purchaseType', payload.purchaseType)
+  }
   if (payload.purchaseStore) {
     formData.append('purchaseStore', payload.purchaseStore)
+  }
+  if (payload.purchaseBranch) {
+    formData.append('purchaseBranch', payload.purchaseBranch)
+  }
+  if (payload.purchaseUrl) {
+    formData.append('purchaseUrl', payload.purchaseUrl)
+  }
+  if (payload.purchaseDetail) {
+    formData.append('purchaseDetail', payload.purchaseDetail)
   }
 
   const response = await fetch(`${API_BASE_URL}/valuations.php`, {

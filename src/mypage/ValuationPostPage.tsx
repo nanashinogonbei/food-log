@@ -5,8 +5,16 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { fetchProductById } from '../product/data.ts'
 import type { ProductSummary } from '../product/data.ts'
 import { useProductSearch } from '../product/useProducts.ts'
-import { submitValuation, VALUATION_SCORE_OPTIONS } from '../valuation/data.ts'
-import type { ValuationScore } from '../valuation/data.ts'
+import {
+  PURCHASE_BRANCH_MAX_LENGTH,
+  PURCHASE_DETAIL_MAX_LENGTH,
+  PURCHASE_STORE_MAX_LENGTH,
+  PURCHASE_TYPE_OPTIONS,
+  PURCHASE_URL_MAX_LENGTH,
+  submitValuation,
+  VALUATION_SCORE_OPTIONS,
+} from '../valuation/data.ts'
+import type { PurchaseType, ValuationScore } from '../valuation/data.ts'
 import { useUserValuations } from '../valuation/useValuations.ts'
 import { toHalfWidthDigits } from '../valuation/format.ts'
 import { useBodyId } from '../components/useBodyId.ts'
@@ -14,7 +22,6 @@ import { useBodyId } from '../components/useBodyId.ts'
 const COMMENT_MIN_LENGTH = 10
 const COMMENT_MAX_LENGTH = 2000
 const PURCHASE_PRICE_MAX_LENGTH = 10
-const PURCHASE_STORE_MAX_LENGTH = 50
 const PRODUCT_NAME_MIN_LENGTH = 3
 
 function ValuationPostPage() {
@@ -41,7 +48,12 @@ function ValuationPostPage() {
   const [score, setScore] = useState<ValuationScore | ''>('')
   const [comment, setComment] = useState('')
   const [purchasePrice, setPurchasePrice] = useState('')
+  // 購入場所: 種別ごとに入力欄が変わる（店舗=店名+支店名 / 自販機=場所 / ネット・通販=店名+URL / その他=内容）
+  const [purchaseType, setPurchaseType] = useState<PurchaseType | ''>('')
   const [purchaseStore, setPurchaseStore] = useState('')
+  const [purchaseBranch, setPurchaseBranch] = useState('')
+  const [purchaseUrl, setPurchaseUrl] = useState('')
+  const [purchaseDetail, setPurchaseDetail] = useState('')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -115,12 +127,20 @@ function ValuationPostPage() {
       setScore(existingValuation.score)
       setComment(existingValuation.comment)
       setPurchasePrice(existingValuation.purchasePrice ?? '')
+      setPurchaseType(existingValuation.purchaseType ?? '')
       setPurchaseStore(existingValuation.purchaseStore ?? '')
+      setPurchaseBranch(existingValuation.purchaseBranch ?? '')
+      setPurchaseUrl(existingValuation.purchaseUrl ?? '')
+      setPurchaseDetail(existingValuation.purchaseDetail ?? '')
     } else {
       setScore('')
       setComment('')
       setPurchasePrice('')
+      setPurchaseType('')
       setPurchaseStore('')
+      setPurchaseBranch('')
+      setPurchaseUrl('')
+      setPurchaseDetail('')
     }
   }, [selectedProduct, existingValuation])
 
@@ -139,6 +159,25 @@ function ValuationPostPage() {
 
   const commentLength = Array.from(comment).length
   const showCandidateList = !isProductConfirmed && trimmedProductName.length >= PRODUCT_NAME_MIN_LENGTH
+
+  /** 購入場所の入力内容を検証し、問題があればエラーメッセージを返す（api/valuations.php と同じ規則） */
+  const validatePurchasePlace = (): string | null => {
+    if (purchaseType === 'store' || purchaseType === 'online') {
+      if (purchaseStore.trim() === '') {
+        return '店名を入力してください。'
+      }
+    }
+
+    if (purchaseType === 'online' && purchaseUrl.trim() !== '' && !/^https?:\/\/\S+$/i.test(purchaseUrl.trim())) {
+      return 'URLは http:// または https:// から始まる形式で入力してください。'
+    }
+
+    if (purchaseType === 'other' && purchaseDetail.trim() === '') {
+      return '購入場所の内容を入力してください。'
+    }
+
+    return null
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -162,8 +201,9 @@ function ValuationPostPage() {
       return
     }
 
-    if (purchaseStore.length > PURCHASE_STORE_MAX_LENGTH) {
-      setSubmitError(`購入店舗は${PURCHASE_STORE_MAX_LENGTH}文字以内で入力してください。`)
+    const purchasePlaceError = validatePurchasePlace()
+    if (purchasePlaceError) {
+      setSubmitError(purchasePlaceError)
       return
     }
 
@@ -178,7 +218,12 @@ function ValuationPostPage() {
         score,
         comment,
         purchasePrice: purchasePrice || undefined,
-        purchaseStore: purchaseStore || undefined,
+        // 種別に関係のない入力欄の値は送らない（サーバー側でも破棄される）
+        purchaseType: purchaseType || undefined,
+        purchaseStore: purchaseType === 'store' || purchaseType === 'online' ? purchaseStore.trim() || undefined : undefined,
+        purchaseBranch: purchaseType === 'store' ? purchaseBranch.trim() || undefined : undefined,
+        purchaseUrl: purchaseType === 'online' ? purchaseUrl.trim() || undefined : undefined,
+        purchaseDetail: purchaseType === 'vending' || purchaseType === 'other' ? purchaseDetail.trim() || undefined : undefined,
       })
 
       setSubmitSuccessAction(result.action)
@@ -187,7 +232,11 @@ function ValuationPostPage() {
       setScore('')
       setComment('')
       setPurchasePrice('')
+      setPurchaseType('')
       setPurchaseStore('')
+      setPurchaseBranch('')
+      setPurchaseUrl('')
+      setPurchaseDetail('')
       setSearchParams({}, { replace: true })
       reloadValuations()
     } catch (err) {
@@ -319,18 +368,89 @@ function ValuationPostPage() {
 					</div>
 
 					<div className="stack-formRow">
-						<p className="elem-label"><label htmlFor="purchaseStore">購入場所</label></p>
+						<p className="elem-label"><label htmlFor="purchaseType">購入場所</label></p>
 						<div className="elem-parts">
-							<input
-								id="purchaseStore"
-								type="text"
-								value={purchaseStore}
-								onChange={(event) => setPurchaseStore(event.target.value)}
-								maxLength={PURCHASE_STORE_MAX_LENGTH}
-								placeholder="例）◯×マート 東京駅店、東京都渋谷区、ECサイト名など"
-							/>
+							<select
+								id="purchaseType"
+								value={purchaseType}
+								onChange={(event) => setPurchaseType(event.target.value as PurchaseType | '')}
+							>
+								<option value="">選択してください</option>
+								{PURCHASE_TYPE_OPTIONS.map((option) => (
+									<option key={option.value} value={option.value}>{option.label}</option>
+								))}
+							</select>
 						</div>
 					</div>
+
+					{(purchaseType === 'store' || purchaseType === 'online') && (
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor="purchaseStore"><img className="icon-required" src="/assets/img/icon-required.png" />店名</label></p>
+							<div className="elem-parts">
+								<input
+									id="purchaseStore"
+									type="text"
+									value={purchaseStore}
+									onChange={(event) => setPurchaseStore(event.target.value)}
+									maxLength={PURCHASE_STORE_MAX_LENGTH}
+									placeholder={purchaseType === 'store' ? '例）◯×マート' : '例）◯×ネットショップ'}
+								/>
+							</div>
+						</div>
+					)}
+
+					{purchaseType === 'store' && (
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor="purchaseBranch">支店名</label></p>
+							<div className="elem-parts">
+								<input
+									id="purchaseBranch"
+									type="text"
+									value={purchaseBranch}
+									onChange={(event) => setPurchaseBranch(event.target.value)}
+									maxLength={PURCHASE_BRANCH_MAX_LENGTH}
+									placeholder="例）東京駅店"
+								/>
+							</div>
+						</div>
+					)}
+
+					{purchaseType === 'online' && (
+						<div className="stack-formRow">
+							<p className="elem-label"><label htmlFor="purchaseUrl">URL</label></p>
+							<div className="elem-parts">
+								<input
+									id="purchaseUrl"
+									type="url"
+									value={purchaseUrl}
+									onChange={(event) => setPurchaseUrl(event.target.value)}
+									maxLength={PURCHASE_URL_MAX_LENGTH}
+									placeholder="https://example.com/..."
+								/>
+							</div>
+						</div>
+					)}
+
+					{(purchaseType === 'vending' || purchaseType === 'other') && (
+						<div className="stack-formRow">
+							<p className="elem-label">
+								<label htmlFor="purchaseDetail">
+									{purchaseType === 'other' && <img className="icon-required" src="/assets/img/icon-required.png" />}
+									{purchaseType === 'vending' ? '自販機の場所' : '購入場所の内容'}
+								</label>
+							</p>
+							<div className="elem-parts">
+								<input
+									id="purchaseDetail"
+									type="text"
+									value={purchaseDetail}
+									onChange={(event) => setPurchaseDetail(event.target.value)}
+									maxLength={PURCHASE_DETAIL_MAX_LENGTH}
+									placeholder={purchaseType === 'vending' ? '例）東京都千代田区' : '例）友人からもらった、イベント会場など'}
+								/>
+							</div>
+						</div>
+					)}
 
 					<div className="stack-formRow">
 						<p className="elem-label"><label htmlFor="comment"><img className="icon-required" src="/assets/img/icon-required.png" />コメント</label></p>

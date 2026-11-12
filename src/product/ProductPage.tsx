@@ -10,6 +10,8 @@ import { formatJapaneseDate } from '../valuation/format.ts'
 import { useCategories } from '../category/useCategories.ts'
 import { getCategoryPath } from '../category/data.ts'
 import { useBodyId } from '../components/useBodyId.ts'
+import PurchasePlace from '../valuation/PurchasePlace.tsx'
+import { hasPurchasePlace } from '../valuation/data.ts'
 import { useCurrentUserProfile } from '../user/useUserProfile.ts'
 type ValuationTab = 'positive' | 'negative'
 
@@ -259,10 +261,10 @@ function ProductPage() {
 								</p>
 								<p className="elem-score">{valuation.scoreLabel}</p>
 								<p className="elem-comment">{valuation.comment}</p>
-								{(valuation.purchasePrice || valuation.purchaseStore) && (
+								{(valuation.purchasePrice || hasPurchasePlace(valuation)) && (
 									<p className="elem-purchase">
 										{valuation.purchasePrice && <>購入金額: {valuation.purchasePrice}円　</>}
-										{valuation.purchaseStore && <>購入店舗: {valuation.purchaseStore}</>}
+										{hasPurchasePlace(valuation) && <PurchasePlace valuation={valuation} />}
 									</p>
 								)}
 								<p className="elem-date">

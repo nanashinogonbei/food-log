@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useBodyId } from '../components/useBodyId.ts'
 import { usePublicUserValuations } from '../valuation/useValuations.ts'
+import PurchasePlace from '../valuation/PurchasePlace.tsx'
+import { hasPurchasePlace } from '../valuation/data.ts'
 import { formatJapaneseDate } from '../valuation/format.ts'
 import { fetchPublicUserProfile } from './data.ts'
 import type { UserProfile } from './data.ts'
@@ -84,7 +86,7 @@ function UserValuationPage() {
                 {valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
               </p>
               {valuation.purchasePrice && <p className="elem-price">購入金額: {valuation.purchasePrice}円</p>}
-              {valuation.purchaseStore && <p className="elem-store">購入店舗: {valuation.purchaseStore}</p>}
+              {hasPurchasePlace(valuation) && <p className="elem-store"><PurchasePlace valuation={valuation} /></p>}
               <p className="elem-score">{valuation.scoreLabel}</p>
               <p className="elem-comment">{valuation.comment}</p>
             </li>

@@ -18,6 +18,11 @@ const COMMENT_MIN_LENGTH = 10;
 const COMMENT_MAX_LENGTH = 2000;
 const PURCHASE_PRICE_MAX_LENGTH = 10;
 const PURCHASE_STORE_MAX_LENGTH = 50;
+const PURCHASE_BRANCH_MAX_LENGTH = 50;
+const PURCHASE_URL_MAX_LENGTH = 500;
+const PURCHASE_DETAIL_MAX_LENGTH = 100;
+/** 購入場所の種別 */
+const PURCHASE_TYPES = ['store', 'vending', 'online', 'other'];
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');
@@ -134,7 +139,8 @@ function handleListValuations(): void
 
         $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
-                    v.purchase_price, v.purchase_store, v.created_at, v.updated_at
+                    v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
+                    v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
              INNER JOIN products p ON p.id = v.product_id
@@ -164,7 +170,8 @@ function handleListValuationsByPublicId(string $publicId): void
 
         $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
-                    v.purchase_price, v.purchase_store, v.created_at, v.updated_at
+                    v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
+                    v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
              INNER JOIN products p ON p.id = v.product_id
@@ -186,7 +193,8 @@ function handleListValuationsByPublicId(string $publicId): void
  * （商品の1枚目の写真URLを付与する）。
  *
  * @param list<array<string,mixed>> $rows v.id, v.product_id, product_name, user_id（投稿者の公開用ID）, v.score, v.comment,
- *                                        v.purchase_price, v.purchase_store, v.created_at, v.updated_at を含む行
+ *                                        v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url,
+ *                                        v.purchase_detail, v.created_at, v.updated_at を含む行
  * @return list<array<string,mixed>>
  */
 function formatValuationRows(PDO $pdo, array $rows): array
@@ -229,7 +237,11 @@ function formatValuationRows(PDO $pdo, array $rows): array
             'scoreLabel' => SCORE_LABELS[$row['score']] ?? $row['score'],
             'comment' => $row['comment'],
             'purchasePrice' => $row['purchase_price'],
+            'purchaseType' => $row['purchase_type'],
             'purchaseStore' => $row['purchase_store'],
+            'purchaseBranch' => $row['purchase_branch'],
+            'purchaseUrl' => $row['purchase_url'],
+            'purchaseDetail' => $row['purchase_detail'],
             'createdAt' => $row['created_at'],
             'updatedAt' => $row['updated_at'],
         ];
@@ -254,7 +266,8 @@ function handleRecentValuations(array $categoryIds = []): void
 
         $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
-                    v.purchase_price, v.purchase_store, v.created_at, v.updated_at
+                    v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
+                    v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
              INNER JOIN products p ON p.id = v.product_id
@@ -419,13 +432,91 @@ function handleDeleteValuation(): void
     }
 }
 
+/**
+ * 購入場所の入力値を検証し、種別に応じて保存する値に整える。
+ * 種別に関係のない入力欄の値は破棄する（NULLにする）。
+ *
+ *   store   : 店名（必須）・支店名
+ *   vending : 場所（任意。◯◯県〇〇市〇〇区）
+ *   online  : 店名（必須）・URL（任意。http/https のみ）
+ *   other   : 内容（必須）
+ *
+ * 種別が未指定の場合は、購入場所なしとして全項目をNULLにする。
+ *
+ * @return array{type:?string,store:?string,branch:?string,url:?string,detail:?string}
+ */
+function normalizePurchasePlace(): array
+{
+    $type = trim((string) ($_POST['purchaseType'] ?? ''));
+    $store = trim((string) ($_POST['purchaseStore'] ?? ''));
+    $branch = trim((string) ($_POST['purchaseBranch'] ?? ''));
+    $url = trim((string) ($_POST['purchaseUrl'] ?? ''));
+    $detail = trim((string) ($_POST['purchaseDetail'] ?? ''));
+
+    $result = ['type' => null, 'store' => null, 'branch' => null, 'url' => null, 'detail' => null];
+
+    if ($type === '') {
+        return $result;
+    }
+
+    if (!in_array($type, PURCHASE_TYPES, true)) {
+        respondError(400, '購入場所の種別が不正です。');
+    }
+
+    $result['type'] = $type;
+
+    if ($type === 'store' || $type === 'online') {
+        if ($store === '') {
+            respondError(400, '店名を入力してください。');
+        }
+        if (mb_strlen($store) > PURCHASE_STORE_MAX_LENGTH) {
+            respondError(400, sprintf('店名は%d文字以内で入力してください。', PURCHASE_STORE_MAX_LENGTH));
+        }
+        $result['store'] = $store;
+    }
+
+    if ($type === 'store' && $branch !== '') {
+        if (mb_strlen($branch) > PURCHASE_BRANCH_MAX_LENGTH) {
+            respondError(400, sprintf('支店名は%d文字以内で入力してください。', PURCHASE_BRANCH_MAX_LENGTH));
+        }
+        $result['branch'] = $branch;
+    }
+
+    if ($type === 'online' && $url !== '') {
+        // 画面に出すリンクになるため、http/https のURLのみ許可する（javascript: などを防ぐ）
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+
+        if (
+            mb_strlen($url) > PURCHASE_URL_MAX_LENGTH
+            || filter_var($url, FILTER_VALIDATE_URL) === false
+            || !in_array($scheme, ['http', 'https'], true)
+        ) {
+            respondError(400, sprintf('URLは%d文字以内の http:// または https:// から始まる形式で入力してください。', PURCHASE_URL_MAX_LENGTH));
+        }
+        $result['url'] = $url;
+    }
+
+    // 自販機の場所は任意、その他の内容は必須
+    if ($type === 'other' && $detail === '') {
+        respondError(400, '購入場所の内容を入力してください。');
+    }
+
+    if ($type === 'vending' || $type === 'other') {
+        if (mb_strlen($detail) > PURCHASE_DETAIL_MAX_LENGTH) {
+            respondError(400, sprintf('購入場所は%d文字以内で入力してください。', PURCHASE_DETAIL_MAX_LENGTH));
+        }
+        $result['detail'] = $detail !== '' ? $detail : null;
+    }
+
+    return $result;
+}
+
 // --- 入力値の検証 ---
 
 $productId = trim((string) ($_POST['productId'] ?? ''));
 $score = trim((string) ($_POST['score'] ?? ''));
 $comment = trim((string) ($_POST['comment'] ?? ''));
 $purchasePrice = trim((string) ($_POST['purchasePrice'] ?? ''));
-$purchaseStore = trim((string) ($_POST['purchaseStore'] ?? ''));
 // TODO: 本来はClerkのセッション(Authorizationヘッダー)をサーバー側で検証すべきだが、
 // このプロジェクトの他API同様、簡易的にフォームから受け取った値をそのまま使用している。
 $userId = trim((string) ($_POST['userId'] ?? ''));
@@ -462,9 +553,7 @@ if ($purchasePrice !== '') {
     }
 }
 
-if (mb_strlen($purchaseStore) > PURCHASE_STORE_MAX_LENGTH) {
-    respondError(400, sprintf('購入店舗は%d文字以内で入力してください。', PURCHASE_STORE_MAX_LENGTH));
-}
+$purchasePlace = normalizePurchasePlace();
 
 try {
     $pdo = getPdoConnection();
@@ -497,7 +586,6 @@ try {
     $existingRow = $existingStmt->fetch();
 
     $purchasePriceValue = $purchasePrice !== '' ? $purchasePrice : null;
-    $purchaseStoreValue = $purchaseStore !== '' ? $purchaseStore : null;
 
     if ($existingRow !== false) {
         // --- 更新（修正投稿） ---
@@ -507,14 +595,19 @@ try {
         $updateStmt = $pdo->prepare(
             'UPDATE product_valuations
              SET score = :score, comment = :comment, purchase_price = :purchase_price,
-                 purchase_store = :purchase_store, ip_address = :ip_address, updated_at = NOW()
+                 purchase_type = :purchase_type, purchase_store = :purchase_store, purchase_branch = :purchase_branch,
+                 purchase_url = :purchase_url, purchase_detail = :purchase_detail, ip_address = :ip_address, updated_at = NOW()
              WHERE id = :id'
         );
         $updateStmt->execute([
             'score' => $score,
             'comment' => $comment,
             'purchase_price' => $purchasePriceValue,
-            'purchase_store' => $purchaseStoreValue,
+            'purchase_type' => $purchasePlace['type'],
+            'purchase_store' => $purchasePlace['store'],
+            'purchase_branch' => $purchasePlace['branch'],
+            'purchase_url' => $purchasePlace['url'],
+            'purchase_detail' => $purchasePlace['detail'],
             'ip_address' => $ipAddress,
             'id' => $valuationId,
         ]);
@@ -523,8 +616,12 @@ try {
         $action = 'created';
 
         $insertStmt = $pdo->prepare(
-            'INSERT INTO product_valuations (product_id, user_id, score, comment, purchase_price, purchase_store, ip_address, created_at)
-             VALUES (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_store, :ip_address, NOW())'
+            'INSERT INTO product_valuations
+                (product_id, user_id, score, comment, purchase_price, purchase_type, purchase_store, purchase_branch,
+                 purchase_url, purchase_detail, ip_address, created_at)
+             VALUES
+                (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_type, :purchase_store, :purchase_branch,
+                 :purchase_url, :purchase_detail, :ip_address, NOW())'
         );
 
         try {
@@ -534,7 +631,11 @@ try {
                 'score' => $score,
                 'comment' => $comment,
                 'purchase_price' => $purchasePriceValue,
-                'purchase_store' => $purchaseStoreValue,
+                'purchase_type' => $purchasePlace['type'],
+            'purchase_store' => $purchasePlace['store'],
+            'purchase_branch' => $purchasePlace['branch'],
+            'purchase_url' => $purchasePlace['url'],
+            'purchase_detail' => $purchasePlace['detail'],
                 'ip_address' => $ipAddress,
             ]);
         } catch (PDOException $e) {
@@ -556,14 +657,19 @@ try {
             $updateStmt = $pdo->prepare(
                 'UPDATE product_valuations
                  SET score = :score, comment = :comment, purchase_price = :purchase_price,
-                     purchase_store = :purchase_store, ip_address = :ip_address, updated_at = NOW()
+                     purchase_type = :purchase_type, purchase_store = :purchase_store, purchase_branch = :purchase_branch,
+                 purchase_url = :purchase_url, purchase_detail = :purchase_detail, ip_address = :ip_address, updated_at = NOW()
                  WHERE id = :id'
             );
             $updateStmt->execute([
                 'score' => $score,
                 'comment' => $comment,
                 'purchase_price' => $purchasePriceValue,
-                'purchase_store' => $purchaseStoreValue,
+                'purchase_type' => $purchasePlace['type'],
+            'purchase_store' => $purchasePlace['store'],
+            'purchase_branch' => $purchasePlace['branch'],
+            'purchase_url' => $purchasePlace['url'],
+            'purchase_detail' => $purchasePlace['detail'],
                 'ip_address' => $ipAddress,
                 'id' => $valuationId,
             ]);
