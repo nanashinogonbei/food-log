@@ -21,6 +21,7 @@ const PURCHASE_STORE_MAX_LENGTH = 50;
 const PURCHASE_BRANCH_MAX_LENGTH = 50;
 const PURCHASE_URL_MAX_LENGTH = 500;
 const PURCHASE_DETAIL_MAX_LENGTH = 100;
+const PURCHASE_REGION_MAX_LENGTH = 100;
 /** 購入場所の種別 */
 const PURCHASE_TYPES = ['store', 'vending', 'online', 'other'];
 
@@ -139,7 +140,7 @@ function handleListValuations(): void
 
         $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
-                    v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
+                    v.purchase_price, v.purchase_region, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
                     v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
@@ -170,7 +171,7 @@ function handleListValuationsByPublicId(string $publicId): void
 
         $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
-                    v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
+                    v.purchase_price, v.purchase_region, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
                     v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
@@ -193,7 +194,7 @@ function handleListValuationsByPublicId(string $publicId): void
  * （商品の1枚目の写真URLを付与する）。
  *
  * @param list<array<string,mixed>> $rows v.id, v.product_id, product_name, user_id（投稿者の公開用ID）, v.score, v.comment,
- *                                        v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url,
+ *                                        v.purchase_price, v.purchase_region, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url,
  *                                        v.purchase_detail, v.created_at, v.updated_at を含む行
  * @return list<array<string,mixed>>
  */
@@ -237,6 +238,7 @@ function formatValuationRows(PDO $pdo, array $rows): array
             'scoreLabel' => SCORE_LABELS[$row['score']] ?? $row['score'],
             'comment' => $row['comment'],
             'purchasePrice' => $row['purchase_price'],
+            'purchaseRegion' => $row['purchase_region'],
             'purchaseType' => $row['purchase_type'],
             'purchaseStore' => $row['purchase_store'],
             'purchaseBranch' => $row['purchase_branch'],
@@ -266,7 +268,7 @@ function handleRecentValuations(array $categoryIds = []): void
 
         $stmt = $pdo->prepare(
             "SELECT v.id, v.product_id, p.name AS product_name, u.public_id AS user_id, u.display_name AS user_display_name, v.score, v.comment,
-                    v.purchase_price, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
+                    v.purchase_price, v.purchase_region, v.purchase_type, v.purchase_store, v.purchase_branch, v.purchase_url, v.purchase_detail,
                     v.created_at, v.updated_at
              FROM product_valuations v
              INNER JOIN users u ON u.id = v.user_id
@@ -437,13 +439,15 @@ function handleDeleteValuation(): void
  * 種別に関係のない入力欄の値は破棄する（NULLにする）。
  *
  *   store   : 店名（必須）・支店名
- *   vending : 場所（任意。◯◯県〇〇市〇〇区）
+ *   vending : 追加入力なし
  *   online  : 店名（必須）・URL（任意。http/https のみ）
  *   other   : 内容（必須）
  *
  * 種別が未指定の場合は、購入場所なしとして全項目をNULLにする。
  *
- * @return array{type:?string,store:?string,branch:?string,url:?string,detail:?string}
+ * 購入地域（任意）は種別と独立して保存する。
+ *
+ * @return array{region:?string,type:?string,store:?string,branch:?string,url:?string,detail:?string}
  */
 function normalizePurchasePlace(): array
 {
@@ -452,8 +456,16 @@ function normalizePurchasePlace(): array
     $branch = trim((string) ($_POST['purchaseBranch'] ?? ''));
     $url = trim((string) ($_POST['purchaseUrl'] ?? ''));
     $detail = trim((string) ($_POST['purchaseDetail'] ?? ''));
+    $region = trim((string) ($_POST['purchaseRegion'] ?? ''));
 
-    $result = ['type' => null, 'store' => null, 'branch' => null, 'url' => null, 'detail' => null];
+    $result = ['region' => null, 'type' => null, 'store' => null, 'branch' => null, 'url' => null, 'detail' => null];
+
+    if ($region !== '') {
+        if (mb_strlen($region) > PURCHASE_REGION_MAX_LENGTH) {
+            respondError(400, sprintf('購入地域は%d文字以内で入力してください。', PURCHASE_REGION_MAX_LENGTH));
+        }
+        $result['region'] = $region;
+    }
 
     if ($type === '') {
         return $result;
@@ -496,16 +508,15 @@ function normalizePurchasePlace(): array
         $result['url'] = $url;
     }
 
-    // 自販機の場所は任意、その他の内容は必須
-    if ($type === 'other' && $detail === '') {
-        respondError(400, '購入場所の内容を入力してください。');
-    }
-
-    if ($type === 'vending' || $type === 'other') {
+    // その他の内容は必須（自販機は追加入力なし）
+    if ($type === 'other') {
+        if ($detail === '') {
+            respondError(400, '購入場所の内容を入力してください。');
+        }
         if (mb_strlen($detail) > PURCHASE_DETAIL_MAX_LENGTH) {
             respondError(400, sprintf('購入場所は%d文字以内で入力してください。', PURCHASE_DETAIL_MAX_LENGTH));
         }
-        $result['detail'] = $detail !== '' ? $detail : null;
+        $result['detail'] = $detail;
     }
 
     return $result;
@@ -595,7 +606,7 @@ try {
         $updateStmt = $pdo->prepare(
             'UPDATE product_valuations
              SET score = :score, comment = :comment, purchase_price = :purchase_price,
-                 purchase_type = :purchase_type, purchase_store = :purchase_store, purchase_branch = :purchase_branch,
+                 purchase_region = :purchase_region, purchase_type = :purchase_type, purchase_store = :purchase_store, purchase_branch = :purchase_branch,
                  purchase_url = :purchase_url, purchase_detail = :purchase_detail, ip_address = :ip_address, updated_at = NOW()
              WHERE id = :id'
         );
@@ -603,6 +614,7 @@ try {
             'score' => $score,
             'comment' => $comment,
             'purchase_price' => $purchasePriceValue,
+            'purchase_region' => $purchasePlace['region'],
             'purchase_type' => $purchasePlace['type'],
             'purchase_store' => $purchasePlace['store'],
             'purchase_branch' => $purchasePlace['branch'],
@@ -617,10 +629,10 @@ try {
 
         $insertStmt = $pdo->prepare(
             'INSERT INTO product_valuations
-                (product_id, user_id, score, comment, purchase_price, purchase_type, purchase_store, purchase_branch,
+                (product_id, user_id, score, comment, purchase_price, purchase_region, purchase_type, purchase_store, purchase_branch,
                  purchase_url, purchase_detail, ip_address, created_at)
              VALUES
-                (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_type, :purchase_store, :purchase_branch,
+                (:product_id, :user_id, :score, :comment, :purchase_price, :purchase_region, :purchase_type, :purchase_store, :purchase_branch,
                  :purchase_url, :purchase_detail, :ip_address, NOW())'
         );
 
@@ -631,6 +643,7 @@ try {
                 'score' => $score,
                 'comment' => $comment,
                 'purchase_price' => $purchasePriceValue,
+                'purchase_region' => $purchasePlace['region'],
                 'purchase_type' => $purchasePlace['type'],
             'purchase_store' => $purchasePlace['store'],
             'purchase_branch' => $purchasePlace['branch'],
@@ -657,7 +670,7 @@ try {
             $updateStmt = $pdo->prepare(
                 'UPDATE product_valuations
                  SET score = :score, comment = :comment, purchase_price = :purchase_price,
-                     purchase_type = :purchase_type, purchase_store = :purchase_store, purchase_branch = :purchase_branch,
+                     purchase_region = :purchase_region, purchase_type = :purchase_type, purchase_store = :purchase_store, purchase_branch = :purchase_branch,
                  purchase_url = :purchase_url, purchase_detail = :purchase_detail, ip_address = :ip_address, updated_at = NOW()
                  WHERE id = :id'
             );
@@ -665,6 +678,7 @@ try {
                 'score' => $score,
                 'comment' => $comment,
                 'purchase_price' => $purchasePriceValue,
+                'purchase_region' => $purchasePlace['region'],
                 'purchase_type' => $purchasePlace['type'],
             'purchase_store' => $purchasePlace['store'],
             'purchase_branch' => $purchasePlace['branch'],

@@ -187,7 +187,7 @@ function RequestPostPage() {
       </div>
 
       <h1 className="heading -typeA">商品申請 投稿</h1>
-      <p><Link to={`/mypage/${publicId}/request`} className="elem-link -typeB">申請一覧に戻る</Link></p>
+      <p><Link to={`/mypage/${publicId}/request`} className="elem-link -typeA">申請一覧に戻る</Link></p>
 
 			<section className="product-content">
 
@@ -196,7 +196,7 @@ function RequestPostPage() {
 						<p className="heading -typeD">商品を申請しました。ご協力ありがとうございます。</p>
 						{submittedProductId !== null && (
 							<p>
-								<Link to={`/mypage/${publicId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeB">
+								<Link to={`/mypage/${publicId}/valuation/post?productId=${submittedProductId}`} className="elem-link -typeA">
 									この商品の評価を投稿する
 								</Link>
 							</p>
@@ -272,7 +272,7 @@ function RequestPostPage() {
 					</div>
 
 					<div className="stack-formRow">
-						<p className="elem-label"><label htmlFor="photo">商品写真（複数）【必須】</label></p>
+						<p className="elem-label"><label htmlFor="photo"><img className="icon-required" src="/assets/img/icon-required.png" />商品写真（複数）</label></p>
 						<div className="elem-parts stack-photoPost">
 							{photoError && <p className="photo-dropzone__error">{photoError}</p>}
 							{photos.length > 0 && (

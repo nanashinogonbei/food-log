@@ -31,6 +31,7 @@ export const PURCHASE_STORE_MAX_LENGTH = 50
 export const PURCHASE_BRANCH_MAX_LENGTH = 50
 export const PURCHASE_URL_MAX_LENGTH = 500
 export const PURCHASE_DETAIL_MAX_LENGTH = 100
+export const PURCHASE_REGION_MAX_LENGTH = 100
 
 export interface ValuationPayload {
   userId: string
@@ -38,6 +39,8 @@ export interface ValuationPayload {
   score: ValuationScore
   comment: string
   purchasePrice?: string
+  /** 購入地域（任意。◯◯県〇〇市〇〇区） */
+  purchaseRegion?: string
   /** 購入場所の種別。未指定なら購入場所なし */
   purchaseType?: PurchaseType
   /** 店名（店舗・ネット・通販） */
@@ -46,7 +49,7 @@ export interface ValuationPayload {
   purchaseBranch?: string
   /** URL（ネット・通販） */
   purchaseUrl?: string
-  /** 自販機の場所 / その他の内容 */
+  /** その他の内容 */
   purchaseDetail?: string
 }
 
@@ -71,6 +74,7 @@ export interface ValuationSummary {
   scoreLabel: string
   comment: string
   purchasePrice: string | null
+  purchaseRegion: string | null
   purchaseType: PurchaseType | null
   purchaseStore: string | null
   purchaseBranch: string | null
@@ -82,8 +86,8 @@ export interface ValuationSummary {
 }
 
 /** 評価に購入場所があるか（種別が未設定の評価は購入場所なしとして扱う） */
-export function hasPurchasePlace(valuation: Pick<ValuationSummary, 'purchaseType'>): boolean {
-  return valuation.purchaseType !== null
+export function hasPurchasePlace(valuation: Pick<ValuationSummary, 'purchaseType' | 'purchaseRegion'>): boolean {
+  return valuation.purchaseType !== null || Boolean(valuation.purchaseRegion)
 }
 
 export type RankingPeriod = 'weekly' | 'monthly' | 'quarterly'
@@ -109,6 +113,9 @@ export async function submitValuation(payload: ValuationPayload): Promise<Valuat
   formData.append('comment', payload.comment)
   if (payload.purchasePrice) {
     formData.append('purchasePrice', payload.purchasePrice)
+  }
+  if (payload.purchaseRegion) {
+    formData.append('purchaseRegion', payload.purchaseRegion)
   }
   if (payload.purchaseType) {
     formData.append('purchaseType', payload.purchaseType)

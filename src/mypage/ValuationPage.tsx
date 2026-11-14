@@ -3,9 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { deleteValuation } from '../valuation/data.ts'
 import { useUserValuations } from '../valuation/useValuations.ts'
-import PurchasePlace from '../valuation/PurchasePlace.tsx'
-import { hasPurchasePlace } from '../valuation/data.ts'
-import { formatJapaneseDate } from '../valuation/format.ts'
+import { PurchaseTable } from '../valuation/PurchasePlace.tsx'
 import { useBodyId } from '../components/useBodyId.ts'
 
 const PAGE_SIZE = 10
@@ -82,12 +80,7 @@ function ValuationPage() {
 								)}
 							</figure>
 							<p className="elem-name"><Link to={`/product/${valuation.productId}`} className="elem-link -typeA">{valuation.productName}</Link></p>
-							<p className="elem-date">
-								投稿日: {formatJapaneseDate(valuation.createdAt)}
-								{valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
-							</p>
-							{valuation.purchasePrice && <p className="elem-price">購入金額: {valuation.purchasePrice}円</p>}
-							{hasPurchasePlace(valuation) && <p className="elem-store"><PurchasePlace valuation={valuation} /></p>}
+							<PurchaseTable valuation={valuation} />
 							<p className="elem-score">{valuation.scoreLabel}</p>
 							<p className="elem-comment">{valuation.comment}</p>
 							{/* 評価の userId は投稿者の公開用ID。このページは本人の一覧なので、自分の公開用IDと比較する */}

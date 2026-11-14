@@ -8,6 +8,7 @@ import { useProductSearch } from '../product/useProducts.ts'
 import {
   PURCHASE_BRANCH_MAX_LENGTH,
   PURCHASE_DETAIL_MAX_LENGTH,
+  PURCHASE_REGION_MAX_LENGTH,
   PURCHASE_STORE_MAX_LENGTH,
   PURCHASE_TYPE_OPTIONS,
   PURCHASE_URL_MAX_LENGTH,
@@ -53,6 +54,7 @@ function ValuationPostPage() {
   const [purchaseStore, setPurchaseStore] = useState('')
   const [purchaseBranch, setPurchaseBranch] = useState('')
   const [purchaseUrl, setPurchaseUrl] = useState('')
+  const [purchaseRegion, setPurchaseRegion] = useState('')
   const [purchaseDetail, setPurchaseDetail] = useState('')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -131,6 +133,7 @@ function ValuationPostPage() {
       setPurchaseStore(existingValuation.purchaseStore ?? '')
       setPurchaseBranch(existingValuation.purchaseBranch ?? '')
       setPurchaseUrl(existingValuation.purchaseUrl ?? '')
+      setPurchaseRegion(existingValuation.purchaseRegion ?? '')
       setPurchaseDetail(existingValuation.purchaseDetail ?? '')
     } else {
       setScore('')
@@ -140,6 +143,7 @@ function ValuationPostPage() {
       setPurchaseStore('')
       setPurchaseBranch('')
       setPurchaseUrl('')
+      setPurchaseRegion('')
       setPurchaseDetail('')
     }
   }, [selectedProduct, existingValuation])
@@ -219,11 +223,12 @@ function ValuationPostPage() {
         comment,
         purchasePrice: purchasePrice || undefined,
         // 種別に関係のない入力欄の値は送らない（サーバー側でも破棄される）
+        purchaseRegion: purchaseRegion.trim() || undefined,
         purchaseType: purchaseType || undefined,
         purchaseStore: purchaseType === 'store' || purchaseType === 'online' ? purchaseStore.trim() || undefined : undefined,
         purchaseBranch: purchaseType === 'store' ? purchaseBranch.trim() || undefined : undefined,
         purchaseUrl: purchaseType === 'online' ? purchaseUrl.trim() || undefined : undefined,
-        purchaseDetail: purchaseType === 'vending' || purchaseType === 'other' ? purchaseDetail.trim() || undefined : undefined,
+        purchaseDetail: purchaseType === 'other' ? purchaseDetail.trim() || undefined : undefined,
       })
 
       setSubmitSuccessAction(result.action)
@@ -236,6 +241,7 @@ function ValuationPostPage() {
       setPurchaseStore('')
       setPurchaseBranch('')
       setPurchaseUrl('')
+      setPurchaseRegion('')
       setPurchaseDetail('')
       setSearchParams({}, { replace: true })
       reloadValuations()
@@ -261,6 +267,7 @@ function ValuationPostPage() {
 
 			<section className="product-content">
 				{isLoadingPreselected && <p className="stack-load">選択中の商品を読み込んでいます...</p>}
+				{preselectedError && <p className="stack-error">{preselectedError}</p>}
 				{submitSuccessAction === 'created' && (
 					<>
 						<p className="_mb10">評価を投稿しました。ご協力ありがとうございます。</p>
@@ -273,6 +280,7 @@ function ValuationPostPage() {
 						<p><Link to={`/mypage/${publicId}`} className="elem-link -typeB">マイページに戻る</Link></p>
 					</>
 				)}
+				{submitError && <p className="stack-error">{submitError}</p>}
 
 				{!submitSuccessAction && (
 				<form className="product-form" onSubmit={handleSubmit}>
@@ -305,7 +313,7 @@ function ValuationPostPage() {
 								<>
 									{isSearching && <p className="field-hint">検索中...</p>}
 									{!isSearching && candidates.length === 0 && (
-										<p className="stack-error">一致する商品が見つかりません。先に「<a class="elem-link" href="../request">商品申請</a>」を行ってください。</p>
+										<p className="field-hint">一致する商品が見つかりません。</p>
 									)}
 									{candidates.length > 0 && (
 										<ul className="list-autocomplete">
@@ -362,6 +370,21 @@ function ValuationPostPage() {
 							/>
 							円
 							<p className="elem-notes -typeA">数字{PURCHASE_PRICE_MAX_LENGTH}桁以内（全角数字は自動で半角に変換されます）</p>
+						</div>
+					</div>
+
+					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="purchaseRegion">購入地域</label></p>
+						<div className="elem-parts">
+							<input
+								id="purchaseRegion"
+								type="text"
+								value={purchaseRegion}
+								onChange={(event) => setPurchaseRegion(event.target.value)}
+								maxLength={PURCHASE_REGION_MAX_LENGTH}
+								placeholder="例）東京都千代田区"
+							/>
+							<p className="elem-notes -typeA">◯◯県〇〇市〇〇区の形式で入力してください（任意）</p>
 						</div>
 					</div>
 
@@ -429,12 +452,12 @@ function ValuationPostPage() {
 						</div>
 					)}
 
-					{(purchaseType === 'vending' || purchaseType === 'other') && (
+					{purchaseType === 'other' && (
 						<div className="stack-formRow">
 							<p className="elem-label">
 								<label htmlFor="purchaseDetail">
-									{purchaseType === 'other' && <img className="icon-required" src="/assets/img/icon-required.png" />}
-									{purchaseType === 'vending' ? '自販機の場所' : '購入場所の内容'}
+									<img className="icon-required" src="/assets/img/icon-required.png" />
+									購入場所の内容
 								</label>
 							</p>
 							<div className="elem-parts">
@@ -444,7 +467,7 @@ function ValuationPostPage() {
 									value={purchaseDetail}
 									onChange={(event) => setPurchaseDetail(event.target.value)}
 									maxLength={PURCHASE_DETAIL_MAX_LENGTH}
-									placeholder={purchaseType === 'vending' ? '例）東京都千代田区' : '例）友人からもらった、イベント会場など'}
+									placeholder="例）友人からもらった、イベント会場など"
 								/>
 							</div>
 						</div>
@@ -463,9 +486,6 @@ function ValuationPostPage() {
 							<p className="elem-notes -typeA">{commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）</p>
 						</div>
 					</div>
-
-					{preselectedError && <p className="stack-error">{preselectedError}</p>}
-					{submitError && <p className="stack-error">{submitError}</p>}
 
 					<div className="stack-button">
 						<button type="submit" className="elem-button -typeA" disabled={isSubmitting}>
