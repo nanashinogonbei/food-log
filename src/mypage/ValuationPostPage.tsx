@@ -263,7 +263,7 @@ function ValuationPostPage() {
 
 			<h1 className="heading -typeA">商品評価 投稿</h1>
 
-      <p><Link to={`/mypage/${publicId}/valuation`} className="elem-link -typeB">評価一覧に戻る</Link></p>
+      <p><Link to={`/mypage/${publicId}/valuation`} className="elem-link -typeA">評価一覧に戻る</Link></p>
 
 			<section className="product-content">
 				{isLoadingPreselected && <p className="stack-load">選択中の商品を読み込んでいます...</p>}
@@ -280,7 +280,7 @@ function ValuationPostPage() {
 						<p><Link to={`/mypage/${publicId}`} className="elem-link -typeB">マイページに戻る</Link></p>
 					</>
 				)}
-				{submitError && <p className="stack-error">{submitError}</p>}
+				
 
 				{!submitSuccessAction && (
 				<form className="product-form" onSubmit={handleSubmit}>
@@ -311,9 +311,9 @@ function ValuationPostPage() {
 							)}
 							{showCandidateList && (
 								<>
-									{isSearching && <p className="field-hint">検索中...</p>}
+									{isSearching && <p className="stack-load">検索中...</p>}
 									{!isSearching && candidates.length === 0 && (
-										<p className="field-hint">一致する商品が見つかりません。</p>
+										<p className="stack-error">一致する商品が見つかりません。</p>
 									)}
 									{candidates.length > 0 && (
 										<ul className="list-autocomplete">
@@ -357,6 +357,20 @@ function ValuationPostPage() {
 					</div>
 
 					<div className="stack-formRow">
+						<p className="elem-label"><label htmlFor="comment"><img className="icon-required" src="/assets/img/icon-required.png" />コメント</label></p>
+						<div className="elem-parts">
+							<textarea
+								id="comment"
+								value={comment}
+								onChange={(event) => setComment(event.target.value)}
+								rows={4}
+								required
+							/>
+							<p className="elem-notes -typeA">{commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）</p>
+						</div>
+					</div>
+
+					<div className="stack-formRow">
 						<p className="elem-label"><label htmlFor="purchasePrice">購入金額</label></p>
 						<div className="elem-parts">
 							<input
@@ -382,9 +396,8 @@ function ValuationPostPage() {
 								value={purchaseRegion}
 								onChange={(event) => setPurchaseRegion(event.target.value)}
 								maxLength={PURCHASE_REGION_MAX_LENGTH}
-								placeholder="例）東京都千代田区"
+								placeholder="例）東京都千代田区、大阪府など"
 							/>
-							<p className="elem-notes -typeA">◯◯県〇〇市〇〇区の形式で入力してください（任意）</p>
 						</div>
 					</div>
 
@@ -473,19 +486,7 @@ function ValuationPostPage() {
 						</div>
 					)}
 
-					<div className="stack-formRow">
-						<p className="elem-label"><label htmlFor="comment"><img className="icon-required" src="/assets/img/icon-required.png" />コメント</label></p>
-						<div className="elem-parts">
-							<textarea
-								id="comment"
-								value={comment}
-								onChange={(event) => setComment(event.target.value)}
-								rows={4}
-								required
-							/>
-							<p className="elem-notes -typeA">{commentLength} / {COMMENT_MAX_LENGTH}文字（{COMMENT_MIN_LENGTH}文字以上必須）</p>
-						</div>
-					</div>
+					{submitError && <p className="stack-error">{submitError}</p>}
 
 					<div className="stack-button">
 						<button type="submit" className="elem-button -typeA" disabled={isSubmitting}>

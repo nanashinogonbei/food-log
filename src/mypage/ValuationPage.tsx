@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { deleteValuation } from '../valuation/data.ts'
 import { useUserValuations } from '../valuation/useValuations.ts'
-import { PurchaseTable } from '../valuation/PurchasePlace.tsx'
+import { formatJapaneseDate } from '../valuation/format.ts'
+import { PlaceValue } from '../valuation/PurchasePlace.tsx'
 import { useBodyId } from '../components/useBodyId.ts'
 
 const PAGE_SIZE = 10
@@ -80,7 +81,38 @@ function ValuationPage() {
 								)}
 							</figure>
 							<p className="elem-name"><Link to={`/product/${valuation.productId}`} className="elem-link -typeA">{valuation.productName}</Link></p>
-							<PurchaseTable valuation={valuation} />
+							<div className="stack-purchaseInfo">
+								<table className="table -typeB">
+									<tbody>
+										<tr>
+											<th>投稿日：</th>
+											<td>
+												{formatJapaneseDate(valuation.createdAt)}<br />
+												{valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
+											</td>
+										</tr>
+										{valuation.purchasePrice && (
+											<tr>
+												<th>購入金額：</th>
+												<td>{valuation.purchasePrice}円</td>
+											</tr>
+										)}
+										{valuation.purchaseRegion && (
+											<tr>
+												<th>購入地域：</th>
+												<td>{valuation.purchaseRegion}</td>
+											</tr>
+										)}
+										{valuation.purchaseType !== null && (
+												<tr>
+													<th>購入場所：</th>
+													<td><PlaceValue valuation={valuation} /></td>
+												</tr>
+										)}
+									</tbody>
+								</table>
+							</div>
+
 							<p className="elem-score">{valuation.scoreLabel}</p>
 							<p className="elem-comment">{valuation.comment}</p>
 							{/* 評価の userId は投稿者の公開用ID。このページは本人の一覧なので、自分の公開用IDと比較する */}

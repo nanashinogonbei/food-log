@@ -18,13 +18,9 @@
 			width: 35%
 			
 			.stack-imgMain
-				display: flex
-				justify-content: center
-				align-items: center
 				height: 300px
 				text-align: center
 				img
-					max-width: 100%
 					max-height: 100%
 					object-fit: contain
 						
@@ -35,12 +31,10 @@
 				margin-top: 10px
 				.item
 					width: 100%
-					max-width: calc( 92% / 3 )
+					max-width: calc( 96% / 3 )
 					text-align: center
 					img
-						width: 100px
-						height: 100px
-						object-fit: contain
+						max-height: 100px
 
 		.cluster-txt
 			width: 61%
@@ -100,13 +94,11 @@
 					.elem-comment
 						margin-bottom: 10px
 						line-height: 1.6
-					.elem-purchase
-						margin-bottom: 5px
+					.stack-purchaseInfo
 						color: #808080
 						font-size: 1.4rem
-					.elem-date
-						color: #808080
-						font-size: 1.4rem
+						p+p
+							margin-top: 5px
 						
 				.cluster-action
 					.elem-actions

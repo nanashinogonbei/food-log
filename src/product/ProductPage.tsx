@@ -6,12 +6,11 @@ import { useProductValuations } from '../valuation/useValuations.ts'
 import { deleteValuation } from '../valuation/data.ts'
 import { useReportedValuationIds } from '../report/useReportedValuationIds.ts'
 import ValuationReportButton from './ValuationReportButton.tsx'
-import { formatJapaneseDate } from '../valuation/format.ts'
 import { useCategories } from '../category/useCategories.ts'
 import { getCategoryPath } from '../category/data.ts'
 import { useBodyId } from '../components/useBodyId.ts'
-import PurchasePlace from '../valuation/PurchasePlace.tsx'
-import { hasPurchasePlace } from '../valuation/data.ts'
+import { formatJapaneseDate } from '../valuation/format.ts'
+import { PlaceValue } from '../valuation/PurchasePlace.tsx'
 import { useCurrentUserProfile } from '../user/useUserProfile.ts'
 type ValuationTab = 'positive' | 'negative'
 
@@ -261,16 +260,19 @@ function ProductPage() {
 								</p>
 								<p className="elem-score">{valuation.scoreLabel}</p>
 								<p className="elem-comment">{valuation.comment}</p>
-								{(valuation.purchasePrice || hasPurchasePlace(valuation)) && (
-									<p className="elem-purchase">
-										{valuation.purchasePrice && <>購入金額: {valuation.purchasePrice}円　</>}
-										{hasPurchasePlace(valuation) && <PurchasePlace valuation={valuation} />}
+								<div className="stack-purchaseInfo">
+									<p className="elem-date">
+										投稿日: {formatJapaneseDate(valuation.createdAt)}
+										{valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
 									</p>
-								)}
-								<p className="elem-date">
-									投稿日: {formatJapaneseDate(valuation.createdAt)}
-									{valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
-								</p>
+									{valuation.purchasePrice && <p className="elem-price">購入金額: {valuation.purchasePrice}円</p>}
+									{valuation.purchaseRegion && <p className="elem-area">購入地域: {valuation.purchaseRegion}</p>}
+									{valuation.purchaseType !== null && (
+										<p className="elem-place">
+											購入場所: <PlaceValue valuation={valuation} />
+										</p>
+									)}
+								</div>
 							</div>
 							<div className="cluster-action">
 								{user && profile && valuation.userId === profile.publicId && (

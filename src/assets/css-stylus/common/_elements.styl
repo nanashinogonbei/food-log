@@ -95,6 +95,17 @@
 		td
 			padding: 12px 20px
 			border: 1px solid border-c
+	&.-typeB
+		line-height: 1.2
+		th
+			padding-right: 6px
+			vertical-align: top
+			text-align: right
+		tr:not(:last-child)
+			th
+				padding-bottom: 4px
+			td
+				padding-bottom: 4px
 
 
 /********************
@@ -294,6 +305,10 @@ textarea
 		outline: none
 		box-shadow: 0px 0px 20px 0 rgba(0, 0, 0, 0.1)
 		background-color: #E6F0FA
+
+input[disabled]
+	color: #808080
+	background-color: #EBEBEB
 
 input[type="checkbox"],
 input[type="radio"]
