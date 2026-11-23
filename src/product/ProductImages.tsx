@@ -15,10 +15,15 @@ interface ProductImagesProps {
   footer?: ReactNode
 }
 
-const formatPostedDate = (createdAt: string) => {
-  const date = formatJapaneseDate(createdAt)
-  return date ? `${date} 投稿` : ''
+/** 表示名が未設定のユーザーに使う名前（UserValuationPage と同じ） */
+const DEFAULT_USER_NAME = '未指定'
+
+/** 「2026年11月17日 ユーザー名 投稿」の形式にする */
+const formatPostedCaption = (photo: ProductPhotoDetail) => {
+  const date = formatJapaneseDate(photo.createdAt)
+  return date ? `${date} ${photo.userDisplayName || DEFAULT_USER_NAME} 投稿` : ''
 }
+
 
 /** サムネイルの下に表示する短い日付（例: 2026/11/17）。不正な日付なら空文字 */
 const formatShortDate = (createdAt: string) => {
@@ -69,7 +74,7 @@ function ProductImages({ productName, photos, footer }: ProductImagesProps) {
       {active && (
         <figure className="stack-imgMain">
           <img src={`${PHOTO_BASE_URL}${active.url}`} alt={productName} />
-          <figcaption>{formatPostedDate(active.createdAt)}</figcaption>
+          <figcaption>{formatPostedCaption(active)}</figcaption>
         </figure>
       )}
 

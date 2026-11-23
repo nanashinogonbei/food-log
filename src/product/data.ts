@@ -21,6 +21,8 @@ export interface ProductPhotoDetail {
   url: string
   /** 投稿日時 */
   createdAt: string
+  /** 投稿者の表示名（未設定の場合は null） */
+  userDisplayName: string | null
 }
 
 export interface ProductSummary {

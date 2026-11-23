@@ -280,7 +280,7 @@ function handleSearchProductsByName(string $name, bool $publicOnly = false): voi
  * 商品レコードの配列に写真URLを付与し、フロントに返すJSON形式に整形する。
  *
  * @param list<array{id:int|string,name:string,category1:int|string|null,category2:int|string|null,distributor:string,manufacturing:string|null,status:string,created_at:string}> $products
- * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>,photoDetails:list<array{url:string,createdAt:string}>}>
+ * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>,photoDetails:list<array{url:string,createdAt:string,userDisplayName:?string}>}>
  */
 function attachPhotosAndFormat(PDO $pdo, array $products): array
 {
@@ -303,14 +303,20 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
         }
     }
 
-    // 商品ページ用の写真一覧（投稿日が新しい順、同じ投稿内は優先順位(display_order)順。投稿日も付ける）
+    // 商品ページ用の写真一覧（投稿日が新しい順、同じ投稿内は優先順位(display_order)順。投稿日と投稿者の表示名も付ける）
+    // 投稿者は、画像申請（product_photo_requests）で承認された画像ならその申請者、商品申請時の画像なら商品の申請者
     $photoDetailsByProductId = [];
 
     if (count($productIds) > 0) {
         $detailStmt = $pdo->prepare(
-            "SELECT product_id, filename, created_at FROM product_photos
-             WHERE product_id IN ($photoPlaceholders)
-             ORDER BY product_id ASC, created_at DESC, display_order ASC, id ASC"
+            "SELECT ph.product_id, ph.filename, ph.created_at, u.display_name AS user_display_name
+             FROM product_photos ph
+             INNER JOIN products pr ON pr.id = ph.product_id
+             LEFT JOIN product_photo_requests r
+                    ON r.product_id = ph.product_id AND r.filename = ph.filename AND r.status = 'approved'
+             INNER JOIN users u ON u.id = COALESCE(r.requested_by, pr.requested_by)
+             WHERE ph.product_id IN ($photoPlaceholders)
+             ORDER BY ph.product_id ASC, ph.created_at DESC, ph.display_order ASC, ph.id ASC"
         );
         $detailStmt->execute($productIds);
 
@@ -318,6 +324,7 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
             $photoDetailsByProductId[(int) $detailRow['product_id']][] = [
                 'url' => UPLOAD_URL_BASE . $detailRow['filename'],
                 'createdAt' => $detailRow['created_at'],
+                'userDisplayName' => $detailRow['user_display_name'],
             ];
         }
     }
