@@ -280,7 +280,7 @@ function handleSearchProductsByName(string $name, bool $publicOnly = false): voi
  * 商品レコードの配列に写真URLを付与し、フロントに返すJSON形式に整形する。
  *
  * @param list<array{id:int|string,name:string,category1:int|string|null,category2:int|string|null,distributor:string,manufacturing:string|null,status:string,created_at:string}> $products
- * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>,photoDetails:list<array{url:string,createdAt:string,userDisplayName:?string}>}>
+ * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>,photoDetails:list<array{url:string,createdAt:string,userId:string,userDisplayName:?string}>}>
  */
 function attachPhotosAndFormat(PDO $pdo, array $products): array
 {
@@ -309,7 +309,7 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
 
     if (count($productIds) > 0) {
         $detailStmt = $pdo->prepare(
-            "SELECT ph.product_id, ph.filename, ph.created_at, u.display_name AS user_display_name
+            "SELECT ph.product_id, ph.filename, ph.created_at, u.public_id AS user_public_id, u.display_name AS user_display_name
              FROM product_photos ph
              INNER JOIN products pr ON pr.id = ph.product_id
              LEFT JOIN product_photo_requests r
@@ -324,6 +324,8 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
             $photoDetailsByProductId[(int) $detailRow['product_id']][] = [
                 'url' => UPLOAD_URL_BASE . $detailRow['filename'],
                 'createdAt' => $detailRow['created_at'],
+                // ユーザーページ (/user/[userID]) へのリンク用の公開ID
+                'userId' => $detailRow['user_public_id'],
                 'userDisplayName' => $detailRow['user_display_name'],
             ];
         }

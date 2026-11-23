@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useBodyId } from '../components/useBodyId.ts'
 import { usePublicUserValuations } from '../valuation/useValuations.ts'
-import PurchasePlace from '../valuation/PurchasePlace.tsx'
-import { hasPurchasePlace } from '../valuation/data.ts'
+import { PlaceValue } from '../valuation/PurchasePlace.tsx'
 import { formatJapaneseDate } from '../valuation/format.ts'
 import { fetchPublicUserProfile } from './data.ts'
 import type { UserProfile } from './data.ts'
@@ -13,7 +12,7 @@ const PAGE_SIZE = 10
 
 /** ユーザーページ (/user/[userID]): そのユーザーが評価した商品の一覧を、誰でも見られる */
 function UserValuationPage() {
-  useBodyId('MYPAGE')
+  useBodyId('USER')
   const { userId: publicId } = useParams<{ userId: string }>()
   const { valuations, isLoading, error } = usePublicUserValuations(publicId)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -68,9 +67,9 @@ function UserValuationPage() {
           投稿した評価
           {!isLoading && !error && <span className="count">（全{valuations.length}件）</span>}
         </h2>
-        {isLoading && <p>読み込み中...</p>}
-        {(error || profileError) && <p>{error ?? profileError}</p>}
-        {!isLoading && !error && valuations.length === 0 && <p>まだ評価が投稿されていません。</p>}
+        {isLoading && <p className="stack-load">読み込み中...</p>}
+        {(error || profileError) && <p className="stack-error">{error ?? profileError}</p>}
+        {!isLoading && !error && valuations.length === 0 && <p className="stack-error">まだ評価が投稿されていません。</p>}
 
         <ul className="product-listValuation">
           {visibleValuations.map((valuation) => (
@@ -81,12 +80,38 @@ function UserValuationPage() {
                 )}
               </figure>
               <p className="elem-name"><Link to={`/product/${valuation.productId}`} className="elem-link -typeA">{valuation.productName}</Link></p>
-              <p className="elem-date">
-                投稿日: {formatJapaneseDate(valuation.createdAt)}
-                {valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
-              </p>
-              {valuation.purchasePrice && <p className="elem-price">購入金額: {valuation.purchasePrice}円</p>}
-              {hasPurchasePlace(valuation) && <p className="elem-store"><PurchasePlace valuation={valuation} /></p>}
+              <div className="stack-purchaseInfo">
+                <table className="table -typeB">
+                  <tbody>
+                    <tr>
+                      <th>投稿日：</th>
+                      <td>
+                        {formatJapaneseDate(valuation.createdAt)}<br />
+                        {valuation.updatedAt && <>（更新日: {formatJapaneseDate(valuation.updatedAt)}）</>}
+                      </td>
+                    </tr>
+                    {valuation.purchasePrice && (
+                      <tr>
+                        <th>購入金額：</th>
+                        <td>{valuation.purchasePrice}円</td>
+                      </tr>
+                    )}
+                    {valuation.purchaseRegion && (
+                      <tr>
+                        <th>購入地域：</th>
+                        <td>{valuation.purchaseRegion}</td>
+                      </tr>
+                    )}
+                    {valuation.purchaseType !== null && (
+                      <tr>
+                        <th>購入場所：</th>
+                        <td><PlaceValue valuation={valuation} /></td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
               <p className="elem-score">{valuation.scoreLabel}</p>
               <p className="elem-comment">{valuation.comment}</p>
             </li>

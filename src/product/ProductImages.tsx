@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { formatJapaneseDate } from '../valuation/format.ts'
 import { PHOTO_BASE_URL } from './photoRequest.ts'
 import type { ProductPhotoDetail } from './data.ts'
@@ -18,10 +19,19 @@ interface ProductImagesProps {
 /** 表示名が未設定のユーザーに使う名前（UserValuationPage と同じ） */
 const DEFAULT_USER_NAME = '未指定'
 
-/** 「2026年11月17日 ユーザー名 投稿」の形式にする */
-const formatPostedCaption = (photo: ProductPhotoDetail) => {
+/** 「2026年11月17日 ユーザー名 投稿」の形式にする。ユーザー名はユーザーページ (/user/[userID]) へのリンク */
+const renderPostedCaption = (photo: ProductPhotoDetail) => {
   const date = formatJapaneseDate(photo.createdAt)
-  return date ? `${date} ${photo.userDisplayName || DEFAULT_USER_NAME} 投稿` : ''
+  if (!date) {
+    return null
+  }
+  return (
+    <>
+      {date}{' '}
+      <Link to={`/user/${photo.userId}`} className="elem-link">{photo.userDisplayName || DEFAULT_USER_NAME}</Link>{' '}
+      投稿
+    </>
+  )
 }
 
 
@@ -74,7 +84,7 @@ function ProductImages({ productName, photos, footer }: ProductImagesProps) {
       {active && (
         <figure className="stack-imgMain">
           <img src={`${PHOTO_BASE_URL}${active.url}`} alt={productName} />
-          <figcaption>{formatPostedCaption(active)}</figcaption>
+          <figcaption>{renderPostedCaption(active)}</figcaption>
         </figure>
       )}
 
