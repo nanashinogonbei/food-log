@@ -30,14 +30,31 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 商品写真（1商品につき複数枚）
+--
+-- 商品申請時の画像と、商品ページ /product/[id] や マイページ /mypage/[userID]/image/post から
+-- 投稿される画像を、このテーブルで一括管理する（旧 product_photo_requests を統合）。
+--   requested_by : 画像を投稿したユーザー（users.id）。商品申請時の画像は商品の申請者
+--   status       : pending=承認待ち / approved=公開 / rejected=却下
+--                  商品申請時の画像は approved で登録する。画像投稿は pending で登録し、
+--                  管理画面 /admin/image で承認すると approved になり商品ページに表示される。
+--                  却下すると画像ファイルを削除し rejected にする（行は投稿履歴として残す）。
+--   display_order: 同じ投稿内での表示の優先順位（0が最優先＝左端）
+--   created_at   : 投稿日時
+--   reviewed_at  : 承認・却下した日時
 CREATE TABLE `product_photos` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `product_id` int UNSIGNED NOT NULL,
+  `requested_by` int UNSIGNED NOT NULL COMMENT '投稿したユーザーのサイト用ID（users.id）',
   `filename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `display_order` int UNSIGNED NOT NULL DEFAULT '0',
   `ip_address` varchar(45) DEFAULT NULL COMMENT 'アップロードしたユーザーのIPアドレス（IPv6対応）',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '投稿日時',
+  `reviewed_at` datetime DEFAULT NULL COMMENT '承認・却下した日時',
   PRIMARY KEY (`id`),
   KEY `idx_product_photos_product_id` (`product_id`),
-  CONSTRAINT `fk_product_photos_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
+  KEY `idx_product_photos_status_created` (`status`, `created_at`),
+  KEY `idx_product_photos_requested_by` (`requested_by`),
+  CONSTRAINT `fk_product_photos_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_product_photos_requested_by` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

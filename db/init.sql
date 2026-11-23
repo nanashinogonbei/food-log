@@ -5,9 +5,8 @@
 --   1. categories           カテゴリー（初期データ付き）
 --   2. users                サイト用ユーザー（ClerkのIDとの対応・公開用ID・表示名）
 --   3. products / product_photos
---   4. product_photo_requests
---   5. product_valuations
---   6. valuation_reports
+--   4. product_valuations
+--   5. valuation_reports
 --
 -- 各テーブルの定義は db/*.sql と同じ内容（それらを順に連結したもの）。
 -- ユーザーIDを持つテーブルは、ClerkのIDではなく users.id を保存する。
@@ -19,7 +18,6 @@
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `valuation_reports`;
 DROP TABLE IF EXISTS `product_valuations`;
-DROP TABLE IF EXISTS `product_photo_requests`;
 DROP TABLE IF EXISTS `product_photos`;
 DROP TABLE IF EXISTS `products`;
 DROP TABLE IF EXISTS `users`;
@@ -147,46 +145,33 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 商品写真（1商品につき複数枚）
+--
+-- 商品申請時の画像と、商品ページ /product/[id] や マイページ /mypage/[userID]/image/post から
+-- 投稿される画像を、このテーブルで一括管理する（旧 product_photo_requests を統合）。
+--   requested_by : 画像を投稿したユーザー（users.id）。商品申請時の画像は商品の申請者
+--   status       : pending=承認待ち / approved=公開 / rejected=却下
+--                  商品申請時の画像は approved で登録する。画像投稿は pending で登録し、
+--                  管理画面 /admin/image で承認すると approved になり商品ページに表示される。
+--                  却下すると画像ファイルを削除し rejected にする（行は投稿履歴として残す）。
+--   display_order: 同じ投稿内での表示の優先順位（0が最優先＝左端）
+--   created_at   : 投稿日時
+--   reviewed_at  : 承認・却下した日時
 CREATE TABLE `product_photos` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `product_id` int UNSIGNED NOT NULL,
+  `requested_by` int UNSIGNED NOT NULL COMMENT '投稿したユーザーのサイト用ID（users.id）',
   `filename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `display_order` int UNSIGNED NOT NULL DEFAULT '0',
   `ip_address` varchar(45) DEFAULT NULL COMMENT 'アップロードしたユーザーのIPアドレス（IPv6対応）',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_product_photos_product_id` (`product_id`),
-  CONSTRAINT `fk_product_photos_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================================
--- product_photo_requests  （db/product_photo_requests.sql）
--- ============================================================
--- 商品画像の申請テーブル（商品ページ /product/[id] の「この商品の画像を投稿する」から申請される画像）
---
--- 1回の申請で複数枚をまとめて送れる。display_order は同じ申請内での表示の優先順位（0が最優先＝左端）。
--- 管理画面 /admin/image で「承認」すると product_photos に追加され、商品ページに表示される
--- （そのとき product_photos.created_at には、申請された日時＝画像の投稿日時を引き継ぐ）。
--- 「却下」すると画像ファイルを削除し、status を rejected にする。
--- 画像ファイルは商品申請と同じ uploads/products/ に保存する。
--- ip_address は申請者のIPアドレス（IPv6対応で最大45文字）。
-
-CREATE TABLE `product_photo_requests` (
-  `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
-  `product_id` int UNSIGNED NOT NULL,
-  `requested_by` int UNSIGNED NOT NULL COMMENT '申請者のサイト用ユーザーID（users.id）',
-  `filename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `display_order` int UNSIGNED NOT NULL DEFAULT '0' COMMENT '同じ申請内での表示の優先順位（0が最優先）',
-  `ip_address` varchar(45) DEFAULT NULL COMMENT '申請者のIPアドレス（IPv6対応）',
   `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申請（投稿）日時',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '投稿日時',
   `reviewed_at` datetime DEFAULT NULL COMMENT '承認・却下した日時',
   PRIMARY KEY (`id`),
-  KEY `idx_photo_requests_status_created` (`status`, `created_at`),
-  KEY `idx_photo_requests_product_id` (`product_id`),
-  KEY `idx_photo_requests_requested_by` (`requested_by`),
-  CONSTRAINT `fk_photo_requests_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_photo_requests_requested_by` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`)
+  KEY `idx_product_photos_product_id` (`product_id`),
+  KEY `idx_product_photos_status_created` (`status`, `created_at`),
+  KEY `idx_product_photos_requested_by` (`requested_by`),
+  CONSTRAINT `fk_product_photos_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_product_photos_requested_by` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================

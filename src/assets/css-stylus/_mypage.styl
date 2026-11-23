@@ -72,6 +72,63 @@
 					font-weight: bold
 					background-color: #DBDBDB
 
+	.list-image
+		display: flex
+		flex-wrap: wrap
+		gap: 20px
+		.item
+			display: flex
+			position: relative
+			align-items: center
+			gap: 10px
+			width: calc( (100% - 40px) / 3 )
+			padding: 15px
+
+			&.-approved
+				border: 1px solid #DBDBDB
+			&.-pending
+				background-color: #E6FAE6
+				.status
+					color: #fff
+					background-color: #3D993D !important
+			&.-rejected
+				background-color: #F0F0F0
+
+			figure
+				flex-shrink: 0
+				width: 80px
+				height: 80px
+			img
+				width: 80px
+				height: 80px
+				object-fit: contain
+			.elem-noImage
+				display: flex
+				justify-content: center
+				align-items: center
+				width: 80px
+				height: 80px
+				font-size: 1.1rem
+				text-align: center
+				color: #777
+				background-color: #fff
+
+			.cluster-txt
+				line-height: 1.4
+				.name
+					margin-bottom: 6px
+					font-weight: bold
+				.date
+					font-size: 1.2rem
+			.status
+				position: absolute
+				top: 0
+				right: 0
+				padding: 3px 7px 4px
+				font-size: 1.2rem
+				font-weight: bold
+				background-color: #DBDBDB
+
 	.stack-formRow
 		.elem-parts
 			position: relative

@@ -291,7 +291,7 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
         $photoPlaceholders = implode(',', array_fill(0, count($productIds), '?'));
         $photoStmt = $pdo->prepare(
             "SELECT id, product_id, filename, created_at FROM product_photos
-             WHERE product_id IN ($photoPlaceholders)
+             WHERE product_id IN ($photoPlaceholders) AND status = 'approved'
              ORDER BY product_id ASC, display_order ASC"
         );
         $photoStmt->execute($productIds);
@@ -304,18 +304,15 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
     }
 
     // 商品ページ用の写真一覧（投稿日が新しい順、同じ投稿内は優先順位(display_order)順。投稿日と投稿者の表示名も付ける）
-    // 投稿者は、画像申請（product_photo_requests）で承認された画像ならその申請者、商品申請時の画像なら商品の申請者
+    // 承認済み(approved)の画像のみ。投稿者は product_photos.requested_by（商品申請時の画像は商品の申請者）
     $photoDetailsByProductId = [];
 
     if (count($productIds) > 0) {
         $detailStmt = $pdo->prepare(
             "SELECT ph.product_id, ph.filename, ph.created_at, u.public_id AS user_public_id, u.display_name AS user_display_name
              FROM product_photos ph
-             INNER JOIN products pr ON pr.id = ph.product_id
-             LEFT JOIN product_photo_requests r
-                    ON r.product_id = ph.product_id AND r.filename = ph.filename AND r.status = 'approved'
-             INNER JOIN users u ON u.id = COALESCE(r.requested_by, pr.requested_by)
-             WHERE ph.product_id IN ($photoPlaceholders)
+             INNER JOIN users u ON u.id = ph.requested_by
+             WHERE ph.product_id IN ($photoPlaceholders) AND ph.status = 'approved'
              ORDER BY ph.product_id ASC, ph.created_at DESC, ph.display_order ASC, ph.id ASC"
         );
         $detailStmt->execute($productIds);
@@ -498,8 +495,8 @@ try {
     $postedAt = date('Y-m-d H:i:s');
 
     $photoStmt = $pdo->prepare(
-        'INSERT INTO product_photos (product_id, filename, display_order, ip_address, created_at)
-         VALUES (:product_id, :filename, :display_order, :ip_address, :created_at)'
+        "INSERT INTO product_photos (product_id, requested_by, filename, display_order, ip_address, status, created_at)
+         VALUES (:product_id, :requested_by, :filename, :display_order, :ip_address, 'approved', :created_at)"
     );
 
     $savedPhotoUrls = [];
@@ -514,6 +511,7 @@ try {
 
         $photoStmt->execute([
             'product_id' => $productId,
+            'requested_by' => $siteUserId,
             'filename' => $filename,
             'display_order' => $index,
             'ip_address' => $ipAddress,

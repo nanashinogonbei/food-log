@@ -11,7 +11,7 @@ require __DIR__ . '/db.php';
  * GET  /api/admin-product-photos.php?adminUserId=xxx
  *   承認待ち(pending)の画像申請の一覧を返す（新しい申請が先頭）。
  * POST /api/admin-product-photos.php (adminUserId, requestId, action=approve|reject)
- *   approve: 画像を商品の写真(product_photos)に追加する（投稿日は申請日時を引き継ぐ）。商品ページに表示される。
+ *   approve: 画像の status を approved にする（投稿日は申請日時のまま）。商品ページに表示される。
  *   reject : 画像ファイルを削除し、申請を却下済みにする。
  *
  * 管理者かどうかは、他の管理者APIと同様に config.php の admin_user_ids ホワイトリストで判定する。
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt = $pdo->query(
             "SELECT r.id, r.product_id, p.name AS product_name, r.filename, r.display_order,
                     u.public_id AS requested_by, r.created_at
-             FROM product_photo_requests r
+             FROM product_photos r
              INNER JOIN products p ON p.id = r.product_id
              INNER JOIN users u ON u.id = r.requested_by
              WHERE r.status = 'pending'
@@ -138,7 +138,7 @@ try {
     $pdo->beginTransaction();
 
     // 二重に処理されないよう、行をロックして承認待ちか確認する
-    $selectStmt = $pdo->prepare('SELECT * FROM product_photo_requests WHERE id = :id FOR UPDATE');
+    $selectStmt = $pdo->prepare('SELECT * FROM product_photos WHERE id = :id FOR UPDATE');
     $selectStmt->execute(['id' => $requestId]);
     $photoRequest = $selectStmt->fetch();
 
@@ -152,22 +152,7 @@ try {
         respondError(409, 'この画像申請はすでに処理されています。');
     }
 
-    if ($action === 'approve') {
-        // 商品の写真として追加する。投稿日は申請日時、優先順位は申請内の並び順を引き継ぐ
-        $insertStmt = $pdo->prepare(
-            'INSERT INTO product_photos (product_id, filename, display_order, ip_address, created_at)
-             VALUES (:product_id, :filename, :display_order, :ip_address, :created_at)'
-        );
-        $insertStmt->execute([
-            'product_id' => $photoRequest['product_id'],
-            'filename' => $photoRequest['filename'],
-            'display_order' => $photoRequest['display_order'],
-            'ip_address' => $photoRequest['ip_address'],
-            'created_at' => $photoRequest['created_at'],
-        ]);
-    }
-
-    $updateStmt = $pdo->prepare('UPDATE product_photo_requests SET status = :status, reviewed_at = NOW() WHERE id = :id');
+    $updateStmt = $pdo->prepare('UPDATE product_photos SET status = :status, reviewed_at = NOW() WHERE id = :id');
     $updateStmt->execute([
         'status' => $action === 'approve' ? 'approved' : 'rejected',
         'id' => $requestId,

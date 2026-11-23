@@ -43,3 +43,37 @@ export async function submitProductPhotoRequest(payload: ProductPhotoRequestPayl
     )
   }
 }
+
+export type UserProductPhotoStatus = 'pending' | 'approved' | 'rejected'
+
+export interface UserProductPhoto {
+  id: number
+  productId: number
+  productName: string
+  /** 画像のURL（/uploads/...）。却下された画像はファイルを削除済みのため null */
+  url: string | null
+  status: UserProductPhotoStatus
+  createdAt: string
+}
+
+/**
+ * ログインユーザー自身が投稿した商品画像の一覧を取得する（承認待ち・承認済み・却下済みすべて、新しい投稿が先頭）。
+ */
+export async function fetchUserProductPhotos(userId: string): Promise<UserProductPhoto[]> {
+  const params = new URLSearchParams({ userId })
+  const response = await fetch(`${API_BASE_URL}/product-photo-requests.php?${params.toString()}`, {
+    mode: 'cors',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    const data: unknown = await response.json().catch(() => null)
+    throw new Error(
+      data && typeof data === 'object' && 'error' in data
+        ? String((data as { error: unknown }).error)
+        : `投稿した画像の取得に失敗しました (status: ${response.status})`,
+    )
+  }
+
+  return (await response.json()) as UserProductPhoto[]
+}

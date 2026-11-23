@@ -6,7 +6,7 @@ import { PHOTO_BASE_URL } from './photoRequest.ts'
 import type { ProductPhotoDetail } from './data.ts'
 
 /** サムネイルがこの枚数を超えたらカルーセルにする（＝4枚目以降） */
-const CAROUSEL_THRESHOLD = 3
+const CAROUSEL_THRESHOLD = 4
 
 interface ProductImagesProps {
   productName: string

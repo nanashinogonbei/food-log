@@ -26,6 +26,8 @@ import ProductPage from './product/ProductPage.tsx'
 import MyPage from './mypage/MyPage.tsx'
 import RequestPage from './mypage/RequestPage.tsx'
 import RequestPostPage from './mypage/RequestPostPage.tsx'
+import ImagePage from './mypage/ImagePage.tsx'
+import ImagePostPage from './mypage/ImagePostPage.tsx'
 import ValuationPage from './mypage/ValuationPage.tsx'
 import ValuationPostPage from './mypage/ValuationPostPage.tsx'
 import UserPage from './mypage/UserPage.tsx'
@@ -203,6 +205,24 @@ function App() {
           element={
             <RequireAuth>
               <ValuationPostPage />
+            </RequireAuth>
+          }
+        />
+        {/* 商品画像一覧（要ログイン） */}
+        <Route
+          path="/mypage/:userId/image"
+          element={
+            <RequireAuth>
+              <ImagePage />
+            </RequireAuth>
+          }
+        />
+        {/* 商品画像 投稿（要ログイン） */}
+        <Route
+          path="/mypage/:userId/image/post"
+          element={
+            <RequireAuth>
+              <ImagePostPage />
             </RequireAuth>
           }
         />

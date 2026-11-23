@@ -189,7 +189,7 @@ function attachPhotosAndFormatForAdmin(PDO $pdo, array $products): array
         $photoPlaceholders = implode(',', array_fill(0, count($productIds), '?'));
         $photoStmt = $pdo->prepare(
             "SELECT id, product_id, filename FROM product_photos
-             WHERE product_id IN ($photoPlaceholders)
+             WHERE product_id IN ($photoPlaceholders) AND status = 'approved'
              ORDER BY product_id ASC, display_order ASC"
         );
         $photoStmt->execute($productIds);

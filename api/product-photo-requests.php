@@ -7,12 +7,15 @@ require __DIR__ . '/db.php';
 /**
  * 商品ページ (/product/[id]) の「この商品の画像を投稿する」から、商品画像を申請するAPI。
  *
+ * GET  /api/product-photo-requests.php?userId=xxx
+ *   ログイン中ユーザー本人が投稿した画像の一覧（承認待ち・承認済み・却下済みすべて、新しい投稿が先頭）。
+ *   マイページの「商品画像 一覧」(/mypage/[userID]/image) 用。
  * POST /api/product-photo-requests.php (multipart/form-data)
  *   userId   : ClerkのユーザーID
  *   productId: 画像を追加したい商品のID（公開中=approved の商品のみ）
  *   photo[]  : 画像ファイル（複数可。送信順がそのまま優先順位。JPEG/PNG/WebP、1枚5MBまで）
  *
- * 申請した画像は product_photo_requests に status=pending で保存され、
+ * 申請した画像は product_photos に status=pending で保存され、
  * 管理画面 (/admin/image) で承認されるまで商品ページには表示されない。
  */
 
@@ -32,7 +35,7 @@ const MAX_PENDING_PER_USER_PRODUCT = 20;
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -40,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method Not Allowed'], JSON_UNESCAPED_UNICODE);
     exit;
@@ -53,6 +56,47 @@ function respondError(int $status, string $message): never
 {
     http_response_code($status);
     echo json_encode(['error' => $message], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// --- 自分が投稿した画像の一覧 ---
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $clerkUserId = trim((string) ($_GET['userId'] ?? ''));
+
+    if ($clerkUserId === '') {
+        respondError(400, 'ユーザーIDが取得できませんでした。再度ログインしてください。');
+    }
+
+    try {
+        $pdo = getPdoConnection();
+        $siteUserId = resolveUserId($pdo, $clerkUserId);
+
+        $listStmt = $pdo->prepare(
+            "SELECT ph.id, ph.product_id, p.name AS product_name, ph.filename, ph.status, ph.created_at
+             FROM product_photos ph
+             INNER JOIN products p ON p.id = ph.product_id
+             WHERE ph.requested_by = :requested_by
+             ORDER BY ph.created_at DESC, ph.display_order ASC, ph.id ASC"
+        );
+        $listStmt->execute(['requested_by' => $siteUserId]);
+
+        $result = array_map(static fn (array $row): array => [
+            'id' => (int) $row['id'],
+            'productId' => (int) $row['product_id'],
+            'productName' => $row['product_name'],
+            // 却下された画像はファイルを削除済みのため、URLは返さない
+            'url' => $row['status'] === 'rejected' ? null : '/uploads/products/' . $row['filename'],
+            'status' => $row['status'],
+            'createdAt' => $row['created_at'],
+        ], $listStmt->fetchAll());
+
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => '投稿した画像の取得に失敗しました。'], JSON_UNESCAPED_UNICODE);
+    }
+
     exit;
 }
 
@@ -145,7 +189,7 @@ try {
 
     // 承認待ちの画像を溜めすぎないようにする
     $pendingStmt = $pdo->prepare(
-        "SELECT COUNT(*) FROM product_photo_requests
+        "SELECT COUNT(*) FROM product_photos
          WHERE product_id = :product_id AND requested_by = :requested_by AND status = 'pending'"
     );
     $pendingStmt->execute(['product_id' => $productId, 'requested_by' => $siteUserId]);
@@ -164,7 +208,7 @@ try {
     $pdo->beginTransaction();
 
     $insertStmt = $pdo->prepare(
-        'INSERT INTO product_photo_requests (product_id, requested_by, filename, display_order, ip_address, status, created_at)
+        'INSERT INTO product_photos (product_id, requested_by, filename, display_order, ip_address, status, created_at)
          VALUES (:product_id, :requested_by, :filename, :display_order, :ip_address, :status, :created_at)'
     );
 

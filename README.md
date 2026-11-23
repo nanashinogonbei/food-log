@@ -16,6 +16,8 @@
 --ユーザ情報 編集 (/mypage/[userID]/user)
 --商品申請 一覧 (/mypage/[userID]/request)
 ---商品申請 投稿 (/mypage/[userID]/request/post)
+--商品画像 一覧 (/mypage/[userID]/image)
+---商品画像 投稿 (/mypage/[userID]/image/post)
 --商品評価 一覧 (/mypage/[userID]/valuation)
 ---商品評価 投稿 (/mypage/[userID]/valuation/post)
 
