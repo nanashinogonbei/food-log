@@ -16,6 +16,13 @@ export interface ProductRequestResult {
   photos: string[]
 }
 
+export interface ProductPhotoDetail {
+  /** 画像のパス（アップロード先のURLの前に付けて表示する） */
+  url: string
+  /** 投稿日時 */
+  createdAt: string
+}
+
 export interface ProductSummary {
   id: number
   name: string
@@ -26,6 +33,8 @@ export interface ProductSummary {
   status: string
   createdAt: string
   photos: string[]
+  /** 商品ページ用の写真一覧（投稿日が新しい順。同じ投稿内は優先順位順） */
+  photoDetails: ProductPhotoDetail[]
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'

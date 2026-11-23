@@ -22,6 +22,7 @@
 -管理者ページ (/admin)
 --商品申請 管理 (/admin/product-approval/)
 --商品 管理 (/admin/product/)
+--商品画像 管理 (/admin/image/)
 --商品評価 管理 (/admin/valuation/)
 --通報 管理 (/admin/report/)
 

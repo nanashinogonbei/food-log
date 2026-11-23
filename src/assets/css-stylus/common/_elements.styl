@@ -263,6 +263,93 @@
 * txt
 ********************/
 
+// 商品写真のトリミング画面（ImageCropModal）
+.stack-cropModal
+	display: flex
+	justify-content: center
+	align-items: center
+	position: fixed
+	z-index: 2000
+	top: 0
+	left: 0
+	width: 100%
+	height: 100dvh
+	padding: 20px
+	background-color: rgba(0,0,0,0.8)
+	.inner
+		overflow-y: auto
+		width: 100%
+		max-width: 720px
+		max-height: 100%
+		padding: 25px
+		border-radius: 8px
+		background-color: #fff
+	.elem-title
+		margin-bottom: 6px
+		font-size: 2rem
+		font-weight: bold
+		.count
+			margin-left: 8px
+			font-size: 1.4rem
+			font-weight: normal
+	.elem-fileName
+		overflow: hidden
+		margin-bottom: 15px
+		color: #808080
+		font-size: 1.3rem
+		text-overflow: ellipsis
+		white-space: nowrap
+	.stack-selectUI
+		flex-wrap: wrap
+		gap: 10px
+		margin-bottom: 15px
+		label
+			padding: 10px 15px
+			font-size: 1.4rem
+	.cluster-stage
+		position: relative
+		margin: 0 auto
+		overflow: hidden
+		background-color: #333
+		user-select: none
+		img
+			display: block
+			width: 100%
+			height: 100%
+			pointer-events: none
+	.elem-cropBox
+		position: absolute
+		border: 2px solid #fff
+		// 枠の外側を暗くする
+		box-shadow: 0 0 0 9999px rgba(0,0,0,0.55)
+		cursor: move
+		touch-action: none
+		&:focus-visible
+			outline: 3px solid #FF8233
+	.stack-zoom
+		display: flex
+		align-items: center
+		gap: 15px
+		margin-top: 15px
+		font-size: 1.4rem
+		input
+			flex-grow: 1
+	.stack-cropActions
+		display: flex
+		flex-wrap: wrap
+		justify-content: center
+		gap: 10px
+		margin-top: 20px
+		.elem-button
+			min-width: 0
+			padding: 12px 18px 14px
+			font-size: 1.4rem
+			&:disabled
+				opacity: 0.5
+		.elem-button + .elem-button
+			margin-left: 0
+
+
 .elem-nomalTxt
 	line-height: 1.6
 

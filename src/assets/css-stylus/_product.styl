@@ -19,26 +19,94 @@
 			
 			.stack-imgMain
 				display: flex
-				justify-content:center
+				flex-direction: column
 				align-items: center
-				height: 300px
+				position: relative
 				img
-					max-height: 100%
-					object-fit: contain
-						
-			.stack-imgThumb
-				display: flex
-				flex-wrap: wrap
-				gap: 3%
-				margin-top: 10px
-				.item
 					width: 100%
-					max-width: calc( 91% / 4 )
+					height: 300px
+					object-fit: contain
+				figcaption
+					position: absolute
+					bottom: 0
+					left: 0
+					width: 100%
+					padding: 4px 5px 5px
 					text-align: center
+					color: #fff
+					font-size: 1.0rem
+					background-color: rgba(0,0,0,0.5)
+
+			.stack-thumbTrack
+				display: flex
+				flex-grow: 1
+				gap: 5px
+				margin-top: 15px
+				overflow-x: auto
+				scroll-snap-type: x mandatory
+				scrollbar-width: none
+				&::-webkit-scrollbar
+					display: none
+				.item
+					flex: 0 0 calc( ( 100% - 15px ) / 4 )
+					scroll-snap-align: start
+					figure
+						position: relative
+						text-align: center
+						&.-active
+							opacity: 0.5
+					a
+						display: block
+						width: 100%
+						cursor: pointer
 					img
 						width: 100%
-						max-height: 100px
+						height: 80px
 						object-fit: contain
+					figcaption
+						position: absolute
+						bottom: 0
+						left: 0
+						width: 100%
+						padding: 2px 3px 3px
+						color: #fff
+						font-size: 0.8rem
+						background-color: rgba(0,0,0,0.5)
+
+			.stack-buttons
+				display: flex
+				justify-content: space-between
+				align-items: center
+				gap: 15px
+				margin-top: 15px
+				
+				.stack-photoRequest
+					font-size: 1.4rem
+					&.-login
+						font-size: 1.2rem
+					.elem-link
+						padding-left: 25px
+						background: url(/assets/img/icon-upload.svg) no-repeat 0 4px / 20px auto
+				
+				.stack-carouselButton
+					display: flex
+					gap: 5px
+					.button-prev,
+					.button-next
+						flex-shrink: 0
+						width: 24px
+						height: 24px
+						border: none
+						border-radius: 50%
+						color: #fff
+						font-size: 0.8rem
+						background-color: #000
+						cursor: pointer
+						&:hover:not(:disabled)
+							background-color: main-c
+						&:disabled
+							opacity: 0.2
+							cursor: not-allowed
 
 		.cluster-txt
 			width: 61%
@@ -58,6 +126,53 @@
 				gap: 5%
 
 			
+	// 商品画像の申請画面
+	.stack-photoRequestModal
+		display: flex
+		justify-content: center
+		align-items: center
+		position: fixed
+		z-index: 1900
+		top: 0
+		left: 0
+		width: 100%
+		height: 100dvh
+		padding: 20px
+		background-color: rgba(0,0,0,0.6)
+		.inner
+			overflow-y: auto
+			width: 100%
+			max-width: 760px
+			max-height: 100%
+			padding: 25px
+			border-radius: 8px
+			text-align: left
+			background-color: #fff
+		.elem-title
+			margin-bottom: 10px
+			font-size: 2rem
+			font-weight: bold
+		.elem-notes
+			margin: 8px 0
+			line-height: 1.5
+		.stack-success
+			padding: 20px 0
+			color: #2e7d32
+		.stack-modalActions
+			display: flex
+			flex-wrap: wrap
+			justify-content: center
+			gap: 10px
+			margin-top: 20px
+			.elem-button
+				min-width: 0
+				margin-left: 0
+				padding: 12px 18px 14px
+				font-size: 1.4rem
+				&:disabled
+					opacity: 0.5
+		photoPickerStyle()
+
 	.stack-valuation
 		margin-top: 30px
 		padding: 13px 0 15px

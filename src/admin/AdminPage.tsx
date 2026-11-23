@@ -19,6 +19,7 @@ function AdminPage() {
       <ul className="stack-linkLink -typeA">
         <li className="item"><NavLink to="/admin/product-approval" className={({ isActive }) => (isActive ? '-active' : '')}>商品承認 管理</NavLink></li>
         <li className="item"><NavLink to="/admin/product" className={({ isActive }) => (isActive ? '-active' : '')}>商品 管理</NavLink></li>
+        <li className="item"><NavLink to="/admin/image" className={({ isActive }) => (isActive ? '-active' : '')}>商品画像 管理</NavLink></li>
         <li className="item"><NavLink to="/admin/report" className={({ isActive }) => (isActive ? '-active' : '')}>通報 管理</NavLink></li>
       </ul>
     </div>

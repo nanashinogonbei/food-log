@@ -8,6 +8,7 @@ import Header from './components/Header.tsx'
 import RequireAuth from './components/RequireAuth.tsx'
 import RequireAdmin from './components/RequireAdmin.tsx'
 import AdminPage from './admin/AdminPage.tsx'
+import AdminImagePage from './admin/AdminImagePage.tsx'
 import AdminProductApprovalPage from './admin/AdminProductApprovalPage.tsx'
 import AdminProductManagePage from './admin/AdminProductManagePage.tsx'
 import AdminReportPage from './admin/AdminReportPage.tsx'
@@ -135,6 +136,15 @@ function App() {
           element={
             <RequireAdmin>
               <AdminProductManagePage />
+            </RequireAdmin>
+          }
+        />
+        {/* 商品画像 管理ページ（要管理者権限） */}
+        <Route
+          path="/admin/image"
+          element={
+            <RequireAdmin>
+              <AdminImagePage />
             </RequireAdmin>
           }
         />

@@ -59,3 +59,103 @@ cfix()
 
 size(_size)
 	round(_size/1399*100, 3)
+
+// 商品写真の選択UI（PhotoPicker）のスタイル。#MYPAGE（商品申請）と #PRODUCT（画像の申請）で共用する
+photoPickerStyle()
+	.stack-photoPost
+		display: flex
+		gap: 10px
+
+	.stack-dropzone
+		display: flex
+		justify-content: center
+		align-items: center
+		flex-grow: 1
+		gap: 15px
+		min-height: 120px
+		padding: 15px
+		border: 2px dashed #ccc
+		border-radius: 8px
+		line-height: 1.4
+		color: #999
+		//background: #F5F5F5 url(/assets/img/icon-img.svg) no-repeat center center / 60px auto
+		background-color: #F5F5F5
+		cursor: pointer
+		&:hover,
+		&:focus-visible
+			border-color: #666
+
+		.elem-input
+			display: none
+
+	.photo-dropzone__error
+		margin: 0.5rem 0 0
+		color: #d93025
+		font-size: 0.85rem
+
+	// 商品写真の並び替え（左から優先順位順。ドラッグ&ドロップで並び替える）
+	.stack-photoPost.-sortable
+		flex-direction: column
+		gap: 10px
+
+	.cluster-photoSort
+		display: flex
+		flex-wrap: wrap
+		gap: 20px 12px
+		padding: 15px
+		border: 2px dashed #8FCC8F
+		border-radius: 8px
+		background-color: #F0FAF0
+
+		.item
+			position: relative
+			width: 120px
+			padding: 4px
+			border: 2px solid transparent
+			border-radius: 6px
+			cursor: grab
+			&.-dragging
+				opacity: 0.4
+			&.-dragOver
+				border-color: #FF8233
+				background-color: #FFF3EB
+
+		.elem-order
+			display: block
+			margin-bottom: 4px
+			color: #666
+			font-size: 1.2rem
+			font-weight: bold
+
+		.elem-thumb
+			display: flex
+			justify-content: center
+			align-items: center
+			width: 100%
+			height: 100px
+			background-color: #fff
+			img
+				max-width: 100%
+				max-height: 100%
+				object-fit: contain
+				pointer-events: none
+
+		.elem-thumbActions
+			display: flex
+			justify-content: space-between
+			gap: 4px
+			margin-top: 6px
+			button
+				padding: 4px 6px
+				border: 1px solid #ccc
+				border-radius: 4px
+				font-size: 1.1rem
+				white-space: nowrap
+				background-color: #fff
+				cursor: pointer
+				&:hover:not(:disabled)
+					border-color: #FF8233
+					color: #FF8233
+				&:disabled
+					opacity: 0.35
+					cursor: not-allowed

@@ -280,7 +280,7 @@ function handleSearchProductsByName(string $name, bool $publicOnly = false): voi
  * 商品レコードの配列に写真URLを付与し、フロントに返すJSON形式に整形する。
  *
  * @param list<array{id:int|string,name:string,category1:int|string|null,category2:int|string|null,distributor:string,manufacturing:string|null,status:string,created_at:string}> $products
- * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>}>
+ * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>,photoDetails:list<array{url:string,createdAt:string}>}>
  */
 function attachPhotosAndFormat(PDO $pdo, array $products): array
 {
@@ -290,7 +290,7 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
     if (count($productIds) > 0) {
         $photoPlaceholders = implode(',', array_fill(0, count($productIds), '?'));
         $photoStmt = $pdo->prepare(
-            "SELECT product_id, filename FROM product_photos
+            "SELECT id, product_id, filename, created_at FROM product_photos
              WHERE product_id IN ($photoPlaceholders)
              ORDER BY product_id ASC, display_order ASC"
         );
@@ -303,7 +303,26 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
         }
     }
 
-    return array_map(static function (array $row) use ($photosByProductId): array {
+    // 商品ページ用の写真一覧（投稿日が新しい順、同じ投稿内は優先順位(display_order)順。投稿日も付ける）
+    $photoDetailsByProductId = [];
+
+    if (count($productIds) > 0) {
+        $detailStmt = $pdo->prepare(
+            "SELECT product_id, filename, created_at FROM product_photos
+             WHERE product_id IN ($photoPlaceholders)
+             ORDER BY product_id ASC, created_at DESC, display_order ASC, id ASC"
+        );
+        $detailStmt->execute($productIds);
+
+        foreach ($detailStmt->fetchAll() as $detailRow) {
+            $photoDetailsByProductId[(int) $detailRow['product_id']][] = [
+                'url' => UPLOAD_URL_BASE . $detailRow['filename'],
+                'createdAt' => $detailRow['created_at'],
+            ];
+        }
+    }
+
+    return array_map(static function (array $row) use ($photosByProductId, $photoDetailsByProductId): array {
         $productId = (int) $row['id'];
 
         return [
@@ -316,6 +335,7 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
             'status' => $row['status'],
             'createdAt' => $row['created_at'],
             'photos' => $photosByProductId[$productId] ?? [],
+            'photoDetails' => $photoDetailsByProductId[$productId] ?? [],
         ];
     }, $products);
 }
@@ -465,9 +485,12 @@ try {
         throw new RuntimeException('アップロード先ディレクトリを作成できませんでした。');
     }
 
+    // 同じ申請の写真は同じ投稿日時にそろえる（商品ページで投稿日の新しい順に並べるときの並びを安定させる）
+    $postedAt = date('Y-m-d H:i:s');
+
     $photoStmt = $pdo->prepare(
         'INSERT INTO product_photos (product_id, filename, display_order, ip_address, created_at)
-         VALUES (:product_id, :filename, :display_order, :ip_address, NOW())'
+         VALUES (:product_id, :filename, :display_order, :ip_address, :created_at)'
     );
 
     $savedPhotoUrls = [];
@@ -485,6 +508,7 @@ try {
             'filename' => $filename,
             'display_order' => $index,
             'ip_address' => $ipAddress,
+            'created_at' => $postedAt,
         ]);
 
         $savedPhotoUrls[] = UPLOAD_URL_BASE . $filename;

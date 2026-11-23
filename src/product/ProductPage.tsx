@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react'
 import { useProduct } from './useProducts.ts'
@@ -12,6 +12,8 @@ import { useBodyId } from '../components/useBodyId.ts'
 import { formatJapaneseDate } from '../valuation/format.ts'
 import { PlaceValue } from '../valuation/PurchasePlace.tsx'
 import { useCurrentUserProfile } from '../user/useUserProfile.ts'
+import ProductImages from './ProductImages.tsx'
+import ProductPhotoRequest from './ProductPhotoRequest.tsx'
 type ValuationTab = 'positive' | 'negative'
 
 // 公開以外のステータスの商品（投稿者本人のみ閲覧可）は、商品名の先頭にステータスを付けて表示する
@@ -38,13 +40,6 @@ function ProductPage() {
   } = useProductValuations(productId)
   // ログインユーザーが通報済みの評価（「通報済み」表示用）
   const { reportedIds, markReported } = useReportedValuationIds(user?.id)
-
-  // 大きい画像に表示中のサムネイルのインデックス（サムネイルにマウスオーバー/フォーカス/クリックで切り替え）
-  const [activePhotoIndex, setActivePhotoIndex] = useState(0)
-
-  useEffect(() => {
-    setActivePhotoIndex(0)
-  }, [product?.id])
 
   // ログインユーザーが既にこの商品を評価済みかどうか（評価済みなら投稿ボタンを隠す）
   // 評価の userId は投稿者の公開用ID（ClerkのIDではない）なので、自分の公開用IDと比較する
@@ -127,33 +122,23 @@ function ProductPage() {
 
 
 			<section className="product-info">
-				{product.photos.length > 0 && (
-					<div className="cluster-img">
-					
-						<figure className="stack-imgMain">
-							<img
-							src={`http://production-null.work/food-log${product.photos[activePhotoIndex] ?? product.photos[0]}`}
-							alt={product.name}
-							/>
-						</figure>
-
-						{product.photos.length > 1 && (
-							<div className="stack-imgThumb">
-							{product.photos.map((photo, index) => (
-								<Link
-									key={photo}
-									className={`item${index === activePhotoIndex ? ' -active' : ''}`}
-									onMouseEnter={() => setActivePhotoIndex(index)}
-									onFocus={() => setActivePhotoIndex(index)}
-									onClick={() => setActivePhotoIndex(index)}
-									aria-label={`${index + 1}枚目の画像を表示`}
-								>
-								<img src={`http://production-null.work/food-log${photo}`} alt="" />
-								</Link>
-							))}
-							</div>
-						)}
-					</div>
+				{(product.photoDetails.length > 0 || product.status === 'approved') && (
+					<ProductImages
+						key={product.id}
+						productName={product.name}
+						photos={product.photoDetails}
+						footer={
+							// 画像を投稿できるのは公開中の商品のみ
+							product.status === 'approved' ? (
+								<>
+									<SignedIn>{user && <ProductPhotoRequest productId={product.id} userId={user.id} />}</SignedIn>
+									<SignedOut>
+										<p className="stack-photoRequest -login"><a href="/login.html" className="elem-link">ログイン</a>すると、この商品の画像を投稿できます。</p>
+									</SignedOut>
+								</>
+							) : null
+						}
+					/>
 				)}
 
 				<div className="cluster-txt">

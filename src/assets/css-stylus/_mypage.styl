@@ -40,7 +40,8 @@
 				.status
 					color: #fff
 					background-color: #3D993D !important
-			&.-private
+			&.-private,
+			&.-rejected
 				background-color: #F0F0F0
 			
 			img
@@ -138,36 +139,7 @@
 				select + select
 					margin-left: 10px
 
-	.stack-photoPost
-		display: flex
-		gap: 10px
-	
-	.stack-dropzone
-		display: flex
-		justify-content: center
-		align-items: center
-		flex-grow: 1
-		gap: 15px
-		min-height: 120px
-		padding: 15px
-		border: 2px dashed #ccc
-		border-radius: 8px
-		line-height: 1.4
-		color: #999
-		//background: #F5F5F5 url(/assets/img/icon-img.svg) no-repeat center center / 60px auto
-		background-color: #F5F5F5
-		cursor: pointer
-		&:hover,
-		&:focus-visible
-			border-color: #666
-
-		.elem-input
-			display: none
-
-	.photo-dropzone__error
-		margin: 0.5rem 0 0
-		color: #d93025
-		font-size: 0.85rem
+	photoPickerStyle()
 
 	.cluster-listThumbs
 		display: flex
