@@ -143,12 +143,6 @@ function ProductPage() {
 
 				<div className="cluster-txt">
 					<h1 className="heading -typeA">{PRODUCT_STATUS_PREFIXES[product.status] ?? ''}{product.name}</h1>
-
-					{product.requester && (
-						<p className="elem-requester">
-							申請者: <Link to={`/user/${product.requester.userId}`} className="elem-link">{product.requester.userDisplayName || 'ユーザー'}</Link>さん
-						</p>
-					)}
 					
 					{categoryPaths.length > 0 && (
 						<div className="stack-catgory" aria-label="カテゴリー">
@@ -156,6 +150,12 @@ function ProductPage() {
 								<p className="elem-category" key={path[path.length - 1].slug}>{path.map((category) => category.name).join(' > ')}</p>
 							))}
 						</div>
+					)}
+					
+					{product.requester && (
+						<p className="elem-requester">
+							申請者: <Link to={`/user/${product.requester.userId}`} className="elem-link">{product.requester.userDisplayName || 'ユーザー'}</Link>さん
+						</p>
 					)}
 					
 					{priceRange && (
