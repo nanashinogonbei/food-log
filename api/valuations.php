@@ -210,7 +210,7 @@ function formatValuationRows(PDO $pdo, array $rows): array
         $photoStmt = $pdo->prepare(
             "SELECT product_id, filename FROM product_photos
              WHERE product_id IN ($photoPlaceholders) AND status = 'approved'
-             ORDER BY product_id ASC, display_order ASC"
+             ORDER BY product_id ASC, created_at DESC, display_order ASC, id ASC"
         );
         $photoStmt->execute($productIds);
 
@@ -348,7 +348,7 @@ function handleProductRanking(string $period, array $categoryIds = []): void
         $photoStmt = $pdo->prepare(
             "SELECT product_id, filename FROM product_photos
              WHERE product_id IN ($placeholders) AND status = 'approved'
-             ORDER BY product_id ASC, display_order ASC"
+             ORDER BY product_id ASC, created_at DESC, display_order ASC, id ASC"
         );
         $photoStmt->execute($productIds);
         $photoByProductId = [];

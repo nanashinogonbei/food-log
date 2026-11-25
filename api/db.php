@@ -238,3 +238,23 @@ function buildCategoryFilterSql(string $alias, array $categoryIds): string
 
     return "({$alias}.category1 IN ($placeholders) OR {$alias}.category2 IN ($placeholders))";
 }
+
+/**
+ * 商品画像の保存用ファイル名を作る。ルール: p[商品ID]_[タイムスタンプ]_[連番].[拡張子]
+ * 同じ商品に同じ秒で投稿が重なって同名のファイルがすでにある場合は、連番を進めて重複を避ける。
+ *
+ * @param int    $productId 商品ID
+ * @param int    $timestamp 投稿時のUNIXタイムスタンプ（1回の投稿内の画像は共通の値を渡す）
+ * @param int    $sequence  1回の投稿内での連番（1始まり）
+ * @param string $extension 拡張子（ドットなし）
+ * @param string $uploadDir 保存先ディレクトリ（末尾スラッシュ付き）
+ */
+function buildProductPhotoFilename(int $productId, int $timestamp, int $sequence, string $extension, string $uploadDir): string
+{
+    do {
+        $filename = sprintf('p%d_%d_%d.%s', $productId, $timestamp, $sequence, $extension);
+        $sequence++;
+    } while (file_exists($uploadDir . $filename));
+
+    return $filename;
+}

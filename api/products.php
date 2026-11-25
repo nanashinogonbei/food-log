@@ -280,7 +280,7 @@ function handleSearchProductsByName(string $name, bool $publicOnly = false): voi
  * 商品レコードの配列に写真URLを付与し、フロントに返すJSON形式に整形する。
  *
  * @param list<array{id:int|string,name:string,category1:int|string|null,category2:int|string|null,distributor:string,manufacturing:string|null,status:string,created_at:string}> $products
- * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>,photoDetails:list<array{url:string,createdAt:string,userId:string,userDisplayName:?string}>}>
+ * @return list<array{id:int,name:string,category1:?string,category2:?string,distributor:string,manufacturing:?string,status:string,createdAt:string,photos:list<string>,photoDetails:list<array{url:string,createdAt:string,userId:string,userDisplayName:?string}>,requester:?array{userId:string,userDisplayName:?string}}>
  */
 function attachPhotosAndFormat(PDO $pdo, array $products): array
 {
@@ -292,7 +292,7 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
         $photoStmt = $pdo->prepare(
             "SELECT id, product_id, filename, created_at FROM product_photos
              WHERE product_id IN ($photoPlaceholders) AND status = 'approved'
-             ORDER BY product_id ASC, display_order ASC"
+             ORDER BY product_id ASC, created_at DESC, display_order ASC, id ASC"
         );
         $photoStmt->execute($productIds);
 
@@ -328,7 +328,27 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
         }
     }
 
-    return array_map(static function (array $row) use ($photosByProductId, $photoDetailsByProductId): array {
+    // 商品の申請ユーザー（商品ページのh1の下に、ユーザーページへのリンク付きで表示する）
+    $requesterByProductId = [];
+
+    if (count($productIds) > 0) {
+        $requesterStmt = $pdo->prepare(
+            "SELECT pr.id AS product_id, u.public_id AS user_public_id, u.display_name AS user_display_name
+             FROM products pr
+             INNER JOIN users u ON u.id = pr.requested_by
+             WHERE pr.id IN ($photoPlaceholders)"
+        );
+        $requesterStmt->execute($productIds);
+
+        foreach ($requesterStmt->fetchAll() as $requesterRow) {
+            $requesterByProductId[(int) $requesterRow['product_id']] = [
+                'userId' => $requesterRow['user_public_id'],
+                'userDisplayName' => $requesterRow['user_display_name'],
+            ];
+        }
+    }
+
+    return array_map(static function (array $row) use ($photosByProductId, $photoDetailsByProductId, $requesterByProductId): array {
         $productId = (int) $row['id'];
 
         return [
@@ -342,6 +362,7 @@ function attachPhotosAndFormat(PDO $pdo, array $products): array
             'createdAt' => $row['created_at'],
             'photos' => $photosByProductId[$productId] ?? [],
             'photoDetails' => $photoDetailsByProductId[$productId] ?? [],
+            'requester' => $requesterByProductId[$productId] ?? null,
         ];
     }, $products);
 }
@@ -452,6 +473,14 @@ try {
         respondError(403, REPORT_RESTRICTED_MESSAGE);
     }
 
+    // 同じ商品名がすでに登録（申請中・非公開を含む）されている場合は申請できない
+    $duplicateStmt = $pdo->prepare('SELECT id FROM products WHERE name = :name LIMIT 1');
+    $duplicateStmt->execute(['name' => $name]);
+
+    if ($duplicateStmt->fetch() !== false) {
+        respondError(409, '同じ商品名の商品がすでに登録されています。');
+    }
+
     // カテゴリーの存在チェック
     $checkStmt = $pdo->prepare('SELECT id FROM categories WHERE id = :id');
 
@@ -492,7 +521,8 @@ try {
     }
 
     // 同じ申請の写真は同じ投稿日時にそろえる（商品ページで投稿日の新しい順に並べるときの並びを安定させる）
-    $postedAt = date('Y-m-d H:i:s');
+    $postedTimestamp = time();
+    $postedAt = date('Y-m-d H:i:s', $postedTimestamp);
 
     $photoStmt = $pdo->prepare(
         "INSERT INTO product_photos (product_id, requested_by, filename, display_order, ip_address, status, created_at)
@@ -502,7 +532,7 @@ try {
     $savedPhotoUrls = [];
 
     foreach ($validatedPhotos as $index => $photo) {
-        $filename = sprintf('%d_%s.%s', $productId, bin2hex(random_bytes(8)), $photo['extension']);
+        $filename = buildProductPhotoFilename($productId, $postedTimestamp, $index + 1, $photo['extension'], UPLOAD_DIR);
         $destination = UPLOAD_DIR . $filename;
 
         if (!move_uploaded_file($photo['tmp_name'], $destination)) {

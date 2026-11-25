@@ -1,7 +1,7 @@
 import { useUser } from '@clerk/clerk-react'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useCategories } from '../category/useCategories.ts'
 import { isCategoryPathComplete } from '../category/data.ts'
 import CategoryCascadeSelect from '../components/CategoryCascadeSelect.tsx'
@@ -9,6 +9,8 @@ import PhotoPicker from '../components/PhotoPicker.tsx'
 import { revokePhotoPreviews } from '../components/photoItems.ts'
 import type { PhotoItem } from '../components/photoItems.ts'
 import { submitProductRequest } from '../product/data.ts'
+import type { ProductSummary } from '../product/data.ts'
+import { useProductSearch } from '../product/useProducts.ts'
 import { useBodyId } from '../components/useBodyId.ts'
 
 function RequestPostPage() {
@@ -17,6 +19,7 @@ function RequestPostPage() {
   const { user } = useUser()
   // APIには（URLの公開用IDではなく）ClerkのユーザーIDを渡す
   const userId = user?.id
+  const navigate = useNavigate()
   const { categories, isLoading: isCategoriesLoading, error: categoriesError } = useCategories()
 
   const [name, setName] = useState('')
@@ -29,6 +32,30 @@ function RequestPostPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submittedProductId, setSubmittedProductId] = useState<number | null>(null)
+
+  // 商品名が3文字以上になったら、登録済みの商品を「こちらの商品ですか？」と候補表示する（重複申請の防止）
+  const { candidates } = useProductSearch(name)
+  const trimmedName = name.trim()
+  const hasDuplicateName = candidates.some((candidate) => candidate.name === trimmedName)
+
+  // 商品名の入力欄（div.elem-parts）の外側をクリックしたら候補を閉じる。入力欄に触れると再び開く
+  const [isCandidateOpen, setIsCandidateOpen] = useState(true)
+  const nameParts = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (nameParts.current && !nameParts.current.contains(event.target as Node)) {
+        setIsCandidateOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
+
+  // 候補を選ぶと、その商品の評価投稿ページへ移動する
+  const handleSelectCandidate = (candidate: ProductSummary) => {
+    navigate(`/mypage/${publicId}/valuation/post?productId=${candidate.id}`)
+  }
 
   // アンマウント時にプレビュー用URLを解放するため、最新の一覧を保持する
   const photosRef = useRef<PhotoItem[]>([])
@@ -52,6 +79,11 @@ function RequestPostPage() {
     const form = event.currentTarget
 
     if (!userId) {
+      return
+    }
+
+    if (hasDuplicateName) {
+      setSubmitError('同じ商品名の商品がすでに登録されています。下の候補から選択してください。')
       return
     }
 
@@ -133,14 +165,36 @@ function RequestPostPage() {
 					
 					<div className="stack-formRow">
 						<p className="elem-label"><label htmlFor="name"><img className="icon-required" src="/assets/img/icon-required.png" />商品名</label></p>
-						<div className="elem-parts">
+						<div className="elem-parts" ref={nameParts}>
 							<input
 								id="name"
 								type="text"
 								value={name}
-								onChange={(event) => setName(event.target.value)}
+								onChange={(event) => {
+									setName(event.target.value)
+									setIsCandidateOpen(true)
+								}}
+								onFocus={() => setIsCandidateOpen(true)}
+								autoComplete="off"
 								required
 							/>
+								{isCandidateOpen && candidates.length > 0 && (
+									<ul className="list-autocomplete">
+										<p className="heading">こちらの商品ですか？</p>
+										{candidates.map((candidate) => (
+											<li key={candidate.id} className="item" onClick={() => handleSelectCandidate(candidate)}>
+												{candidate.photos[0] && <img src={`http://production-null.work/food-log${candidate.photos[0]}`} alt={candidate.name} />}
+												<span className="name">
+													{candidate.name}
+													{candidate.status === 'pending' && <>（保留中）</>}
+													を評価する
+												</span>
+											</li>
+										))}
+									</ul>
+
+								)}
+								{hasDuplicateName && <p className="stack-error">同じ商品名の商品がすでに登録されています。</p>}
 						</div>
 					</div>
 

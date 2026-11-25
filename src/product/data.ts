@@ -27,6 +27,13 @@ export interface ProductPhotoDetail {
   userDisplayName: string | null
 }
 
+export interface ProductRequester {
+  /** 申請者の公開用ID（ユーザーページ /user/[userID] のURLに使う） */
+  userId: string
+  /** 申請者の表示名（未設定の場合は null） */
+  userDisplayName: string | null
+}
+
 export interface ProductSummary {
   id: number
   name: string
@@ -39,6 +46,8 @@ export interface ProductSummary {
   photos: string[]
   /** 商品ページ用の写真一覧（投稿日が新しい順。同じ投稿内は優先順位順） */
   photoDetails: ProductPhotoDetail[]
+  /** 商品を申請したユーザー（取得できない場合は null） */
+  requester: ProductRequester | null
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'

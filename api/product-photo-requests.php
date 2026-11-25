@@ -203,7 +203,8 @@ try {
     }
 
     // 同じ申請の画像は同じ投稿日時にそろえる（承認後に投稿日順に並べるときの並びを安定させる）
-    $postedAt = date('Y-m-d H:i:s');
+    $postedTimestamp = time();
+    $postedAt = date('Y-m-d H:i:s', $postedTimestamp);
 
     $pdo->beginTransaction();
 
@@ -213,7 +214,7 @@ try {
     );
 
     foreach ($validatedPhotos as $index => $photo) {
-        $filename = sprintf('%d_%s.%s', (int) $productId, bin2hex(random_bytes(8)), $photo['extension']);
+        $filename = buildProductPhotoFilename((int) $productId, $postedTimestamp, $index + 1, $photo['extension'], UPLOAD_DIR);
 
         if (!move_uploaded_file($photo['tmp_name'], UPLOAD_DIR . $filename)) {
             throw new RuntimeException('画像の保存に失敗しました。');
